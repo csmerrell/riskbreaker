@@ -1,0 +1,71 @@
+
+@import '/typeface/Iconography/fonts/pixelart-icons-font.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#app {
+    height: 100vh;
+    width: 100vw;
+}
+
+img {
+    image-rendering: pixelated;
+    max-width: unset;
+    height: auto;
+    width: auto;
+}
+
+.pix {
+    font-family: 'pixel-icon'
+}
+
+.text-standard-xl {
+    font-family: 'Standard';
+    font-size: 16pt;
+}
+
+.text-standard-lg {
+    font-family: 'Standard';
+    font-size: 12pt;
+}
+
+.text-standard-md {
+    font-family: 'Standard';
+    font-size: 8pt;
+}
+
+.text-standard-sm {
+    font-family: 'Standard';
+    font-size: 7pt;
+}
+
+.text-standard-xs {
+    font-family: 'Standard';
+    font-size: 6pt;
+}
+
+.text-fabled-md {
+    font-family: 'Fabled';
+    font-size: 10pt;
+}
+
+.text-tiny-sm {
+    font-family: 'Tiny';
+    font-size: 8pt;
+}
+
+@font-face {
+    font-family: 'Standard';
+    src: url(/typeface/Everyday-Standard-All/Everyday_Standard_Original.ttf)
+}
+
+@font-face {
+    font-family: 'Tiny';
+    src: url(/typeface/Everyday-Tiny-All/Everyday_Tiny_Original.ttf)
+}
+
+@font-face {
+    font-family: 'Fabled';
+    src: url(/typeface/Fabled-Font-All/Fabled_Font.ttf)
+}
