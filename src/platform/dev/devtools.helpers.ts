@@ -10,11 +10,6 @@ export function addDevTools(mainWindow: InstanceType<typeof BrowserWindow>) {
         devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
         devtools.setSize(560, 900);
     });
-    mainWindow.on('move', function () {
-        if (!mainWindow) return;
-        const windowBounds = mainWindow.getBounds();
-        devtools.setPosition(windowBounds.x + windowBounds.width - 5, windowBounds.y);
-    });
 
     mainWindow.on('focus', () => focusWindow(mainWindow, devtools));
 }

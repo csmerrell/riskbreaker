@@ -14,6 +14,7 @@ const loader = new LiteLoader();
 type AvailableScenes = 'battle' | 'title' | 'test';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
+const hasFrame = makeState<boolean>(true);
 const currentSceneReady = makeState<boolean>(false);
 
 export function initGame() {
@@ -95,6 +96,7 @@ function setLogicClock(val: 'off' | 'on', options: { noPersistence?: boolean } =
 export const gameContext = {
     currentSceneReady,
     game,
+    hasFrame,
     logicClockOff,
     paused,
     togglePause,

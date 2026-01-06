@@ -4,8 +4,6 @@ import {
     Scene,
     Actor,
     SpriteSheet,
-    Rectangle,
-    Color,
     vec,
     Vector,
     ImageSource,
@@ -18,7 +16,7 @@ import { registerInputListener } from '@/game/input/useInput';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
 
-export class TestScene extends Scene {
+export class ExplorationScene extends Scene {
     private plainActor: Actor;
     private playerTileCoord: Vector;
     private map: TiledResource;
@@ -65,15 +63,7 @@ export class TestScene extends Scene {
         // Get the static sprite (idle frame 0,0)
         const staticSprite = spriteSheet.getSprite(0, 0);
 
-        // Add red background for debugging
-        const redBackground = new Rectangle({
-            width: netherFencer.spriteSheet.cellWidth,
-            height: netherFencer.spriteSheet.cellHeight,
-            color: Color.Red,
-        });
-
         // Set up graphics
-        this.plainActor.graphics.add('redBg', redBackground);
         this.plainActor.graphics.add('sprite', staticSprite);
         this.plainActor.graphics.use('sprite');
 

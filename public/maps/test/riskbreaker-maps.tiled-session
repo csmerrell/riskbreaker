@@ -3,14 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test.tmx",
+    "activeFile": "low-fi.tsx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "low-fi.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 4
         },
         "test.tmx": {
             "scale": 1.3220833333333333,
@@ -26,7 +26,8 @@
     "map.tileHeight": 24,
     "map.tileWidth": 24,
     "openFiles": [
-        "test.tmx"
+        "test.tmx",
+        "low-fi.tsx"
     ],
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",

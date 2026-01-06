@@ -4,6 +4,8 @@ import LoadingScreen from '@/ui/views/Loading/LoadingScreen.vue';
 import PartyMenu from '@/ui/views/PartyMenu/PartyMenu.vue';
 import BattleScreen from '../views/BattleScreen/BattleScreen.vue';
 import TestView from '../views/TestView/TestView.vue';
+import SettingsView from '../views/SettingsView/SettingsView.vue';
+import ExplorationView from '../views/ExplorationView/ExplorationView.vue';
 
 const router = createRouter({
     history: createWebHashHistory('/'),
@@ -19,6 +21,11 @@ const router = createRouter({
             component: TitleScreen,
         },
         {
+            path: '/settings',
+            name: 'settings',
+            component: SettingsView,
+        },
+        {
             path: '/loading',
             name: 'loading',
             component: LoadingScreen,
@@ -32,6 +39,11 @@ const router = createRouter({
             path: '/battle',
             name: 'battle',
             component: BattleScreen,
+        },
+        {
+            path: '/exploration',
+            name: 'exploration',
+            component: ExplorationView,
         },
         {
             path: '/test',

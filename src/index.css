@@ -16,43 +16,65 @@ img {
     width: auto;
 }
 
+:root {
+    --font-base: 12pt;
+    --font-540p: 12pt;
+    --font-720plus: 16pt;
+    --font-480p: 10pt;
+
+    font-size: var(--font-base);
+}
+
 .pix {
     font-family: 'pixel-icon'
 }
 
 .text-standard-xl {
     font-family: 'Standard';
-    font-size: 16pt;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
 }
 
 .text-standard-lg {
     font-family: 'Standard';
-    font-size: 12pt;
+    font-size: 1rem;
+    letter-spacing: 1px;
 }
 
 .text-standard-md {
     font-family: 'Standard';
-    font-size: 8pt;
+    font-size: .7rem;
+    letter-spacing: 1px;
 }
 
 .text-standard-sm {
     font-family: 'Standard';
-    font-size: 7pt;
+    font-size: .6rem;
+    letter-spacing: 1px;
 }
 
 .text-standard-xs {
     font-family: 'Standard';
-    font-size: 6pt;
+    font-size: .5rem;
+    letter-spacing: 1px;
 }
 
 .text-fabled-md {
     font-family: 'Fabled';
     font-size: 10pt;
+    letter-spacing: 1px;
+}
+
+.text-fabled-xl {
+    font-family: 'Fabled';
+    font-size: 28pt;
+    letter-spacing: 3px;
 }
 
 .text-tiny-sm {
     font-family: 'Tiny';
     font-size: 8pt;
+    letter-spacing: 1px;
 }
 
 @font-face {
