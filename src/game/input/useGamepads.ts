@@ -89,7 +89,7 @@ const gamepadInputs = new InputMap();
 export function useGamepad() {
     function initGamepads() {
         const buttonMap = { ...defaultGamepadMap };
-        const { game } = useGameContext();
+        const { game, inputType } = useGameContext();
         const { input } = game.value;
 
         input.gamepads.toggleEnabled(true);
@@ -100,6 +100,7 @@ export function useGamepad() {
 
         input.gamepads.on('connect', (connection) => {
             connection.gamepad.on('button', (e) => {
+                inputType.set('controller');
                 const { button } = e;
                 buttonMap[button].forEach((key) => {
                     gamepadInputs[key] = true;
@@ -109,6 +110,7 @@ export function useGamepad() {
     }
 
     function mapHeldControls() {
+        const { inputType } = useGameContext();
         const buttonMap = { ...defaultGamepadMap };
         const result = new InputMap();
 
@@ -149,6 +151,7 @@ export function useGamepad() {
                         if (checkCommandDebounce(command)) {
                             return;
                         }
+                        inputType.set('controller');
                         result[command] = true;
                     },
                 );

@@ -75,11 +75,12 @@ const keyboardInputs = new InputMap();
 export function useKeyboard() {
     function initKeyboard() {
         const keyMap = { ...defaultKeyboardMap };
-        const { game } = useGameContext();
+        const { game, inputType } = useGameContext();
         const { input } = game.value;
 
         input.keyboard.toggleEnabled(true);
         input.keyboard.on('press', (e) => {
+            inputType.set('keyboard');
             const { key } = e;
             keyMap[key]?.forEach((command) => {
                 keyboardInputs[command] = true;

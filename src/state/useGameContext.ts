@@ -16,6 +16,7 @@ const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
 const hasFrame = makeState<boolean>(true);
 const currentSceneReady = makeState<boolean>(false);
+const inputType = makeState<'keyboard' | 'controller'>('controller');
 
 export function initGame() {
     game.set(
@@ -99,6 +100,7 @@ export const gameContext = {
     hasFrame,
     logicClockOff,
     paused,
+    inputType,
     togglePause,
     setLogicClock,
 };
