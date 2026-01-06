@@ -7,6 +7,8 @@ import {
     vec,
     Vector,
     ImageSource,
+    BoundingBox,
+    LimitCameraBoundsStrategy,
 } from 'excalibur';
 import { netherFencer } from '@/db/units/Netherfencer';
 import { getSourceMap } from '@/lib/helpers/resource.helper';
@@ -32,15 +34,16 @@ export class ExplorationScene extends Scene {
         loader.addResources(Object.values(netherFencerResources));
     }
 
-    onInitialize(_engine: Engine) {
+    onInitialize(engine: Engine) {
         // Load the test map and create actor
-        this.setupScene();
+        this.setupScene(engine);
     }
 
-    private async setupScene() {
+    private async setupScene(engine: Engine) {
         // Load the test map first
         this.map = await loadMap('test');
         this.map.addToScene(this);
+
         const [groundLayer] = this.map.getTileLayers();
         this.mapGround = groundLayer;
 
@@ -81,6 +84,9 @@ export class ExplorationScene extends Scene {
 
         // Set camera to follow the actor
         this.camera.strategy.lockToActor(this.plainActor);
+        const { width, tilewidth, height, tileheight } = this.map.map;
+        const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
+        this.camera.addStrategy(new LimitCameraBoundsStrategy(boundingBox));
 
         // Register movement input listeners
         this.setupMovementControls();
