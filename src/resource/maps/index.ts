@@ -1,9 +1,7 @@
-import { TiledResource } from '@excaliburjs/plugin-tiled';
+import { resources as thuralaResources } from './thurala';
 
 export const maps = {
-    test: new TiledResource('./maps/test/test.tmx', {
-        useTilemapCameraStrategy: true,
-    }),
+    ...thuralaResources,
 };
 
 export async function loadMapAsync(key: keyof typeof maps) {

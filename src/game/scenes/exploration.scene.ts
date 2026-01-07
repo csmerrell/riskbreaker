@@ -6,24 +6,19 @@ import {
     SpriteSheet,
     vec,
     Vector,
-    ImageSource,
     BoundingBox,
     LimitCameraBoundsStrategy,
-    Rectangle,
-    Color,
 } from 'excalibur';
 import { netherFencer } from '@/db/units/Netherfencer';
-import { getSourceMap } from '@/lib/helpers/resource.helper';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
-import { loadMap } from '@/resource/maps';
 import { registerInputListener } from '@/game/input/useInput';
-import { TiledResource } from '@excaliburjs/plugin-tiled';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
+import { resources } from '@/resource';
+import { useExploration } from '@/ui/views/ExplorationView/useExploration';
 
 export class ExplorationScene extends Scene {
     private plainActor: Actor;
     private playerTileCoord: Vector;
-    private map: TiledResource;
     private mapGround: TileLayer;
     private startTime: number;
 
@@ -43,48 +38,41 @@ export class ExplorationScene extends Scene {
         console.log(`Preload: ${Date.now() - this.startTime}ms`);
         this.startTime = Date.now();
 
-        this.map = await loadMap('test');
-        this.map.addToScene(this);
+        const { map, startPos } = useExploration().currentMap.value;
+
+        map.addToScene(this);
         console.log(`Map load: ${Date.now() - this.startTime}ms`);
         this.startTime = Date.now();
 
-        const [groundLayer] = this.map.getTileLayers();
+        const [groundLayer] = map.getTileLayers();
         this.mapGround = groundLayer;
 
         // Create a plain ExcaliburJS Actor
         this.plainActor = new Actor();
 
         // Create sprite sheet manually
-        // const sourceMap = getSourceMap(netherFencer);
-        // const imageSource = sourceMap['image/units/Netherfencer'] as unknown as ImageSource;
-        // const spriteSheet = SpriteSheet.fromImageSource({
-        //     image: imageSource,
-        //     grid: {
-        //         spriteHeight: netherFencer.spriteSheet.cellHeight,
-        //         spriteWidth: netherFencer.spriteSheet.cellWidth,
-        //         columns: netherFencer.spriteSheet.numCols,
-        //         rows: netherFencer.spriteSheet.numRows,
-        //     },
-        // });
+        const imageSource = resources.image.units.Lifebinder;
+        const spriteSheet = SpriteSheet.fromImageSource({
+            image: imageSource,
+            grid: {
+                spriteHeight: netherFencer.spriteSheet.cellHeight,
+                spriteWidth: netherFencer.spriteSheet.cellWidth,
+                columns: netherFencer.spriteSheet.numCols,
+                rows: netherFencer.spriteSheet.numRows,
+            },
+        });
 
-        // // Get the static sprite (idle frame 0,0)
-        // const staticSprite = spriteSheet.getSprite(0, 0);
+        // Get the static sprite (idle frame 0,0)
+        const staticSprite = spriteSheet.getSprite(0, 0);
 
         // Set up graphics
-        this.plainActor.graphics.add(
-            'sprite',
-            new Rectangle({
-                color: Color.Red,
-                width: 24,
-                height: 24,
-            }),
-        );
+        this.plainActor.graphics.add('sprite', staticSprite);
         this.plainActor.graphics.use('sprite');
         console.log(`Sprite setup: ${Date.now() - this.startTime}ms`);
         this.startTime = Date.now();
 
         // Position sprite at tile (3,9) center
-        this.playerTileCoord = vec(3, 9);
+        this.playerTileCoord = startPos;
         const tilePos = this.mapGround.getTileByCoordinate(
             this.playerTileCoord.x,
             this.playerTileCoord.y,
@@ -97,7 +85,7 @@ export class ExplorationScene extends Scene {
 
         // Set camera to follow the actor
         this.camera.strategy.lockToActor(this.plainActor);
-        const { width, tilewidth, height, tileheight } = this.map.map;
+        const { width, tilewidth, height, tileheight } = map.map;
         const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
         this.camera.addStrategy(new LimitCameraBoundsStrategy(boundingBox));
 

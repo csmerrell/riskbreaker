@@ -6,9 +6,10 @@ import { useRoute } from 'vue-router';
 
 const el = ref<HTMLElement | null>(null);
 
-// Object.keys(maps).forEach((key: keyof typeof maps) => {
-//     loadMapAsync(key);
-// });
+const promises: Promise<unknown>[] = [];
+Object.keys(maps).forEach((key: keyof typeof maps) => {
+    promises.push(loadMapAsync(key));
+});
 
 const route = useRoute();
 watch(
@@ -32,6 +33,11 @@ watch(
     },
     { immediate: true },
 );
+
+const ready = ref(false);
+Promise.all(promises).then(() => {
+    ready.value = true;
+});
 </script>
 
 <template>
