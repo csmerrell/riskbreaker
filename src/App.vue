@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
 
-import { initGame, useGameContext } from './state/useGameContext';
+import { initGame, initExplorationEngine, useGameContext } from './state/useGameContext';
 import { useSFX } from './state/useSFX';
 
 import { preloadDbAll } from './state/useDb';
 import { LiteLoader } from './resource/loader';
+import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
 
 const router = useRouter();
 const currentRoute = router.currentRoute;
@@ -22,6 +23,9 @@ onMounted(() => {
     promises.push(preloadDbAll());
     Promise.all(promises).then(() => {
         router.replace({ path: '/title' });
+    });
+    nextTick(() => {
+        initExplorationEngine();
     });
 });
 
@@ -73,6 +77,9 @@ function minimizeGame() {
                     <PauseMenu v-if="paused" />
                     <LoadingScreen v-if="!ready" />
                     <RouterView :key="currentRoute.fullPath" />
+                </div>
+                <div id="exploration-ph" class="invisible absolute top-full">
+                    <ExplorationCanvas />
                 </div>
             </div>
         </div>

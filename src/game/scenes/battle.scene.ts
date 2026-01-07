@@ -4,13 +4,11 @@ import { BattlePartyState, useBattleParty } from '@/state/useBattleParty';
 import { GameContext, useGameContext } from '@/state/useGameContext';
 import { EnemyWaveState, useEnemyWave } from '@/state/useEnemyWave';
 import { HexTile } from '../actors/Arena/HexTile';
-import { AuroraBG } from '../actors/Effects/Aurora.actor';
 
 export class BattleScene extends Scene {
     private battlePartyState: BattlePartyState = {} as BattlePartyState;
     private enemyWaveState: EnemyWaveState = {} as EnemyWaveState;
     private gameContext: GameContext;
-    private auroraBg: AuroraBG;
 
     constructor() {
         super();
@@ -23,16 +21,8 @@ export class BattleScene extends Scene {
         const battlePartyResources = this.battlePartyState.getDependencies();
         const enemyWaveResources = this.enemyWaveState.getDependencies();
         const tileResources = HexTile.getDependencies();
-        const auroraResources = AuroraBG.getDependencies();
         loader.addResources(
-            Array.from(
-                new Set([
-                    ...battlePartyResources,
-                    ...enemyWaveResources,
-                    ...tileResources,
-                    ...auroraResources,
-                ]),
-            ),
+            Array.from(new Set([...battlePartyResources, ...enemyWaveResources, ...tileResources])),
         );
     }
 
@@ -46,8 +36,5 @@ export class BattleScene extends Scene {
         const a = new Actor();
         this.add(a);
         this.camera.strategy.lockToActor(a);
-
-        this.auroraBg = new AuroraBG();
-        this.add(this.auroraBg);
     }
 }

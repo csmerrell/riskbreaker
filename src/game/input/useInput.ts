@@ -183,16 +183,6 @@ export function unregisterInputListener(id: string) {
 function pause() {
     const { togglePause } = useGameContext();
     togglePause();
-
-    setTimeout(captureControls, 0);
-    setTimeout(() => {
-        registerInputListener(() => {
-            togglePause();
-            setTimeout(unCaptureControls, 0);
-            return true;
-        }, 'pause_menu');
-    }, 100);
-    return true;
 }
 
 export function provideInput() {

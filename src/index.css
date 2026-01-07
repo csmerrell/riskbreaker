@@ -17,12 +17,34 @@ img {
 }
 
 :root {
+    --sprite-scale-sm: 2;
+    --sprite-scale-lg: 3;
+
     --font-base: 12pt;
     --font-540p: 12pt;
     --font-720plus: 16pt;
     --font-480p: 10pt;
 
+    --sprite-scale: var(--sprite-scale-sm);
     font-size: var(--font-base);
+}
+
+@media (min-height: 720px) {
+    :root {
+        --sprite-scale: var(--sprite-scale-lg);
+    }
+}
+
+.abs-center {
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+}
+
+.abs-center-x {
+    @apply absolute left-1/2 -translate-x-1/2;
+}
+
+.abs-center-y {
+    @apply absolute top-1/2 -translate-y-1/2;
 }
 
 .pix {

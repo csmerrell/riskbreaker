@@ -5,7 +5,8 @@ import { displayModeMenuItem } from './menuItems/displayMode';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { useRoute, useRouter } from 'vue-router';
 import { MenuItemExposed, MenuItemMeta } from './SettingsMenuItemMeta';
-import { useGameContext } from '@/state/useGameContext';
+
+import ControlLegend from '@/ui/components/ControlLegend.vue';
 
 const router = useRouter();
 
@@ -26,13 +27,15 @@ const menuUp = registerInputListener(() => {
 }, ['movement_up', 'menu_up']);
 
 const route = useRoute();
+function isPage() {
+    return route.path === '/settings';
+}
+const emit = defineEmits(['exit']);
 const exitSettings = registerInputListener(() => {
-    if (route.path === '/settings') {
+    if (isPage()) {
         router.replace('/title?selectedKey=settings');
     } else {
-        console.warn(
-            "TODO - unmount, but don't change navigation (current scene is controlling this menu.",
-        );
+        emit('exit');
     }
 }, 'cancel');
 
@@ -63,10 +66,16 @@ onUnmounted(unregisterInputListeners);
 </script>
 
 <template>
-    <div class="w-full">
-        <div class="text-standard-xl mt-8 flex flex-row justify-center text-white">Settings</div>
+    <div class="relative size-full">
         <div
-            class="justify-left text-standard-md flex w-full flex-col items-center gap-4 px-8 py-4 tracking-wide text-white"
+            class="text-standard-xl flex flex-row justify-center text-white"
+            :class="isPage() && 'mt-8'"
+        >
+            Settings
+        </div>
+        <div
+            class="justify-left text-standard-md flex w-full flex-col items-center gap-4 py-4 tracking-wide text-white"
+            :class="isPage() && 'px-8'"
         >
             <div
                 v-for="(item, idx) in menuItems"
@@ -87,6 +96,9 @@ onUnmounted(unregisterInputListeners);
                     @directional-exit="handleDirectionalExit"
                 />
             </div>
+        </div>
+        <div class="absolute -bottom-4 right-8">
+            <ControlLegend :commands="[{ key: 'cancel', label: 'Back' }]" />
         </div>
     </div>
 </template>

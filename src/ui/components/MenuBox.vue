@@ -11,7 +11,6 @@ type Props = {
 };
 
 const { focused = false, noBorder = false, poles = { SW: true, NE: true } } = defineProps<Props>();
-const { NW = false, NE = false, SW = false, SE = false } = poles;
 </script>
 
 <template>

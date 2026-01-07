@@ -73,6 +73,8 @@ const debounceCounts = debouncedInputs.reduce(
 const keyboardInputs = new InputMap();
 
 export function useKeyboard() {
+    const keymap = { ...defaultKeyboardMap };
+
     function initKeyboard() {
         const keyMap = { ...defaultKeyboardMap };
         const { game, inputType } = useGameContext();
@@ -140,9 +142,16 @@ export function useKeyboard() {
         keyboardInputs.clear({ exemptCommands: persistentKeys });
     }
 
+    function getUnmappedKey(mapped: MappedCommand) {
+        return (Object.entries(keymap) as [Keys, MappedCommand[]][]).find(([_key, value]) =>
+            value.includes(mapped),
+        )[0];
+    }
+
     return {
         clear,
         getKeyboardInputs,
+        getUnmappedKey,
         initKeyboard,
     };
 }

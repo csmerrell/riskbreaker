@@ -40,12 +40,18 @@ export const resolutionMenuItem = defineMenuItem({
 async function setResolution(value: string) {
     const label = resolutionMenuItem.componentProps.options.find((o) => o.key === value).label;
     const [w, h] = label.split(' x ').map((v: string) => parseInt(v, 10));
-    console.log(`Attempting to change resolution to: ${w}x${h}`);
     try {
         const result = await window.electron.changeWindowResolution(w, h);
-        console.log('Resolution change result:', result);
-        if (result && !result.success) {
-            console.error('Resolution change failed:', result.error);
+        if (result && result.success) {
+            let fontSizeVar: string;
+            if (h < 540) {
+                fontSizeVar = 'var(--font-480p)';
+            } else if (h < 720) {
+                fontSizeVar = 'var(--font-540p)';
+            } else {
+                fontSizeVar = 'var(--font-720plus)';
+            }
+            document.querySelector(':root').style.setProperty('font-size', fontSizeVar);
         }
     } catch (error) {
         console.error('Resolution change error:', error);

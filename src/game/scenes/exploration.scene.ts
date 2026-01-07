@@ -9,6 +9,8 @@ import {
     ImageSource,
     BoundingBox,
     LimitCameraBoundsStrategy,
+    Rectangle,
+    Color,
 } from 'excalibur';
 import { netherFencer } from '@/db/units/Netherfencer';
 import { getSourceMap } from '@/lib/helpers/resource.helper';
@@ -23,26 +25,28 @@ export class ExplorationScene extends Scene {
     private playerTileCoord: Vector;
     private map: TiledResource;
     private mapGround: TileLayer;
+    private startTime: number;
 
     constructor() {
         super();
+        this.startTime = Date.now();
     }
 
-    onPreLoad(loader: DefaultLoader) {
-        // Get dependencies for the Netherfencer sprite sheet
-        const netherFencerResources = getSourceMap(netherFencer);
-        loader.addResources(Object.values(netherFencerResources));
-    }
+    onPreLoad(_loader: DefaultLoader) {}
 
     onInitialize(engine: Engine) {
         // Load the test map and create actor
         this.setupScene(engine);
     }
 
-    private async setupScene(engine: Engine) {
-        // Load the test map first
+    private async setupScene(_engine: Engine) {
+        console.log(`Preload: ${Date.now() - this.startTime}ms`);
+        this.startTime = Date.now();
+
         this.map = await loadMap('test');
         this.map.addToScene(this);
+        console.log(`Map load: ${Date.now() - this.startTime}ms`);
+        this.startTime = Date.now();
 
         const [groundLayer] = this.map.getTileLayers();
         this.mapGround = groundLayer;
@@ -51,24 +55,33 @@ export class ExplorationScene extends Scene {
         this.plainActor = new Actor();
 
         // Create sprite sheet manually
-        const sourceMap = getSourceMap(netherFencer);
-        const imageSource = sourceMap['image/units/Netherfencer'] as unknown as ImageSource;
-        const spriteSheet = SpriteSheet.fromImageSource({
-            image: imageSource,
-            grid: {
-                spriteHeight: netherFencer.spriteSheet.cellHeight,
-                spriteWidth: netherFencer.spriteSheet.cellWidth,
-                columns: netherFencer.spriteSheet.numCols,
-                rows: netherFencer.spriteSheet.numRows,
-            },
-        });
+        // const sourceMap = getSourceMap(netherFencer);
+        // const imageSource = sourceMap['image/units/Netherfencer'] as unknown as ImageSource;
+        // const spriteSheet = SpriteSheet.fromImageSource({
+        //     image: imageSource,
+        //     grid: {
+        //         spriteHeight: netherFencer.spriteSheet.cellHeight,
+        //         spriteWidth: netherFencer.spriteSheet.cellWidth,
+        //         columns: netherFencer.spriteSheet.numCols,
+        //         rows: netherFencer.spriteSheet.numRows,
+        //     },
+        // });
 
-        // Get the static sprite (idle frame 0,0)
-        const staticSprite = spriteSheet.getSprite(0, 0);
+        // // Get the static sprite (idle frame 0,0)
+        // const staticSprite = spriteSheet.getSprite(0, 0);
 
         // Set up graphics
-        this.plainActor.graphics.add('sprite', staticSprite);
+        this.plainActor.graphics.add(
+            'sprite',
+            new Rectangle({
+                color: Color.Red,
+                width: 24,
+                height: 24,
+            }),
+        );
         this.plainActor.graphics.use('sprite');
+        console.log(`Sprite setup: ${Date.now() - this.startTime}ms`);
+        this.startTime = Date.now();
 
         // Position sprite at tile (3,9) center
         this.playerTileCoord = vec(3, 9);
@@ -90,6 +103,8 @@ export class ExplorationScene extends Scene {
 
         // Register movement input listeners
         this.setupMovementControls();
+        console.log(`Everything else: ${Date.now() - this.startTime}ms`);
+        this.startTime = Date.now();
     }
 
     private setupMovementControls() {
