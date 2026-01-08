@@ -11,6 +11,7 @@ import { useSFX } from './state/useSFX';
 import { preloadDbAll } from './state/useDb';
 import { LiteLoader } from './resource/loader';
 import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
+import { usePlayerSprites } from './state/usePlayerSprites';
 
 const router = useRouter();
 const currentRoute = router.currentRoute;
@@ -21,6 +22,8 @@ onMounted(() => {
     const promises: Promise<void>[] = [];
     promises.push(game.start(new LiteLoader()));
     promises.push(preloadDbAll());
+    usePlayerSprites().loadAllSprites();
+
     Promise.all(promises).then(() => {
         router.replace({ path: '/title' });
     });

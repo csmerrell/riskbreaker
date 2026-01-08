@@ -3,14 +3,30 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "thurala.tmx",
+    "activeFile": "someForest.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "low-fi.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 4
+        },
+        "someCave.tmx": {
+            "scale": 2.4858333333333333,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 239.9597720415689,
+                "y": 143.81495139121688
+            }
+        },
+        "someForest.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 206.83333333333331,
+                "y": 135.83333333333331
+            }
         },
         "thurala.tmx": {
             "scale": 1.5,
@@ -26,16 +42,18 @@
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 24,
     "map.tileWidth": 24,
-    "map.width": 12,
+    "map.width": 20,
     "openFiles": [
         "thurala.tmx",
-        "low-fi.tsx"
+        "low-fi.tsx",
+        "someForest.tmx"
     ],
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "thurala.tmx",
         "low-fi.tsx",
-        "thurala.tmx"
+        "someForest.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

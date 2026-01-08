@@ -5,12 +5,12 @@ export const maps = {
 };
 
 export async function loadMapAsync(key: keyof typeof maps) {
-    return maps[key].load();
+    return maps[key].map.load();
 }
 
 export async function loadMap(key: keyof typeof maps) {
-    if (!maps[key].isLoaded()) {
-        await maps[key].load();
+    if (!maps[key].map.isLoaded()) {
+        await maps[key].map.load();
     }
     return maps[key];
 }

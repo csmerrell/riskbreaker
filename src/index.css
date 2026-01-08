@@ -27,6 +27,13 @@ img {
 
     --sprite-scale: var(--sprite-scale-sm);
     font-size: var(--font-base);
+
+    --bg: #151d28;
+    --bg-alt: #303050;
+    --bg-dark: #121821;
+    --blue-300:#a38529;
+    --yellow-500: #D2BF55;
+    --yellow-700: #7D6C0C;
 }
 
 @media (min-height: 720px) {
