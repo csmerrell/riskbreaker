@@ -1,4 +1,4 @@
-import { makeState } from './Observable';
+import { makeState } from '../Observable';
 import { SaveState, UnitState } from './saveState/index';
 
 export const roster = makeState<Record<number, UnitState>>();

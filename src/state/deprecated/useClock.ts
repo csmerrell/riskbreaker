@@ -1,5 +1,5 @@
-import { makeState } from './Observable';
-import { useGameContext } from './useGameContext';
+import { makeState } from '../Observable';
+import { useGameContext } from '../useGameContext';
 
 const CLOCKSPEED_1X = 30;
 const CLOCKSPEED_1_5X = 22;

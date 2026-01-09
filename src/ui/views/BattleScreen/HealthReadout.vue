@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { HealthComponent } from '@/game/actors/StrategemActor/components/HealthComponent';
 import { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { onMounted, ref } from 'vue';
 
 type Props = {

@@ -1,13 +1,6 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
 
 export function initIPC() {
-    ipcMain.on('save-game', () => {
-        return 'Not yet implemented';
-    });
-    ipcMain.on('available-saved-games', () => {
-        return 'Not yet implemented';
-    });
-
     ipcMain.handle('change-window-resolution', (event, width: number, height: number) => {
         try {
             const window = BrowserWindow.fromWebContents(event.sender);

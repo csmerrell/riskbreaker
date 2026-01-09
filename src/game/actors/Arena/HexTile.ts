@@ -1,5 +1,5 @@
 import { resources } from '@/resource';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import {
     Actor,
     Engine,

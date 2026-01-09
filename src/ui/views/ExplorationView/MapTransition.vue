@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useExploration } from './useExploration';
+import { useExploration } from '../../../state/useExploration';
 
 const { loaded, currentMap, fadeInStart, fadeOutEnd } = useExploration();
 const showOverlay = ref(false);
+
+const GRID_SIZE = 200;
+const CELL_SIZE = 2;
+const BATCH_SIZE = 1000;
+const DURATION_MS = 250;
 
 onMounted(() => {
     // Subscribe to transition state changes for debugging
@@ -11,10 +16,7 @@ onMounted(() => {
         if (!loaded.value) return;
         showOverlay.value = true;
 
-        animateCanvas(canvasRef.value, {
-            batchSize: 500,
-            durationMs: 500,
-        }).then(() => {
+        animateCanvas(canvasRef.value).then(() => {
             fadeOutEnd.set(true);
         });
     });
@@ -22,10 +24,7 @@ onMounted(() => {
     fadeInStart.subscribe((shouldStart) => {
         if (shouldStart) {
             // Simulate fade in completion after a short delay
-            animateCanvas(canvasRef.value, {
-                batchSize: 500,
-                durationMs: 500,
-            }).then(() => {
+            animateCanvas(canvasRef.value).then(() => {
                 showOverlay.value = false;
                 fadeOutEnd.set(false);
                 fadeInStart.set(false);
@@ -33,11 +32,6 @@ onMounted(() => {
         }
     });
 });
-
-const GRID_SIZE = 100;
-const CELL_SIZE = 4;
-const BATCH_SIZE = 500;
-const DURATION_MS = 500;
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 

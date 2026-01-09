@@ -7,7 +7,7 @@ import type { StrategemActor } from '../actors/StrategemActor/StrategemActor';
 import { frameRange } from '@/lib/helpers/number.helper';
 
 //state
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 
 //action components
 import { DamageComponent } from './components/DamageComponent';

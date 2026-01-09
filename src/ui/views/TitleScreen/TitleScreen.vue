@@ -27,16 +27,17 @@ const menuItems = ref<MenuItemMeta[]>([
         disabled: true,
     },
     {
-        key: 'load',
-        label: 'Load',
-        onSelect: () => {},
-        disabled: true,
-    },
-    {
         key: 'settings',
         label: 'Settings',
         onSelect: () => {
             router.replace('/settings');
+        },
+    },
+    {
+        key: 'quit',
+        label: 'Exit Game',
+        onSelect: () => {
+            window.electron.quit();
         },
     },
 ]);
@@ -100,21 +101,22 @@ onUnmounted(() => {
                 (Alpha v0.0.1)
             </span>
         </h1>
-        <div class="text-standard-lg mt-16 flex flex-col gap-2">
+        <div class="text-standard-lg mt-16 flex w-72 flex-col gap-2">
             <div
                 v-for="item in menuItems"
                 :key="`${item.key}-${item.selected}`"
-                class="flex flex-row items-center gap-3"
+                class="flex flex-row items-center justify-center gap-3 py-px"
                 :class="[
                     item.selected
-                        ? 'text-rose-700'
+                        ? 'menu-select-highlight'
                         : item.disabled
                           ? 'text-gray-600'
                           : 'text-gray-200',
                 ]"
             >
-                <div class="relative bottom-px" :class="!item.selected && 'invisible'">></div>
-                {{ item.label }}
+                <div class="relative top-[2px]">
+                    {{ item.label }}
+                </div>
             </div>
         </div>
     </div>

@@ -4,14 +4,16 @@ import { useRouter } from 'vue-router';
 
 import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
+import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
 
 import { initGame, initExplorationEngine, useGameContext } from './state/useGameContext';
 import { useSFX } from './state/useSFX';
 
-import { preloadDbAll } from './state/useDb';
 import { LiteLoader } from './resource/loader';
-import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
 import { usePlayerSprites } from './state/usePlayerSprites';
+import { useGameState } from './state/useGameState';
+
+const { loadSave } = useGameState();
 
 const router = useRouter();
 const currentRoute = router.currentRoute;
@@ -19,9 +21,9 @@ const currentRoute = router.currentRoute;
 onMounted(() => {
     router.replace({ path: '/' });
     const game = initGame();
-    const promises: Promise<void>[] = [];
+    const promises: Promise<void | void[]>[] = [];
     promises.push(game.start(new LiteLoader()));
-    promises.push(preloadDbAll());
+    promises.push(loadSave());
     usePlayerSprites().loadAllSprites();
 
     Promise.all(promises).then(() => {
@@ -77,7 +79,7 @@ function minimizeGame() {
             <div id="main-container" class="relative grow">
                 <canvas id="main-canvas" class="absolute inset-0 z-10 p-1" />
                 <div class="absolute inset-0 z-20 pt-1">
-                    <PauseMenu v-if="paused" />
+                    <PauseMenu v-if="paused && ready" />
                     <LoadingScreen v-if="!ready" />
                     <RouterView :key="currentRoute.fullPath" />
                 </div>

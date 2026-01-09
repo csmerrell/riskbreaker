@@ -4,14 +4,9 @@ import { LiteLoader } from '@/resource/loader';
 import { Color, DisplayMode, Engine } from 'excalibur';
 import { TitleScene } from '@/game/scenes/title.scene';
 import { makeState } from './Observable';
-import {
-    initControls,
-    provideInput,
-    registerInputListener,
-    unregisterInputListener,
-} from '@/game/input/useInput';
+import { initControls, provideInput } from '@/game/input/useInput';
 import { ref } from 'vue';
-import { useClock } from './useClock';
+import { useClock } from './deprecated/useClock';
 import { TestScene } from '@/game/scenes/test.scene';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
 

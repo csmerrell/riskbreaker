@@ -1,4 +1,3 @@
-
 @import '/typeface/Iconography/fonts/pixelart-icons-font.css';
 @tailwind base;
 @tailwind components;
@@ -31,7 +30,7 @@ img {
     --bg: #151d28;
     --bg-alt: #303050;
     --bg-dark: #121821;
-    --blue-300:#a38529;
+    --blue-300: #a38529;
     --yellow-500: #D2BF55;
     --yellow-700: #7D6C0C;
 }
@@ -52,6 +51,17 @@ img {
 
 .abs-center-y {
     @apply absolute top-1/2 -translate-y-1/2;
+}
+
+.menu-select-highlight {
+    @apply rounded;
+    background: linear-gradient(-75deg,
+            transparent 0%,
+            transparent 5%,
+            rgb(190 18 60 / var(--tw-bg-opacity, 1)) 10%,
+            rgb(190 18 60 / var(--tw-bg-opacity, 1)) 90%,
+            transparent 95%,
+            transparent 100%);
 }
 
 .pix {

@@ -7,8 +7,8 @@ import {
     ResourceCondition,
 } from './Condition';
 import { HealthComponent } from '../actors/StrategemActor/components/HealthComponent';
-import { AssembledBattleUnit, useBattleParty } from '@/state/useBattleParty';
-import { useEnemyWave } from '@/state/useEnemyWave';
+import { AssembledBattleUnit, useBattleParty } from '@/state/deprecated/useBattleParty';
+import { useEnemyWave } from '@/state/deprecated/useEnemyWave';
 import { sortArrayRandom } from '@/lib/helpers/number.helper';
 
 export function getUnitPool(unitPoolKey: ConditionTargetableUnitPool) {

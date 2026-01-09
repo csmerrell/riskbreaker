@@ -1,7 +1,7 @@
-import { makeState } from './Observable';
+import { makeState } from '../Observable';
 import { TargetStrategyComponent } from '@/game/actions/components/TargetStrategyComponent';
 import { useClock } from './useClock';
-import { useGameContext } from './useGameContext';
+import { useGameContext } from '../useGameContext';
 import { useBattleState } from './useBattleState';
 import { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
 import { inputGlobalDebounce, registerInputListener } from '@/game/input/useInput';

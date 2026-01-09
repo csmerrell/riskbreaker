@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { useGameContext } from '@/state/useGameContext';
 import { onMounted, ref } from 'vue';
-import { useExploration } from './useExploration';
+import { useExploration } from '../../../state/useExploration';
 import MapTransition from './MapTransition.vue';
 
 const { explorationEngine } = useGameContext();
-const { setCurrentMap } = useExploration();
+const { currentMap, setCurrentMap } = useExploration();
 
 const sceneLoaded = ref(false);
 onMounted(() => {
-    setCurrentMap('thurala');
+    if (!currentMap.value) {
+        setCurrentMap('thurala');
+    }
     explorationEngine.value.goToScene('exploration').then(() => {
         sceneLoaded.value = true;
     });

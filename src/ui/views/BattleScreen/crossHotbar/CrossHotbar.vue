@@ -12,7 +12,7 @@ import {
     unregisterInputListener,
 } from '@/game/input/useInput';
 import { computed, ref, watch } from 'vue';
-import { useBattleParty } from '@/state/useBattleParty';
+import { useBattleParty } from '@/state/deprecated/useBattleParty';
 
 const { currentHotbar } = useCrossHotbar();
 

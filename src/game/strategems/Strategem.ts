@@ -1,4 +1,4 @@
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { StrategemAction } from '../actions/StrategemAction';
 import { CooldownComponent } from '../actions/components/CooldownComponent';
 import { TargetStrategyComponent } from '../actions/components/TargetStrategyComponent';

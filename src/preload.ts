@@ -2,8 +2,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 export const ipcAPI = {
-    saveGame: () => '',
-    availableSaveGames: () => '',
     changeWindowResolution: (width: number, height: number) =>
         ipcRenderer.invoke('change-window-resolution', width, height),
     changeWindowMode: (

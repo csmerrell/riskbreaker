@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { vec } from 'excalibur';
 import { AssembledBattleUnit, useBattleParty } from './useBattleParty';
 import { useEnemyWave } from './useEnemyWave';
-import { useGameContext } from './useGameContext';
+import { useGameContext } from '../useGameContext';
 import { useBattleState } from './useBattleState';
 import { MAX_CT, SpeedComponent } from '@/game/actors/StrategemActor/components/SpeedComponent';
 

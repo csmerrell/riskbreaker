@@ -1,8 +1,8 @@
 import { DefaultLoader, Engine, ExcaliburGraphicsContext, Scene } from 'excalibur';
 import { Actor } from 'excalibur';
-import { BattlePartyState, useBattleParty } from '@/state/useBattleParty';
+import { BattlePartyState, useBattleParty } from '@/state/deprecated/useBattleParty';
+import { EnemyWaveState, useEnemyWave } from '@/state/deprecated/useEnemyWave';
 import { GameContext, useGameContext } from '@/state/useGameContext';
-import { EnemyWaveState, useEnemyWave } from '@/state/useEnemyWave';
 import { HexTile } from '../actors/Arena/HexTile';
 
 export class BattleScene extends Scene {

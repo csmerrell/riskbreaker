@@ -8,12 +8,12 @@ import CrossHotbar from './crossHotbar/CrossHotbar.vue';
 import BattleLog from './BattleLog.vue';
 
 import { useGameContext } from '@/state/useGameContext';
-import { useBattleParty } from '@/state/useBattleParty';
-import { useEnemyWave } from '@/state/useEnemyWave';
-import { useBattlefield } from '@/state/useBattlefield';
+import { useBattleParty } from '@/state/deprecated/useBattleParty';
+import { useEnemyWave } from '@/state/deprecated/useEnemyWave';
+import { useBattlefield } from '@/state/deprecated/useBattlefield';
 
 import type { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { useControlState } from '@/state/menus/useControlState';
 import { InspectUnitState } from './controlStates/InspectUnit';
 

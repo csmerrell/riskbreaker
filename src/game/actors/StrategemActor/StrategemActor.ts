@@ -14,16 +14,19 @@ import { HurtComponent } from './components/HurtComponent';
 
 //strategems / actions
 import { Strategem } from '@/game/strategems/Strategem';
-import { useActionBus } from '@/state/useActionBus';
+import { useActionBus } from '@/state/deprecated/useActionBus';
 
 //state
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 
 //lib
 import { frameRange } from '@/lib/helpers/number.helper';
 
 //ui
-import { SpriteSheetSourcedUnitDefinition, useBattleParty } from '@/state/useBattleParty';
+import {
+    SpriteSheetSourcedUnitDefinition,
+    useBattleParty,
+} from '@/state/deprecated/useBattleParty';
 import { UnitState } from '@/state/saveState';
 import { HealedComponent } from './components/HealedComponent';
 import { ForecastComponent } from './components/ForecastComponent';

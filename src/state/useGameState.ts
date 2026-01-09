@@ -1,16 +1,20 @@
-import { SaveState } from './saveState';
-import { initBattleParty } from './useBattleParty';
-import { initRoster } from './useRoster';
+import { useExploration } from './useExploration';
 
-function saveState() {}
+const { loadExplorationState, saveExplorationState } = useExploration();
 
-function loadSave(savedState: SaveState) {
-    initRoster(savedState);
-    initBattleParty(savedState);
+async function saveGame() {
+    await saveExplorationState();
+}
+
+async function loadSave() {
+    const promises = [];
+    promises.push(loadExplorationState());
+
+    return Promise.all(promises);
 }
 
 const gameState = {
-    saveState,
+    saveGame,
     loadSave,
 };
 

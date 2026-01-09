@@ -16,7 +16,7 @@ import {
     Vector,
 } from 'excalibur';
 import { frameRange } from '@/lib/helpers/number.helper';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { TargetStrategyComponent } from './TargetStrategyComponent';
 import { Animator } from '@/game/actors/StrategemActor/components/Animator';
 import { useGameContext } from '@/state/useGameContext';

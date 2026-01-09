@@ -4,59 +4,140 @@ import { useGameContext } from '@/state/useGameContext';
 import ControlLegend from '@/ui/components/ControlLegend.vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
 import SettingsView from '../SettingsView/SettingsView.vue';
+import { useSFX } from '@/state/useSFX';
+import { useGameState } from '@/state/useGameState';
+import { useRouter } from 'vue-router';
+import {
+    captureControls,
+    unCaptureControls,
+    unregisterInputListener,
+    registerInputListener,
+} from '@/game/input/useInput';
 
-const { game, togglePause } = useGameContext();
+const { togglePause } = useGameContext();
 
-const modalOpen = ref(false);
+type PauseMenuItem = {
+    key: string;
+    label: string;
+    onSelect: () => void;
+};
+
+const router = useRouter();
+const { saveGame } = useGameState();
+
+const selectedMenuItem = ref(0);
+const menuItems = ref<PauseMenuItem[]>([
+    {
+        key: 'resume',
+        label: 'Resume',
+        onSelect: () => {
+            togglePause();
+        },
+    },
+    {
+        key: 'settings',
+        label: 'Settings',
+        onSelect: () => {
+            openSettings();
+        },
+    },
+    {
+        key: 'saveTitle',
+        label: 'Save & Go to Title',
+        onSelect: async () => {
+            await saveGame();
+            togglePause();
+            router.replace('/title');
+        },
+    },
+    {
+        key: 'saveQuit',
+        label: 'Save & Quit',
+        onSelect: async () => {
+            await saveGame();
+            window.electron.quit();
+        },
+    },
+]);
 
 let cancelPause: string;
-let btnSettings: string;
+let selectMenuItemId: string;
+let menuDownId: string;
+let menuUpId: string;
 onMounted(async () => {
-    if (game.value.isReady) {
-        const { captureControls, registerInputListener } = await import('@/game/input/useInput');
-        captureControls();
-        cancelPause = registerInputListener(togglePause, ['cancel', 'pause_menu']);
-        btnSettings = registerInputListener(() => {
-            openSettings();
-        }, 'context_menu_2');
-    }
+    captureControls();
+    cancelPause = registerInputListener(togglePause, ['cancel', 'pause_menu']);
+    selectMenuItemId = registerInputListener(selectMenuItem, 'confirm');
+    menuDownId = registerInputListener(menuDown, ['movement_down', 'menu_down']);
+    menuUpId = registerInputListener(menuUp, ['movement_up', 'menu_up']);
 });
 
-onUnmounted(async () => {
-    if (game.value.isReady) {
-        const { unCaptureControls, unregisterInputListener } = await import(
-            '@/game/input/useInput'
-        );
-        unCaptureControls();
-        unregisterInputListener(cancelPause);
-        unregisterInputListener(btnSettings);
-    }
+onUnmounted(() => {
+    onClose();
 });
 
+function onClose() {
+    unCaptureControls();
+    unregisterInputListener(cancelPause);
+    unregisterInputListener(selectMenuItemId);
+    unregisterInputListener(menuDownId);
+    unregisterInputListener(menuUpId);
+}
+
+const settingsOpen = ref(false);
 function openSettings() {
-    modalOpen.value = true;
+    settingsOpen.value = true;
+}
+
+function selectMenuItem() {
+    menuItems.value[selectedMenuItem.value].onSelect();
+}
+
+const { playSFX } = useSFX();
+function menuDown() {
+    const curr = selectedMenuItem.value;
+    selectedMenuItem.value = Math.min(menuItems.value.length - 1, curr + 1);
+    if (selectedMenuItem.value !== curr) {
+        playSFX('menuNav');
+    }
+}
+
+function menuUp() {
+    const curr = selectedMenuItem.value;
+    selectedMenuItem.value = Math.max(0, curr - 1);
+    if (selectedMenuItem.value !== curr) {
+        playSFX('menuNav');
+    }
 }
 </script>
 
 <template>
     <div class="absolute inset-0 z-[9999]">
         <div class="mask absolute inset-0 bg-gray-950 opacity-80" />
-        <div v-if="!modalOpen">
-            <div
+        <div v-if="!settingsOpen">
+            <MenuBox
                 :class="[
                     'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-                    'text-standard-lg text-white',
+                    'flex w-96 flex-col bg-bg text-white',
                 ]"
             >
-                Paused
-            </div>
+                <h1 class="text-standard-lg my-8 text-center">Paused</h1>
+                <div class="flex flex-col justify-center gap-2">
+                    <div
+                        v-for="(item, idx) in menuItems"
+                        :key="item.key"
+                        :ref="`menu-${item.key}`"
+                        class="text-standard-md py-1 text-center"
+                        :class="selectedMenuItem === idx && 'menu-select-highlight'"
+                    >
+                        <div class="relative top-[2px]">
+                            {{ item.label }}
+                        </div>
+                    </div>
+                </div>
+            </MenuBox>
             <div class="absolute bottom-8 right-16">
-                <ControlLegend
-                    :commands="[
-                        { key: 'context_menu_2', label: 'Settings' },
-                        { key: 'cancel', label: 'Resume' },
-                    ]"
-                />
+                <ControlLegend :commands="[{ key: 'cancel', label: 'Resume' }]" />
             </div>
         </div>
         <div v-else class="">
@@ -66,7 +147,7 @@ function openSettings() {
                     'text-standard-md bg-bg-dark text-white shadow-md shadow-bg-dark',
                 ]"
             >
-                <SettingsView @exit="modalOpen = false" />
+                <SettingsView @exit="settingsOpen = false" />
             </MenuBox>
         </div>
     </div>

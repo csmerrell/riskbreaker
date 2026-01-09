@@ -1,4 +1,4 @@
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { StrategemActionComponent } from '../StrategemAction';
 
 export class CooldownComponent extends StrategemActionComponent {

@@ -83,10 +83,9 @@ onUnmounted(unregisterInputListeners);
                 class="flex w-full items-center justify-start"
             >
                 <div
-                    class="mr-16 flex w-48 flex-row"
-                    :class="selectedItem === idx && 'text-rose-700'"
+                    class="relative -left-4 top-[2px] mr-16 flex w-48 flex-row px-8 py-[2px]"
+                    :class="selectedItem === idx && 'menu-select-highlight'"
                 >
-                    <span class="pr-2" :class="selectedItem !== idx && 'invisible'">></span>
                     {{ item.label }}
                 </div>
                 <component

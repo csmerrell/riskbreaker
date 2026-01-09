@@ -1,6 +1,6 @@
 import { StrategemAction } from '@/game/actions/StrategemAction';
 import { ActorComponent } from './Component';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 export const MAX_CT = 100;
 export class SpeedComponent extends ActorComponent {
     private ct = 0;

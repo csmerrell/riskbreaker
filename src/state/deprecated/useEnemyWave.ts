@@ -1,5 +1,4 @@
-import { makeState } from './Observable';
-import { tempStaticEnemyWave } from './temp/enemyWave';
+import { makeState } from '../Observable';
 import { UnitDefinition } from '@/db/units/BattleUnit';
 import { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
 import { getSourceMap, injectSources } from '@/lib/helpers/resource.helper';
@@ -8,17 +7,18 @@ import { useDb } from './useDb';
 import { AssembledBattleUnit, SpriteSheetSourcedUnitDefinition } from './useBattleParty';
 import { UnitState } from './saveState';
 import { useActionBus } from './useActionBus';
-import { useGameContext } from './useGameContext';
-import { BattleScene } from '@/game/scenes/battle.scene';
+import { useGameContext } from '../useGameContext';
 import { useBattlefield } from './useBattlefield';
-import { SpeedComponent } from '@/game/actors/StrategemActor/components/SpeedComponent';
 
 const currentWave = makeState<AssembledBattleUnit[]>([]);
 const wavesDefeated = makeState<number>(0);
 
 export function assembleEnemyWave() {
     const toSet: AssembledBattleUnit[] = [];
-    const { roster, battleParty } = tempStaticEnemyWave;
+    const { roster, battleParty } = { roster: [], battleParty: [] } as {
+        roster: unknown[];
+        battleParty: unknown[];
+    };
     battleParty.map(async (e) => {
         const { dbResource } = useDb();
         const unitDef = dbResource[roster[e.id].unitPath] as UnitDefinition;

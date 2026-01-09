@@ -5,14 +5,14 @@ import MenuBox from '@/ui/components/MenuBox.vue';
 import HexIcon from './HexIcon.vue';
 
 import { MenuElement, useMenuElement } from '@/state/menus/useMenuElement';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 
 import type { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
 import type { StrategemAction } from '@/game/actions/StrategemAction';
 import HealthReadout from './HealthReadout.vue';
 import { useCrossHotbar } from './state/useCrossHotbar';
-import { useBattleParty } from '@/state/useBattleParty';
-import { useActionBus } from '@/state/useActionBus';
+import { useBattleParty } from '@/state/deprecated/useBattleParty';
+import { useActionBus } from '@/state/deprecated/useActionBus';
 
 export type ActorIntent = {
     actionId?: string;

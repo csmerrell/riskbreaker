@@ -1,5 +1,5 @@
 import { Animation, AnimationStrategy, Graphic } from 'excalibur';
-import { useClock } from '@/state/useClock';
+import { useClock } from '@/state/deprecated/useClock';
 import { ActorComponent } from './Component';
 import { StrategemActor } from '../StrategemActor';
 import { frameRange } from '@/lib/helpers/number.helper';

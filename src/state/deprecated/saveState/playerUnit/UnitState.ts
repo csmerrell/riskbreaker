@@ -1,4 +1,4 @@
-import { useDb } from '@/state/useDb';
+import { useDb } from '@/state/deprecated/useDb';
 import { UnitRosterSaveState } from '..';
 import { EquipmentState, UnitEquipment } from './UnitEquipment';
 import { StrategemState, UnitStrategems } from './UnitStrategems';

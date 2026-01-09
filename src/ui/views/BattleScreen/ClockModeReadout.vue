@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useActionBus } from '@/state/useActionBus';
+import { useActionBus } from '@/state/deprecated/useActionBus';
 import { ref } from 'vue';
 import ClockModeIcon from './ClockModeIcon.vue';
 

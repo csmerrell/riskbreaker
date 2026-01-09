@@ -1,6 +1,6 @@
 import { TiledResource } from '@excaliburjs/plugin-tiled';
 import { vec } from 'excalibur';
-import { MapMeta } from '@/ui/views/ExplorationView/useExploration';
+import { MapMeta } from '@/state/useExploration';
 
 export const resources: Record<string, MapMeta> = {
     thurala: {

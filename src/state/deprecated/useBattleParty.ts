@@ -1,5 +1,5 @@
 import { BattleMember } from './types/BattleMember';
-import { makeState } from './Observable';
+import { makeState } from '../Observable';
 import { StrategemActor } from '@/game/actors/StrategemActor/StrategemActor';
 import { UnitDefinition } from '@/db/units/BattleUnit';
 import { getSourceMap, injectSources } from '@/lib/helpers/resource.helper';

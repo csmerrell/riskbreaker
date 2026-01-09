@@ -2,9 +2,9 @@ import { Animation } from 'excalibur';
 import { Animator } from './Animator';
 import { ActorComponent } from './Component';
 import { Idler } from './Idler';
-import { useClock } from '@/state/useClock';
-import { useBattleParty } from '@/state/useBattleParty';
-import { useEnemyWave } from '@/state/useEnemyWave';
+import { useClock } from '@/state/deprecated/useClock';
+import { useBattleParty } from '@/state/deprecated/useBattleParty';
+import { useEnemyWave } from '@/state/deprecated/useEnemyWave';
 
 export class DeathComponent extends ActorComponent {
     private tickSubscription: string;

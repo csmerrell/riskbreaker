@@ -2,7 +2,7 @@ import { ActionMetadata } from '@/db/actions/Action';
 import { ConditionList, ConditionState } from '@/game/strategems/Condition';
 import { makeState, Observable } from '@/state/Observable';
 import { StrategemSaveState } from '..';
-import { useDb } from '@/state/useDb';
+import { useDb } from '@/state/deprecated/useDb';
 import { getSourceMap, injectSources } from '@/lib/helpers/resource.helper';
 import { Resource } from 'excalibur';
 
