@@ -5,9 +5,10 @@ import {
     Actor,
     SpriteSheet,
     vec,
-    Vector,
     BoundingBox,
     LimitCameraBoundsStrategy,
+    Rectangle,
+    Color,
 } from 'excalibur';
 import { lifebinder } from '@/db/units/Lifebinder';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
@@ -17,8 +18,11 @@ import { resources } from '@/resource';
 import { useExploration } from '@/state/useExploration';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
 
+import FOG_SHADER from '@/shader/fog.glsl?raw';
+
 export class ExplorationScene extends Scene {
     private player: Actor;
+    private fog: Actor;
     private map: TiledResource;
     private mapGround: TileLayer;
 
@@ -35,10 +39,11 @@ export class ExplorationScene extends Scene {
         this.setupScene(engine);
     }
 
-    private async setupScene(_engine: Engine) {
+    private async setupScene(engine: Engine) {
         const { fadeOutEnd, fadeInStart, loaded } = useExploration();
         this.loadPlayer();
         this.loadMap(true);
+        this.addFog(engine);
 
         // Subscribe to map changes with transition effect
         fadeOutEnd.subscribe((next) => {
@@ -97,6 +102,60 @@ export class ExplorationScene extends Scene {
         const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
         this.placePlayer(isSetup);
         this.camera.addStrategy(new LimitCameraBoundsStrategy(boundingBox));
+    }
+
+    private addFog(engine: Engine) {
+        this.fog = new Actor({
+            pos: this.player.pos,
+            width: visualViewport.width,
+            height: visualViewport.height,
+            z: 9999, // draw on top
+        });
+
+        this.fog.graphics.use(
+            new Rectangle({
+                width: visualViewport.width,
+                height: visualViewport.height,
+                color: Color.fromHex('#151d28'),
+            }),
+        );
+
+        const fogMaterial = engine.graphicsContext.createMaterial({
+            name: 'fog',
+            fragmentSource: FOG_SHADER,
+        });
+
+        this.fog.on('preupdate', () => {
+            // Move fog with camera to cover the viewport
+            this.fog.pos = engine.currentScene.camera.pos;
+
+            // Normalize player position relative to fog dimensions (0.0 to 1.0)
+            const playerRelativePos = this.player.pos.sub(this.fog.pos);
+            const screenWidth = engine.screen.resolution.width;
+            const screenHeight = engine.screen.resolution.height;
+            const normalizedX = (playerRelativePos.x + screenWidth / 2) / screenWidth;
+            const normalizedY = (playerRelativePos.y + screenHeight / 2) / screenHeight;
+
+            // Flip Y coordinate for shader (ExcaliburJS Y-down vs shader Y-up)
+            const holePos = vec(normalizedX, 1.0 - normalizedY);
+
+            fogMaterial.getShader().trySetUniformFloatVector('u_holePos', holePos);
+            fogMaterial
+                .getShader()
+                .trySetUniformFloatVector(
+                    'u_resolution',
+                    vec(visualViewport.width, visualViewport.height),
+                );
+
+            // Optional: use background color for fog
+            const bg = Color.fromHex('#151d28');
+            fogMaterial.getShader().trySetUniformFloat('u_fogR', bg.r / 255);
+            fogMaterial.getShader().trySetUniformFloat('u_fogG', bg.g / 255);
+            fogMaterial.getShader().trySetUniformFloat('u_fogB', bg.b / 255);
+        });
+
+        this.fog.graphics.material = fogMaterial;
+        this.add(this.fog);
     }
 
     private placePlayer(isSetup: boolean = false) {
@@ -174,6 +233,8 @@ export class ExplorationScene extends Scene {
             setCurrentMap,
             saveExplorationState,
         } = useExploration();
+        // Don't move fog here - it should only follow the camera in preupdate
+
         const { x, y } = playerTileCoord.value;
         const keyPoint = currentMap.value.keyPoints[`${x}_${y}`];
         if (keyPoint) {

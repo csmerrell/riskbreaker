@@ -19,10 +19,10 @@ img {
     --sprite-scale-sm: 2;
     --sprite-scale-lg: 3;
 
-    --font-base: 12pt;
     --font-540p: 12pt;
     --font-720plus: 16pt;
     --font-480p: 10pt;
+    --font-base: var(--font-720plus);
 
     --sprite-scale: var(--sprite-scale-sm);
     font-size: var(--font-base);

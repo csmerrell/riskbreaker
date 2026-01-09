@@ -24,6 +24,7 @@ type PauseMenuItem = {
 
 const router = useRouter();
 const { saveGame } = useGameState();
+const { playSFX, bufferAudioCb } = useSFX();
 
 const selectedMenuItem = ref(0);
 const menuItems = ref<PauseMenuItem[]>([
@@ -46,7 +47,7 @@ const menuItems = ref<PauseMenuItem[]>([
         label: 'Save & Go to Title',
         onSelect: async () => {
             await saveGame();
-            togglePause();
+            await togglePause();
             router.replace('/title');
         },
     },
@@ -54,8 +55,10 @@ const menuItems = ref<PauseMenuItem[]>([
         key: 'saveQuit',
         label: 'Save & Quit',
         onSelect: async () => {
-            await saveGame();
-            window.electron.quit();
+            bufferAudioCb('menuBack', async () => {
+                await saveGame();
+                window.electron.quit();
+            });
         },
     },
 ]);
@@ -66,7 +69,9 @@ let menuDownId: string;
 let menuUpId: string;
 onMounted(async () => {
     captureControls();
-    cancelPause = registerInputListener(togglePause, ['cancel', 'pause_menu']);
+    cancelPause = registerInputListener(() => {
+        togglePause();
+    }, ['cancel', 'pause_menu']);
     selectMenuItemId = registerInputListener(selectMenuItem, 'confirm');
     menuDownId = registerInputListener(menuDown, ['movement_down', 'menu_down']);
     menuUpId = registerInputListener(menuUp, ['movement_up', 'menu_up']);
@@ -86,14 +91,21 @@ function onClose() {
 
 const settingsOpen = ref(false);
 function openSettings() {
-    settingsOpen.value = true;
+    bufferAudioCb('menuConfirm', () => {
+        settingsOpen.value = true;
+    });
+}
+
+function closeSettings() {
+    bufferAudioCb('menuBack', () => {
+        settingsOpen.value = false;
+    });
 }
 
 function selectMenuItem() {
     menuItems.value[selectedMenuItem.value].onSelect();
 }
 
-const { playSFX } = useSFX();
 function menuDown() {
     const curr = selectedMenuItem.value;
     selectedMenuItem.value = Math.min(menuItems.value.length - 1, curr + 1);
@@ -147,7 +159,7 @@ function menuUp() {
                     'text-standard-md bg-bg-dark text-white shadow-md shadow-bg-dark',
                 ]"
             >
-                <SettingsView @exit="settingsOpen = false" />
+                <SettingsView @exit="closeSettings" />
             </MenuBox>
         </div>
     </div>

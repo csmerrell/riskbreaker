@@ -35,12 +35,10 @@ export const displayModeMenuItem = defineMenuItem({
 });
 
 function setDisplayMode(e: 'windowed' | 'borderless' | 'fullscreen') {
-    const { game, hasFrame } = useGameContext();
+    const { hasFrame } = useGameContext();
     if (e.match(/borderless|fullscreen/)) {
-        game.value.screen.enterFullscreen();
         hasFrame.set(false);
     } else {
-        game.value.screen.exitFullscreen();
         hasFrame.set(true);
     }
     window.electron.changeWindowMode(e);

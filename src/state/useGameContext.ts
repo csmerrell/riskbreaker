@@ -9,6 +9,7 @@ import { ref } from 'vue';
 import { useClock } from './deprecated/useClock';
 import { TestScene } from '@/game/scenes/test.scene';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
+import { useSFX } from './useSFX';
 
 const loader = new LiteLoader();
 
@@ -84,6 +85,7 @@ export function initExplorationEngine() {
 }
 
 let storedTimescale = -1;
+const { bufferAudioCb } = useSFX();
 function togglePause() {
     paused.value = !paused.value;
 
@@ -91,11 +93,14 @@ function togglePause() {
         storedTimescale = game.value.timescale;
         game.value.timescale = 0;
         setLogicClock('off', { noPersistence: true });
+        return Promise.resolve();
     } else {
-        game.value.timescale = storedTimescale;
-        if (!logicClockOff.value) {
-            setLogicClock('on', { noPersistence: true });
-        }
+        return bufferAudioCb('menuBack', () => {
+            game.value.timescale = storedTimescale;
+            if (!logicClockOff.value) {
+                setLogicClock('on', { noPersistence: true });
+            }
+        });
     }
 }
 

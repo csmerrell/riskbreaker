@@ -8,7 +8,8 @@ export function addDevTools(mainWindow: InstanceType<typeof BrowserWindow>) {
     mainWindow.webContents.once('did-finish-load', function () {
         const windowBounds = mainWindow.getBounds();
         devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
-        devtools.setSize(560, 900);
+        devtools.setSize(640, 1080);
+        devtools.webContents.zoomFactor = 1.5;
     });
 
     mainWindow.on('focus', () => focusWindow(mainWindow, devtools));

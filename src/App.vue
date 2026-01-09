@@ -12,6 +12,7 @@ import { useSFX } from './state/useSFX';
 import { LiteLoader } from './resource/loader';
 import { usePlayerSprites } from './state/usePlayerSprites';
 import { useGameState } from './state/useGameState';
+import SFXDriver from './ui/components/SFXDriver.vue';
 
 const { loadSave } = useGameState();
 
@@ -88,7 +89,7 @@ function minimizeGame() {
                 </div>
             </div>
         </div>
-        <audio id="menuNav_SFX" src="Arrow & Bow 202.wav" preload="auto" />
+        <SFXDriver />
     </div>
 </template>
 

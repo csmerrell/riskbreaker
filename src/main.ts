@@ -11,8 +11,8 @@ if (started) {
 }
 
 const createWindow = () => {
-    const targetWidth = 960;
-    const targetHeight = 540;
+    const targetWidth = 1280;
+    const targetHeight = 720;
     const mainWindow = new BrowserWindow({
         height: targetHeight,
         width: targetWidth,
@@ -55,6 +55,8 @@ const createWindow = () => {
 };
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('high-dpi-support', '1');
+app.commandLine.appendSwitch('force-device-scale-factor', '1');
 
 app.on('ready', () => {
     initIPC();
