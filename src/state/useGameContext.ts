@@ -31,7 +31,7 @@ export function initGame() {
             pixelRatio: 2,
             enableCanvasTransparency: true,
             backgroundColor: Color.Transparent,
-            displayMode: DisplayMode.FitScreen,
+            displayMode: DisplayMode.FitContainerAndZoom,
             suppressPlayButton: true,
             antialiasing: false,
             scenes: {
@@ -68,7 +68,7 @@ export function initExplorationEngine() {
             height: gameEnum.nativeHeight,
             enableCanvasTransparency: true,
             backgroundColor: Color.Transparent,
-            displayMode: DisplayMode.FitContainerAndFill,
+            displayMode: DisplayMode.FitContainerAndZoom,
             suppressPlayButton: true,
             antialiasing: false,
             scenes: {

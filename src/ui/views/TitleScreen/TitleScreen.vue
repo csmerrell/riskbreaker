@@ -114,7 +114,7 @@ onUnmounted(() => {
                           : 'text-gray-200',
                 ]"
             >
-                <div class="relative top-[2px]">
+                <div class="relative top-[3px]">
                     {{ item.label }}
                 </div>
             </div>

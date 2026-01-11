@@ -1,5 +1,5 @@
 import { resources } from '@/resource';
-import { Keys, SpriteSheet, vec, Vector } from 'excalibur';
+import { Keys, SpriteSheet } from 'excalibur';
 
 export type SpriteMap = [number, number, { width?: number; height?: number }];
 export type ControlSpriteMap = Partial<Record<Keys, SpriteMap>>;
@@ -28,6 +28,7 @@ export const animatedKeyboardSpriteSheet = SpriteSheet.fromImageSource({
 
 // Static sprite positions (23×15 grid)
 export const keySpriteMap: ControlSpriteMap = {
+    Enter: [7, 13, { width: 3 }],
     Tab: [7, 12, { width: 2 }],
     Escape: [9, 12, { width: 2 }],
 };
@@ -35,5 +36,5 @@ export const keySpriteMap: ControlSpriteMap = {
 // Animated sprite positions - frames are arranged vertically
 export const animatedKeySpriteMap: ControlSpriteMap = {
     Tab: [19, 11, { width: 2 }],
-    Escape: [0, 20, { width: 2 }], // Escape key at row 20 in animated sheet
+    Escape: [0, 20, { width: 2 }],
 };

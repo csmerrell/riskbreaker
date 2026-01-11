@@ -61,7 +61,7 @@ function minimizeGame() {
 </script>
 
 <template>
-    <div class="app size-full bg-bg">
+    <div class="app size-full overflow-hidden bg-bg">
         <div class="flex size-full flex-col">
             <div
                 v-if="showFrame"
@@ -84,7 +84,7 @@ function minimizeGame() {
                     <LoadingScreen v-if="!ready" />
                     <RouterView :key="currentRoute.fullPath" />
                 </div>
-                <div id="exploration-ph" class="invisible absolute top-full">
+                <div id="exploration-ph" class="invisible absolute inset-x-0 top-full h-full">
                     <ExplorationCanvas />
                 </div>
             </div>

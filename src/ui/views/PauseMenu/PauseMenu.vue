@@ -130,7 +130,7 @@ function menuUp() {
             <MenuBox
                 :class="[
                     'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-                    'flex w-96 flex-col bg-bg text-white',
+                    'flex min-h-[350px] w-96 flex-col bg-bg text-white',
                 ]"
             >
                 <h1 class="text-standard-lg my-8 text-center">Paused</h1>

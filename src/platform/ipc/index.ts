@@ -61,19 +61,19 @@ export function initIPC() {
                     throw new Error('Window not found');
                 }
 
-                // Default fallback size (540p 16:9)
-                const defaultWidth = 960;
-                const defaultHeight = 540;
-
                 window.setResizable(true);
                 switch (mode) {
                     case 'windowed':
+                        if (!(width && height)) {
+                            throw new Error('windowed mode must specify height & width dimensions');
+                        }
+
                         if (window.isFullScreen()) {
                             window.setFullScreen(false);
                         }
 
-                        const windowWidth = width || defaultWidth;
-                        const windowHeight = height || defaultHeight;
+                        const windowWidth = width;
+                        const windowHeight = height;
                         window.setContentSize(windowWidth, windowHeight);
                         window.setPosition(0, 0);
                         window.setResizable(false);
@@ -84,16 +84,15 @@ export function initIPC() {
                         window.setFullScreen(true);
                         window.moveTop();
                         window.focus();
+                        window.setResizable(false);
                         break;
 
                     default:
                         throw new Error(`Invalid window mode: ${mode}`);
                 }
 
-                console.log(`Window mode changed successfully to: ${mode}`);
                 return { success: true, mode, width, height };
             } catch (error) {
-                console.error('Failed to change window mode:', error);
                 return { success: false, error: error.message };
             }
         },

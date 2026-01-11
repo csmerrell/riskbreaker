@@ -3,6 +3,7 @@ import { useGameContext } from '@/state/useGameContext';
 import { onMounted, ref } from 'vue';
 import { useExploration } from '../../../state/useExploration';
 import MapTransition from './MapTransition.vue';
+import ControlLegend from '@/ui/components/ControlLegend.vue';
 
 const { explorationEngine } = useGameContext();
 const { currentMap, setCurrentMap } = useExploration();
@@ -21,6 +22,15 @@ onMounted(() => {
 <template>
     <div class="relative size-full">
         <div id="exploration-container" class="size-full"></div>
+        <ControlLegend
+            class="absolute bottom-8 right-16"
+            :commands="[
+                {
+                    key: 'confirm',
+                    label: 'Battle Debug',
+                },
+            ]"
+        />
         <MapTransition />
     </div>
 </template>

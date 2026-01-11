@@ -1,7 +1,3 @@
-<template>
-    <div class="key-sprite" :class="{ animated: animated && imageLoaded }" :style="spriteStyles" />
-</template>
-
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
@@ -86,21 +82,6 @@ const spriteStyles = computed(() => {
         // Use animated grid configuration
         const width = (options?.width || 1) * ANIMATED_GRID_CONFIG.spriteWidth;
         const height = (options?.height || 1) * ANIMATED_GRID_CONFIG.spriteHeight;
-        const totalSheetWidth = ANIMATED_GRID_CONFIG.columns * ANIMATED_GRID_CONFIG.spriteWidth;
-        const scaledSheetWidth = totalSheetWidth / 4; // Should be 368px
-
-        console.log('animated sprite should be [', width, '] pixels wide');
-        console.log(
-            'base position x:',
-            x,
-            'y:',
-            y,
-            'calculated px:',
-            x * ANIMATED_GRID_CONFIG.spriteWidth,
-            y * ANIMATED_GRID_CONFIG.spriteHeight,
-        );
-        console.log('frame width:', width, 'spriteWidth:', ANIMATED_GRID_CONFIG.spriteWidth);
-        console.log('total sheet width:', totalSheetWidth, 'scaled:', scaledSheetWidth);
 
         return {
             width: `${width * spriteScale.value}px`,
@@ -128,6 +109,10 @@ const spriteStyles = computed(() => {
     }
 });
 </script>
+
+<template>
+    <div class="key-sprite" :class="{ animated: animated && imageLoaded }" :style="spriteStyles" />
+</template>
 
 <style scoped>
 .key-sprite {

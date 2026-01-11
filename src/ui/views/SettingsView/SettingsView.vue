@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import { resolutionMenuItem } from './menuItems/resolution';
 import { displayModeMenuItem } from './menuItems/displayMode';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
@@ -7,23 +7,56 @@ import { useRoute, useRouter } from 'vue-router';
 import { MenuItemExposed, MenuItemMeta } from './SettingsMenuItemMeta';
 
 import ControlLegend from '@/ui/components/ControlLegend.vue';
+import { useSettings } from '@/state/useSettings';
+import { MenuItem } from 'electron';
 
 const router = useRouter();
 
-const selectedItem = ref(0);
+const selectedItem = ref();
 const menuItems = [resolutionMenuItem, displayModeMenuItem];
 const itemRefs = ref<Record<string, unknown>>({});
+
+onMounted(() => {
+    const { disabledSettings } = useSettings();
+
+    for (let i = 0; i < menuItems.length; i++) {
+        const item = menuItems[i];
+        if (!disabledSettings.value[item.settingKey]) {
+            selectedItem.value = i;
+            break;
+        }
+    }
+});
 
 function setItemRef(c: unknown, e: MenuItemMeta) {
     itemRefs.value[e.key] = c;
 }
 
 const menuDown = registerInputListener(() => {
-    selectedItem.value = Math.min(menuItems.length - 1, selectedItem.value + 1);
+    let next = Math.min(menuItems.length - 1, selectedItem.value + 1);
+
+    while (
+        next < menuItems.length &&
+        (itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()
+    ) {
+        next = Math.min(menuItems.length - 1, next + 1);
+    }
+
+    if (!(itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()) {
+        selectedItem.value = next;
+    }
 }, ['movement_down', 'menu_down']);
 
 const menuUp = registerInputListener(() => {
-    selectedItem.value = Math.max(0, selectedItem.value - 1);
+    let next = Math.max(0, selectedItem.value - 1);
+
+    while (next > 0 && (itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()) {
+        next = Math.max(0, next - 1);
+    }
+
+    if (!(itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()) {
+        selectedItem.value = next;
+    }
 }, ['movement_up', 'menu_up']);
 
 const route = useRoute();
@@ -40,18 +73,42 @@ const exitSettings = registerInputListener(() => {
 }, 'cancel');
 
 const enterSetting = registerInputListener(() => {
-    const ref = itemRefs.value[menuItems[selectedItem.value].key];
-    (ref as MenuItemExposed).focus?.();
+    const ref = itemRefs.value[menuItems[selectedItem.value].key] as MenuItemExposed;
+    if (ref.isDisabled()) {
+        return;
+    } else {
+        ref.focus?.();
+    }
 }, ['confirm', 'menu_right', 'movement_right']);
 
 function handleDirectionalExit(e: 'menu_up' | 'menu_down') {
+    let ref: MenuItemExposed;
+    let found: number;
+
     if (e === 'menu_up') {
-        selectedItem.value = Math.max(0, selectedItem.value - 1);
+        let next = selectedItem.value - 1;
+        while (next > 0 && (itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()) {
+            next = Math.max(0, next - 1);
+        }
+        ref = itemRefs.value[menuItems[next].key] as MenuItemExposed;
+        found = next;
     } else {
-        selectedItem.value = Math.min(menuItems.length - 1, selectedItem.value + 1);
+        let next = selectedItem.value + 1;
+        while (
+            next < menuItems.length &&
+            (itemRefs.value[menuItems[next].key] as MenuItemExposed).isDisabled()
+        ) {
+            next = Math.min(menuItems.length - 1, next + 1);
+        }
+        ref = itemRefs.value[menuItems[next].key] as MenuItemExposed;
+        found = next;
     }
-    const ref = itemRefs.value[menuItems[selectedItem.value].key];
-    (ref as MenuItemExposed).focus?.();
+
+    if (ref && !ref.isDisabled()) {
+        (itemRefs.value[menuItems[selectedItem.value].key] as MenuItemExposed).blur();
+        selectedItem.value = found;
+        ref.focus();
+    }
 }
 
 const disablePause = registerInputListener(() => {}, ['pause_menu']);
@@ -92,11 +149,15 @@ onUnmounted(unregisterInputListeners);
                     :is="item.component"
                     v-bind="item.componentProps"
                     :ref="(c: unknown) => setItemRef(c, item)"
+                    :setting-key="item.settingKey"
                     @directional-exit="handleDirectionalExit"
                 />
             </div>
         </div>
-        <div class="absolute -bottom-4 right-8">
+        <div
+            class="text-standard-md absolute text-white"
+            :class="isPage() ? 'bottom-12 right-16' : '-bottom-4 right-8'"
+        >
             <ControlLegend :commands="[{ key: 'cancel', label: 'Back' }]" />
         </div>
     </div>

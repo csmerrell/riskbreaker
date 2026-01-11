@@ -5,27 +5,41 @@ import {
     unCaptureControls,
     unregisterInputListener,
 } from '@/game/input/useInput';
+import { SettingsKey, useSettings } from '@/state/useSettings';
 import { ref } from 'vue';
 
 type Props = {
+    settingKey: SettingsKey;
     options: T[];
-    isCurrentMenuItem: () => boolean;
+    getSelected: () => T;
     onSelect: (e: string) => void;
 };
 
-const { options, onSelect } = defineProps<Props>();
-const currentValue = ref(options[0]);
+const { settingKey, options, getSelected, onSelect } = defineProps<Props>();
+const currentValue = ref(getSelected());
 const focused = ref(false);
 const cursorPos = ref(options.findIndex((o) => o.key === currentValue.value.key));
+
+const { disabledSettings } = useSettings();
+const disabled = ref(disabledSettings.value[settingKey]);
+disabledSettings.subscribe((val) => {
+    disabled.value = val[settingKey] ?? false;
+});
 
 defineExpose({
     getValue: () => {
         return currentValue.value;
     },
+    isDisabled: () => {
+        return disabled.value;
+    },
     focus: () => {
         focused.value = true;
         captureControls();
         registerInputListeners();
+    },
+    blur: () => {
+        onBlur();
     },
 });
 
@@ -51,8 +65,8 @@ function registerInputListeners() {
     }, ['movement_left', 'menu_left']);
 
     confirm = registerInputListener(() => {
+        currentValue.value = options[cursorPos.value];
         onSelect(options[cursorPos.value].key);
-        onBlur();
     }, 'confirm');
 
     cancel = registerInputListener(() => {
@@ -60,12 +74,10 @@ function registerInputListeners() {
     }, 'cancel');
 
     upExit = registerInputListener(() => {
-        onBlur();
         emit('directionalExit', 'menu_up');
     }, ['movement_up', 'menu_up']);
 
     downExit = registerInputListener(() => {
-        onBlur();
         emit('directionalExit', 'menu_down');
     }, ['movement_down', 'menu_down']);
 }
@@ -84,23 +96,23 @@ function onBlur() {
 </script>
 
 <template>
-    <div class="flex flex-row items-center justify-start gap-4">
+    <div class="flex flex-row items-center justify-start">
         <div
             v-for="(option, idx) in options"
             :key="option.key"
-            :class="
+            class="px-6"
+            :class="[
                 focused && cursorPos === idx
-                    ? 'text-rose-700'
+                    ? 'menu-select-highlight'
                     : currentValue.key === option.key
                       ? 'text-white'
-                      : 'text-gray-500'
-            "
+                      : 'text-gray-500',
+                true && 'brightness-[.8]',
+            ]"
         >
-            <span
-                class="picon-chevron-right"
-                :class="(!focused || cursorPos !== idx) && 'invisible'"
-            />
-            {{ option.label }}
+            <div class="relative top-[2px]">
+                {{ option.label }}
+            </div>
         </div>
     </div>
 </template>

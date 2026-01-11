@@ -5,28 +5,44 @@ import {
     unCaptureControls,
     unregisterInputListener,
 } from '@/game/input/useInput';
-import { ref } from 'vue';
+import { SettingsKey, useSettings } from '@/state/useSettings';
+import { onMounted, ref } from 'vue';
 
 type Props = {
+    settingKey: SettingsKey;
     options: T[];
+    getSelected: () => T;
     onSelect: (e: string) => void;
-    isCurrentMenuItem: () => boolean;
 };
-const { options, onSelect } = defineProps<Props>();
+const { settingKey, options, getSelected, onSelect } = defineProps<Props>();
 
-const currentValue = ref<T | null>(options[0]);
+const currentValue = ref<T | null>(getSelected());
 const cursorPos = ref(options.findIndex((o) => o.key === currentValue.value.key));
 
 const open = ref(false);
+
+const { disabledSettings } = useSettings();
+const disabled = ref(disabledSettings.value[settingKey] ?? false);
+onMounted(() => {
+    disabledSettings.subscribe((val) => {
+        disabled.value = val[settingKey] ?? false;
+    });
+});
 
 defineExpose({
     getValue: (): T | null => {
         return currentValue.value;
     },
+    isDisabled: () => {
+        return disabled.value;
+    },
     focus: () => {
         open.value = true;
         captureControls();
         registerInputListeners();
+    },
+    blur: () => {
+        onBlur();
     },
 });
 
@@ -75,6 +91,7 @@ function onBlur() {
                 'flex flex-row items-center justify-between gap-2',
                 'border border-slate-950 bg-slate-900 px-4 shadow-md shadow-slate-950',
                 open && 'invisible',
+                disabled && 'brightness-[40%]',
             ]"
         >
             <span>
@@ -84,8 +101,8 @@ function onBlur() {
         </div>
         <div
             :class="[
-                'absolute left-0 top-0 flex flex-col gap-2',
-                'border border-slate-950 bg-slate-900 px-4 shadow-lg shadow-slate-950',
+                'absolute left-0 top-0 z-50 flex flex-col gap-2',
+                'border border-slate-950 bg-slate-900 px-4 py-2 shadow-lg shadow-slate-950',
                 !open && 'invisible',
             ]"
         >

@@ -24,7 +24,7 @@ export class Observable<T> {
 
         if (typeof val === 'object') {
             try {
-                if (oldVal ? JSON.stringify(oldVal) : undefined === JSON.stringify(val)) return;
+                if ((oldVal ? JSON.stringify(oldVal) : undefined) === JSON.stringify(val)) return;
             } catch (_e) {
                 // do nothing
             }
