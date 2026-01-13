@@ -34,7 +34,7 @@ import { StrategemAction } from '@/game/actions/StrategemAction';
 import { HexTile } from '../Arena/HexTile';
 import { makeState } from '@/state/Observable';
 import { nanoid } from 'nanoid';
-import { HotbarSet, useCrossHotbar } from '@/ui/views/BattleScreen/state/useCrossHotbar';
+import { HotbarSet, useCrossHotbar } from '@/ui/views/deprecated/BattleScreen/state/useCrossHotbar';
 import { ArcLine } from '../ArcLine.actor';
 import { TargetStrategyComponent } from '@/game/actions/components/TargetStrategyComponent';
 import { useGameContext } from '@/state/useGameContext';

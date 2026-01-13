@@ -2,7 +2,7 @@ export { UnitState } from './playerUnit/UnitState';
 
 import { ConditionList, ConditionState } from '@/game/strategems/Condition';
 import { EquipmentSaveState } from './playerUnit/UnitEquipment';
-import type { HotbarAction, HotbarSet } from '@/ui/views/BattleScreen/state/useCrossHotbar';
+import type { HotbarAction, HotbarSet } from '@/ui/views/deprecated/BattleScreen/state/useCrossHotbar';
 import { PrimitivesOf } from '@/lib/types/ClassHelper';
 
 export type HotbarSaveState = PrimitivesOf<HotbarSet>;

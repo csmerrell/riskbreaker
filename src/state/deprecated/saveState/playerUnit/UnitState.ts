@@ -3,7 +3,7 @@ import { UnitRosterSaveState } from '..';
 import { EquipmentState, UnitEquipment } from './UnitEquipment';
 import { StrategemState, UnitStrategems } from './UnitStrategems';
 import { UnitDefinition, UnitClassKey } from '@/db/units/BattleUnit';
-import { HotbarSet } from '@/ui/views/BattleScreen/state/useCrossHotbar';
+import { HotbarSet } from '@/ui/views/deprecated/BattleScreen/state/useCrossHotbar';
 
 export type UnitStoredState = {
     strategems: StrategemState[];

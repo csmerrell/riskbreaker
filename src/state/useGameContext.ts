@@ -6,7 +6,6 @@ import { TitleScene } from '@/game/scenes/title.scene';
 import { makeState } from './Observable';
 import { initControls, provideInput } from '@/game/input/useInput';
 import { ref } from 'vue';
-import { useClock } from './deprecated/useClock';
 import { TestScene } from '@/game/scenes/test.scene';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
 import { useSFX } from './useSFX';
@@ -17,8 +16,8 @@ type AvailableScenes = 'battle' | 'title' | 'test';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
 const explorationEngine = makeState<Engine<'exploration'>>();
+const battleEngine = makeState<Engine<'battle'>>();
 const hasFrame = makeState<boolean>(true);
-const currentSceneReady = makeState<boolean>(false);
 const inputType = makeState<'keyboard' | 'controller'>('controller');
 
 export function initGame() {
@@ -58,7 +57,7 @@ export function initGame() {
     return game.value;
 }
 
-export function initExplorationEngine() {
+export async function initExplorationEngine() {
     explorationEngine.set(
         new Engine<'exploration'>({
             canvasElementId: 'exploration-canvas',
@@ -80,8 +79,32 @@ export function initExplorationEngine() {
         }),
     );
 
-    explorationEngine.value.start(new LiteLoader());
-    console.log(explorationEngine.value);
+    return explorationEngine.value.start(new LiteLoader());
+}
+
+export function initBattleEngine() {
+    battleEngine.set(
+        new Engine<'battle'>({
+            canvasElementId: 'battle-canvas',
+            pixelArt: true,
+            pixelRatio: 1,
+            width: gameEnum.nativeWidth,
+            height: gameEnum.nativeHeight,
+            enableCanvasTransparency: true,
+            backgroundColor: Color.Transparent,
+            displayMode: DisplayMode.FitContainerAndZoom,
+            suppressPlayButton: true,
+            antialiasing: false,
+            scenes: {
+                battle: {
+                    scene: BattleScene,
+                    loader: loader,
+                },
+            },
+        }),
+    );
+
+    battleEngine.value.start(new LiteLoader());
 }
 
 let storedTimescale = -1;
@@ -92,51 +115,22 @@ function togglePause() {
     if (paused.value) {
         storedTimescale = game.value.timescale;
         game.value.timescale = 0;
-        setLogicClock('off', { noPersistence: true });
         return Promise.resolve();
     } else {
         return bufferAudioCb('menuBack', () => {
             game.value.timescale = storedTimescale;
-            if (!logicClockOff.value) {
-                setLogicClock('on', { noPersistence: true });
-            }
         });
     }
 }
 
-const logicClockOff = makeState(false);
-function setLogicClock(val: 'off' | 'on', options: { noPersistence?: boolean } = {}) {
-    const {
-        suspendClock: suspendLogicClock,
-        resumeClock: resumeLogicClock,
-        isRunning,
-    } = useClock();
-    if ((!isRunning.value && val === 'off') || (isRunning.value && val == 'on')) {
-        return;
-    }
-    const { noPersistence = false } = options;
-
-    if (!noPersistence) {
-        logicClockOff.set(val === 'off');
-    }
-
-    if (val === 'off') {
-        suspendLogicClock();
-    } else {
-        resumeLogicClock();
-    }
-}
-
 export const gameContext = {
-    currentSceneReady,
     game,
     explorationEngine,
+    battleEngine,
     hasFrame,
-    logicClockOff,
     paused,
     inputType,
     togglePause,
-    setLogicClock,
 };
 export type GameContext = typeof gameContext;
 

@@ -6,15 +6,23 @@ import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
 import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
 
-import { initGame, initExplorationEngine, useGameContext } from './state/useGameContext';
+import {
+    initGame,
+    initExplorationEngine,
+    useGameContext,
+    initBattleEngine,
+} from './state/useGameContext';
 import { useSFX } from './state/useSFX';
 
 import { LiteLoader } from './resource/loader';
 import { usePlayerSprites } from './state/usePlayerSprites';
 import { useGameState } from './state/useGameState';
 import SFXDriver from './ui/components/SFXDriver.vue';
+import BattleCanvas from './ui/views/BattleScreen/BattleCanvas.vue';
+import { useShader } from './state/useShader';
 
 const { loadSave } = useGameState();
+const { initShaders } = useShader();
 
 const router = useRouter();
 const currentRoute = router.currentRoute;
@@ -31,7 +39,10 @@ onMounted(() => {
         router.replace({ path: '/title' });
     });
     nextTick(() => {
-        initExplorationEngine();
+        initExplorationEngine().then(() => {
+            initShaders();
+        });
+        initBattleEngine();
     });
 });
 
@@ -86,6 +97,9 @@ function minimizeGame() {
                 </div>
                 <div id="exploration-ph" class="invisible absolute inset-x-0 top-full h-full">
                     <ExplorationCanvas />
+                </div>
+                <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
+                    <BattleCanvas />
                 </div>
             </div>
         </div>

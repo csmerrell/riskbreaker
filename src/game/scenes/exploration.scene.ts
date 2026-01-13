@@ -9,30 +9,36 @@ import {
     LimitCameraBoundsStrategy,
     Rectangle,
     Color,
+    Material,
 } from 'excalibur';
-import { lifebinder } from '@/db/units/Lifebinder';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
 import { registerInputListener } from '@/game/input/useInput';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
 import { resources } from '@/resource';
 import { useExploration } from '@/state/useExploration';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
-
-import FOG_SHADER from '@/shader/fog.glsl?raw';
+import { useShader } from '@/state/useShader';
 
 export class ExplorationScene extends Scene {
     private player: Actor;
     private fog: Actor;
     private map: TiledResource;
     private mapGround: TileLayer;
+    private fogMaterial: Material; // Store the compiled material
+    private fogPreupdateHandler: () => void;
+
+    // No animated movement properties needed
 
     constructor() {
         super();
+        const { fogMaterial } = useShader();
+        this.fogMaterial = fogMaterial.value;
+        this.createPlayer();
+        this.createFog();
+        this.setupMovementControls();
     }
 
-    onPreLoad(loader: DefaultLoader) {
-        loader.addResource(resources.image.units.Lifebinder);
-    }
+    onPreLoad(_loader: DefaultLoader) {}
 
     onInitialize(engine: Engine) {
         // Load the test map and create actor
@@ -53,35 +59,87 @@ export class ExplorationScene extends Scene {
             }
         });
 
-        // Register movement input listeners
-        this.setupMovementControls();
         loaded.set(true);
     }
 
-    private loadPlayer() {
+    private createPlayer() {
         // Create a plain ExcaliburJS Actor
         this.player = new Actor();
 
         // Create sprite sheet manually
-        const imageSource = resources.image.units.Lifebinder;
+        const imageSource = resources.image.units.Naturalist;
         const spriteSheet = SpriteSheet.fromImageSource({
             image: imageSource,
             grid: {
-                spriteHeight: lifebinder.spriteSheet.cellHeight,
-                spriteWidth: lifebinder.spriteSheet.cellWidth,
-                columns: lifebinder.spriteSheet.numCols,
-                rows: lifebinder.spriteSheet.numRows,
+                spriteHeight: 24,
+                spriteWidth: 24,
+                columns: 3,
+                rows: 1,
             },
         });
 
         // Get the static sprite (idle frame 0,0)
         const staticSprite = spriteSheet.getSprite(0, 0);
+        this.player.offset = vec(0, -5);
 
         // Set up graphics
         this.player.graphics.add('sprite', staticSprite);
         this.player.graphics.use('sprite');
 
-        // Add to scene
+        // Don't add to scene yet - will be done in setupScene
+    }
+
+    private createFog() {
+        this.fog = new Actor({
+            width: visualViewport.width,
+            height: visualViewport.height,
+            z: 9999, // draw on top
+        });
+
+        this.fog.graphics.use(
+            new Rectangle({
+                width: visualViewport.width,
+                height: visualViewport.height,
+                color: Color.fromHex('#151d28'),
+            }),
+        );
+
+        // We'll need to create the material when we have engine context
+        // Store the preupdate handler for later
+        this.fogPreupdateHandler = () => {
+            // Move fog with camera to cover the viewport
+            this.fog.pos = this.camera.pos;
+
+            // Calculate player position relative to camera (screen space)
+            const playerScreenPos = this.player.pos.sub(this.camera.pos);
+            if (Math.abs(playerScreenPos.x) === 24) playerScreenPos.x = 0;
+            if (Math.abs(playerScreenPos.y) === 24) playerScreenPos.y = 0;
+            const screenWidth = this.engine.screen.resolution.width;
+            const screenHeight = this.engine.screen.resolution.height;
+            const normalizedX = (playerScreenPos.x + screenWidth / 2) / screenWidth;
+            const normalizedY = (playerScreenPos.y + screenHeight / 2) / screenHeight;
+
+            // Flip Y coordinate for shader (ExcaliburJS Y-down vs shader Y-up)
+            const holePos = vec(normalizedX, 1.0 - normalizedY);
+
+            this.fogMaterial.update((shader) => {
+                shader.trySetUniformFloatVector('u_holePos', holePos);
+                shader.trySetUniformFloatVector(
+                    'u_resolution',
+                    vec(visualViewport.width, visualViewport.height),
+                );
+
+                // Optional: use background color for fog
+                const bg = Color.fromHex('#151d28');
+                shader.trySetUniformFloat('u_fogR', bg.r / 255);
+                shader.trySetUniformFloat('u_fogG', bg.g / 255);
+                shader.trySetUniformFloat('u_fogB', bg.b / 255);
+            });
+        };
+    }
+
+    private loadPlayer() {
+        // Player is already created, just add to scene
         this.add(this.player);
     }
 
@@ -104,57 +162,17 @@ export class ExplorationScene extends Scene {
         this.camera.addStrategy(new LimitCameraBoundsStrategy(boundingBox));
     }
 
-    private addFog(engine: Engine) {
-        this.fog = new Actor({
-            pos: this.player.pos,
-            width: visualViewport.width,
-            height: visualViewport.height,
-            z: 9999, // draw on top
-        });
+    private addFog(_engine: Engine) {
+        // Material is already compiled in constructor
 
-        this.fog.graphics.use(
-            new Rectangle({
-                width: visualViewport.width,
-                height: visualViewport.height,
-                color: Color.fromHex('#151d28'),
-            }),
-        );
+        // Set initial position (will be updated by preupdate handler)
+        this.fog.pos = this.player.pos;
 
-        const fogMaterial = engine.graphicsContext.createMaterial({
-            name: 'fog',
-            fragmentSource: FOG_SHADER,
-        });
+        // Attach the preupdate handler
+        this.fog.on('preupdate', this.fogPreupdateHandler);
 
-        this.fog.on('preupdate', () => {
-            // Move fog with camera to cover the viewport
-            this.fog.pos = engine.currentScene.camera.pos;
-
-            // Normalize player position relative to fog dimensions (0.0 to 1.0)
-            const playerRelativePos = this.player.pos.sub(this.fog.pos);
-            const screenWidth = engine.screen.resolution.width;
-            const screenHeight = engine.screen.resolution.height;
-            const normalizedX = (playerRelativePos.x + screenWidth / 2) / screenWidth;
-            const normalizedY = (playerRelativePos.y + screenHeight / 2) / screenHeight;
-
-            // Flip Y coordinate for shader (ExcaliburJS Y-down vs shader Y-up)
-            const holePos = vec(normalizedX, 1.0 - normalizedY);
-
-            fogMaterial.getShader().trySetUniformFloatVector('u_holePos', holePos);
-            fogMaterial
-                .getShader()
-                .trySetUniformFloatVector(
-                    'u_resolution',
-                    vec(visualViewport.width, visualViewport.height),
-                );
-
-            // Optional: use background color for fog
-            const bg = Color.fromHex('#151d28');
-            fogMaterial.getShader().trySetUniformFloat('u_fogR', bg.r / 255);
-            fogMaterial.getShader().trySetUniformFloat('u_fogG', bg.g / 255);
-            fogMaterial.getShader().trySetUniformFloat('u_fogB', bg.b / 255);
-        });
-
-        this.fog.graphics.material = fogMaterial;
+        // Apply the material and add to scene
+        this.fog.graphics.material = this.fogMaterial;
         this.add(this.fog);
     }
 
@@ -176,6 +194,7 @@ export class ExplorationScene extends Scene {
     }
 
     private setupMovementControls() {
+        // INSTANT MOVEMENT - RESTORED
         const { playerTileCoord } = useExploration();
         registerInputListener(() => {
             const currentCoord = playerTileCoord.value;
@@ -233,7 +252,6 @@ export class ExplorationScene extends Scene {
             setCurrentMap,
             saveExplorationState,
         } = useExploration();
-        // Don't move fog here - it should only follow the camera in preupdate
 
         const { x, y } = playerTileCoord.value;
         const keyPoint = currentMap.value.keyPoints[`${x}_${y}`];

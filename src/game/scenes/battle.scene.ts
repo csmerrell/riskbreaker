@@ -1,40 +1,38 @@
-import { DefaultLoader, Engine, ExcaliburGraphicsContext, Scene } from 'excalibur';
+import { Engine, ExcaliburGraphicsContext, GraphicsGroup, Scene, vec } from 'excalibur';
 import { Actor } from 'excalibur';
-import { BattlePartyState, useBattleParty } from '@/state/deprecated/useBattleParty';
-import { EnemyWaveState, useEnemyWave } from '@/state/deprecated/useEnemyWave';
-import { GameContext, useGameContext } from '@/state/useGameContext';
-import { HexTile } from '../actors/Arena/HexTile';
+import { battleground, toLayerArray } from '@/resource/image/battleground';
 
 export class BattleScene extends Scene {
-    private battlePartyState: BattlePartyState = {} as BattlePartyState;
-    private enemyWaveState: EnemyWaveState = {} as EnemyWaveState;
-    private gameContext: GameContext;
+    private bgActor: Actor;
+    private cameraTarget: Actor;
 
     constructor() {
         super();
-        this.battlePartyState = useBattleParty();
-        this.enemyWaveState = useEnemyWave();
-        this.gameContext = useGameContext();
+        this.createBattleground('grass');
+        this.createDummyActor();
     }
 
-    onPreLoad(loader: DefaultLoader) {
-        const battlePartyResources = this.battlePartyState.getDependencies();
-        const enemyWaveResources = this.enemyWaveState.getDependencies();
-        const tileResources = HexTile.getDependencies();
-        loader.addResources(
-            Array.from(new Set([...battlePartyResources, ...enemyWaveResources, ...tileResources])),
-        );
-    }
-
-    onPostDraw(_ctx: ExcaliburGraphicsContext, _elapsed: number): void {
-        if (!this.gameContext.currentSceneReady.value) {
-            this.gameContext.currentSceneReady.set(true);
-        }
-    }
+    onPostDraw(_ctx: ExcaliburGraphicsContext, _elapsed: number): void {}
 
     public onInitialize(_engine: Engine) {
-        const a = new Actor();
-        this.add(a);
-        this.camera.strategy.lockToActor(a);
+        this.add(this.bgActor);
+        this.add(this.cameraTarget);
+        this.camera.strategy.lockToActor(this.cameraTarget);
+    }
+
+    private createBattleground(type: 'grass' | 'dirt') {
+        this.bgActor = new Actor();
+        const bgGraphic = new GraphicsGroup({
+            useAnchor: true,
+            members: toLayerArray(battleground, type).map((img) => ({
+                graphic: img.toSprite(),
+                offset: vec(0, 0),
+            })),
+        });
+        this.bgActor.graphics.add(bgGraphic);
+    }
+
+    private createDummyActor() {
+        this.cameraTarget = new Actor();
     }
 }

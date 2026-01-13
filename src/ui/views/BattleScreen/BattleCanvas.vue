@@ -1,18 +1,18 @@
-<!-- ExplorationCanvas.vue -->
 <script setup lang="ts">
-import { loadMapAsync, maps } from '@/resource/maps';
+import { resources } from '@/resource';
 import { nextTick, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const el = ref<HTMLElement | null>(null);
 
 const promises: Promise<unknown>[] = [];
-Object.keys(maps).forEach((key: keyof typeof maps) => {
-    promises.push(loadMapAsync(key));
+Object.values(resources.image.battleground).forEach((img) => {
+    if (!img.isLoaded()) {
+        promises.push(img.load());
+    }
 });
 
 const route = useRoute();
-const visible = ref(false);
 watch(
     () => route.path,
     async (path) => {
@@ -21,18 +21,13 @@ watch(
         const canvas = el.value;
         if (!canvas) return;
 
-        const targetId = path.startsWith('/exploration')
-            ? 'exploration-container'
-            : 'exploration-ph';
+        const targetId = path.startsWith('/exploration') ? 'battle-container' : 'battle-ph';
 
         const target = document.getElementById(targetId);
         if (!target) return;
 
         if (canvas.parentElement !== target) {
             target.appendChild(canvas);
-            nextTick(() => {
-                visible.value = true;
-            });
         }
     },
     { immediate: true },
@@ -45,5 +40,5 @@ Promise.all(promises).then(() => {
 </script>
 
 <template>
-    <canvas id="exploration-canvas" ref="el" :class="!visible && 'invisible'" />
+    <canvas id="battle-canvas" ref="el" class="size-full" />
 </template>

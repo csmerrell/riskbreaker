@@ -9,7 +9,7 @@ import { usePlayerRoster } from './useRoster';
 import { SaveState, UnitBattlePartySaveState } from './saveState';
 import { useEnemyWave } from './useEnemyWave';
 import { computed, ref } from 'vue';
-import { useCrossHotbar } from '@/ui/views/BattleScreen/state/useCrossHotbar';
+import { useCrossHotbar } from '@/ui/views/deprecated/BattleScreen/state/useCrossHotbar';
 
 export type AssembledBattleUnit = UnitBattlePartySaveState & {
     actor: StrategemActor;

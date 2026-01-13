@@ -8,15 +8,17 @@ const props = withDefaults(
         spriteMap: SpriteMap;
         animated?: boolean;
         animationSpeed?: number;
+        scale?: number;
     }>(),
     {
+        scale: 1,
         animated: false,
         animationSpeed: 2000,
     },
 );
 
 const imageLoaded = ref(false);
-const spriteScale = ref(2); // Default scale
+const spriteScale = ref(2 * props.scale); // Default scale
 
 const staticImageUrl = '/image/import/KeyboardUI/Keyboard_UI.png';
 const animatedImageUrl = '/image/import/KeyboardUI/Keyboard_UI_Black_Animated.png';
@@ -25,7 +27,7 @@ const animatedImageUrl = '/image/import/KeyboardUI/Keyboard_UI_Black_Animated.pn
 const updateSpriteScale = () => {
     const computedStyle = getComputedStyle(document.documentElement);
     const scale = parseFloat(computedStyle.getPropertyValue('--sprite-scale').trim()) || 2;
-    spriteScale.value = scale;
+    spriteScale.value = scale * props.scale;
 };
 
 // Preload images and setup resize listener

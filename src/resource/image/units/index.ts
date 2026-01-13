@@ -5,4 +5,5 @@ export const units = {
         '/image/import/TinyCharacterPack/Characters/Swordsman/Swordsman.png',
     ),
     Lifebinder: new ImageSource('/image/units/Lifebinder.png'),
+    Naturalist: new ImageSource('/image/units/Naturalist.png'),
 };

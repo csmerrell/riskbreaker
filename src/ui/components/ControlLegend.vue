@@ -12,12 +12,14 @@ interface ControlCommand {
 const props = withDefaults(
     defineProps<{
         commands: ControlCommand[];
+        scale?: number;
         animationSpeed?: number;
         globalAnimated?: boolean;
     }>(),
     {
         animationSpeed: 400,
         globalAnimated: false,
+        scale: 1,
     },
 );
 
@@ -32,19 +34,18 @@ const getSpriteMapForCommand = (command: ControlCommand, isAnimated: boolean = f
 </script>
 
 <template>
-    <div class="flex flex-row flex-nowrap items-center gap-8 p-2">
+    <div class="text-standard-md flex flex-row flex-nowrap items-center gap-8 p-2">
         <div
             v-for="(command, index) in commands"
             :key="`${command.key}-${index}`"
             class="flex items-center gap-1 p-1"
         >
-            <span class="text-standard-md whitespace-nowrap text-white">
-                {{ command.label }}:
-            </span>
+            <span class="whitespace-nowrap text-white"> {{ command.label }}: </span>
             <KeySprite
                 :sprite-map="getSpriteMapForCommand(command, props.globalAnimated)"
                 :animated="props.globalAnimated"
                 :animation-speed="props.animationSpeed"
+                :scale="scale"
                 class="shrink-0"
             />
         </div>
