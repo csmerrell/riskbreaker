@@ -11,6 +11,7 @@ out vec4 color;
 // Screen-space info
 uniform vec2 u_resolution;   // viewport size in pixels
 uniform vec2 u_holePos;      // hole center in normalized coordinates (0.0 to 1.0)
+uniform float u_radius;
 
 float bayer4(vec2 p) {
   ivec2 ip = ivec2(mod(p, 4.0));
@@ -45,7 +46,7 @@ void main() {
   holeCenter.y /= aspectRatio;
   
   float dist = distance(uv, holeCenter);
-  float r = 0.2;
+  float r = u_radius;
   float ditherRange = 0.05;
 
   // Clear hole (normalized distance)
