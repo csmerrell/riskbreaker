@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { getScale } from '@/lib/helpers/screen.helper';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
     captureControls,
     registerInputListener,
     unCaptureControls,
     unregisterInputListener,
+    useInput,
 } from '@/game/input/useInput';
 import { useGameContext } from '@/state/useGameContext';
 
-const { battleEngine } = useGameContext();
+const { campEngine } = useGameContext();
 const visible = ref(false);
 defineExpose({
     setVisible,
@@ -19,10 +20,17 @@ function setVisible(val: boolean) {
     visible.value = val;
 }
 
+const { stackOwner } = useInput();
+const inputKey = 'CampScreenRoot';
+const inputOwner = ref(stackOwner.value);
+stackOwner.subscribe((next) => {
+    inputOwner.value = next;
+});
+const hasControl = computed(() => inputOwner.value === inputKey);
 watch(visible, (next) => {
     if (next) {
-        battleEngine.value.goToScene('battle');
-        captureControls();
+        campEngine.value.goToScene('camp');
+        captureControls(inputKey);
         registerInputListeners();
     } else {
         onBlur();
@@ -33,28 +41,16 @@ watch(visible, (next) => {
 // Make scale reactive to window resizes
 const scale = ref(getScale());
 
-const updateScale = () => {
-    scale.value = getScale();
-};
-
-onMounted(() => {
-    window.addEventListener('resize', updateScale);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('resize', updateScale);
-});
-
-let cancelBattle: string;
+let closeCamp: string;
 function registerInputListeners() {
-    cancelBattle = registerInputListener(() => {
+    closeCamp = registerInputListener(() => {
         setVisible(false);
         onBlur();
-    }, 'cancel');
+    }, 'pause_menu');
 }
 
 function onBlur() {
-    unregisterInputListener(cancelBattle);
+    unregisterInputListener(closeCamp);
 }
 
 // Compute CSS custom properties
@@ -67,7 +63,7 @@ const containerStyles = computed(() => ({
     <Transition name="fade" mode="out-in">
         <div v-show="visible" class="absolute inset-0 z-50" :style="containerStyles">
             <div class="z-60 absolute inset-0 bg-bg opacity-75" />
-            <div id="battle-container" class="z-100 absolute inset-0" />
+            <div id="camp-container" class="z-100 absolute inset-0" />
         </div>
     </Transition>
 </template>

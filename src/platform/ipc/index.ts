@@ -8,8 +8,6 @@ export function initIPC() {
                 throw new Error('Window not found');
             }
 
-            console.log(`Changing window resolution to: ${width}x${height}`);
-
             // Temporarily enable resizing if it's disabled
             const wasResizable = window.isResizable();
             if (!wasResizable) {

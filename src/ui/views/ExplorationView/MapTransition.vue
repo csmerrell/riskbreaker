@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useExploration } from '../../../state/useExploration';
 
-const { loaded, currentMap, fadeInStart, fadeOutEnd } = useExploration();
+const { loaded, transitionMap, fadeInStart, fadeOutEnd } = useExploration();
 const showOverlay = ref(false);
 
 const GRID_SIZE = 200;
@@ -12,7 +12,8 @@ const DURATION_MS = 250;
 
 onMounted(() => {
     // Subscribe to transition state changes for debugging
-    currentMap.subscribe(() => {
+    transitionMap.subscribe((next) => {
+        if (!next) return;
         if (!loaded.value) return;
         showOverlay.value = true;
 

@@ -11,6 +11,7 @@ import {
     Color,
     Material,
     Graphic,
+    Vector,
 } from 'excalibur';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
 import { registerInputListener } from '@/game/input/useInput';
@@ -22,6 +23,9 @@ import { useShader } from '@/state/useShader';
 import { LightSource } from '../actors/LightSource/LightSource.component';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { gameEnum } from '@/lib/enum/game.enum';
+import { LanternStateMachine } from '@/state/exploration/LanternStateMachine';
+import { getTileCenter, isBonfire, isZoneChangePoint } from '@/resource/maps';
+import { BonfireManager } from '@/state/exploration/BonfireManager';
 
 export class ExplorationScene extends Scene {
     private player: Actor;
@@ -31,6 +35,10 @@ export class ExplorationScene extends Scene {
     private mapGround: TileLayer;
     private fogMaterial: Material; // Store the compiled material
     private fogPreupdateHandler: () => void;
+    private lastMovement: number;
+    private lanternStateMachine: LanternStateMachine;
+    private suppressLightSources: boolean;
+    private playerOffset?: Vector;
 
     // No animated movement properties needed
 
@@ -39,6 +47,9 @@ export class ExplorationScene extends Scene {
         this.createPlayer();
         this.createFog();
         this.setupMovementControls();
+        this.lanternStateMachine = new LanternStateMachine(this.player, this);
+        const { bonfireManager } = useExploration();
+        bonfireManager.set(new BonfireManager({ scene: this }));
     }
 
     onPreLoad(_loader: DefaultLoader) {}
@@ -48,15 +59,17 @@ export class ExplorationScene extends Scene {
         this.setupScene(engine);
     }
 
-    private async setupScene(engine: Engine) {
-        const { fadeOutEnd, fadeInStart, loaded } = useExploration();
+    private async setupScene(_engine: Engine) {
+        const { transitionMap, fadeOutEnd, fadeInStart, loaded, setCurrentMap, setTransitionMap } =
+            useExploration();
         this.loadPlayer();
         this.loadMap(true);
-        this.addFog(engine);
 
         // Subscribe to map changes with transition effect
         fadeOutEnd.subscribe((next) => {
             if (next === true) {
+                setCurrentMap(transitionMap.value.key, transitionMap.value.startPos);
+                setTransitionMap(undefined);
                 this.loadMap();
                 fadeInStart.set(true);
             }
@@ -86,22 +99,26 @@ export class ExplorationScene extends Scene {
         this.player.offset = vec(0, -4);
 
         // Set up graphics
-        this.player.graphics.add('sprite', staticSprite);
-        this.player.graphics.use('sprite');
+        this.player.graphics.add('idle', staticSprite);
+        this.player.graphics.use('idle');
         this.player.addComponent(new LightSource({ radius: 2 }));
-
-        // Don't add to scene yet - will be done in setupScene
     }
 
     private createFog() {
         const { fogMaterial } = useShader();
         this.fogMaterial = fogMaterial.value;
-        this.fog = new Actor({
+        const fog = new Actor({
+            name: 'fog',
             width: gameEnum.nativeWidth,
             height: gameEnum.nativeHeight,
             anchor: vec(0, 0),
             z: 9999, // draw on top
         });
+        if (this.fog && this.fog.isAdded) {
+            this.fog.kill();
+            this.remove(this.fog);
+        }
+        this.fog = fog;
 
         this.fogGraphic = new Rectangle({
             width: gameEnum.nativeWidth,
@@ -112,28 +129,81 @@ export class ExplorationScene extends Scene {
         this.fog.graphics.use('fog');
 
         this.fogPreupdateHandler = () => {
-            const screenPos = this.engine.worldToScreenCoordinates(
+            // Collect all light sources in the scene
+            const lightSources: number[] = [];
+
+            // Add player light source
+            const playerScreenPos = this.engine.worldToScreenCoordinates(
                 this.player.pos.add(vec(this.player.width / 2, this.player.height / 2)),
             );
             const camOffset = this.player.pos.sub(this.camera.pos);
-            if (Math.abs(camOffset.x) === 24) screenPos.x -= camOffset.x;
-            if (Math.abs(camOffset.y) === 24) screenPos.y -= camOffset.y;
-            const normalizedX = screenPos.x / this.engine.drawWidth;
-            const normalizedY = screenPos.y / this.engine.drawHeight;
+            if (Math.abs(camOffset.x) === 24) playerScreenPos.x -= camOffset.x;
+            if (Math.abs(camOffset.y) === 24) playerScreenPos.y -= camOffset.y;
 
-            const holePos = vec(normalizedX, 1.0 - normalizedY);
+            const normalizedX = playerScreenPos.x / this.engine.drawWidth;
+            const normalizedY = playerScreenPos.y / this.engine.drawHeight;
+            const { tilewidth } = this.map.map;
+            const normalizedRadius =
+                (this.player.get(LightSource).radius * tilewidth * getScale()) /
+                visualViewport.width;
+
+            // Add player light source [centerX, centerY, radius]
+            lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
+
+            const mapMeta = useExploration().currentMap.value;
+            if (!this.suppressLightSources) {
+                Object.entries(mapMeta.keyPoints).forEach(([coordKey, kp]) => {
+                    if (kp.type !== 'lightSource') return;
+
+                    let coord = getTileCenter(coordKey);
+                    if (kp.offset) {
+                        coord = coord.add(kp.offset);
+                    }
+                    const normalizedX = coord.x / this.engine.drawWidth;
+                    const normalizedY = coord.y / this.engine.drawHeight;
+                    const normalizedRadius =
+                        (kp.radius * tilewidth * getScale()) / visualViewport.width;
+
+                    lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
+                });
+
+                this.actors.forEach((actor) => {
+                    if (!actor.get(LightSource)) return;
+
+                    const { x, y } = actor.pos;
+                    const coord = this.engine.worldToScreenCoordinates(vec(x, y));
+
+                    const normalizedX = coord.x / this.engine.drawWidth;
+                    const normalizedY = coord.y / this.engine.drawHeight;
+                    const normalizedRadius =
+                        (actor.get(LightSource).radius * tilewidth * getScale()) /
+                        visualViewport.width;
+
+                    lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
+                });
+
+                const { bonfireManager } = useExploration();
+                Object.keys(bonfireManager.value.getBonfires()).forEach((key) => {
+                    const intensity = bonfireManager.value.getBonfireIntensity(key);
+
+                    const coord = getTileCenter(key);
+                    const normalizedX = coord.x / this.engine.drawWidth;
+                    const normalizedY = coord.y / this.engine.drawHeight;
+                    const normalizedRadius =
+                        (intensity * tilewidth * getScale()) / visualViewport.width;
+
+                    lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
+                });
+            }
 
             this.fogMaterial.update((shader) => {
-                shader.trySetUniformFloatVector('u_holePos', holePos);
+                // Pass the light sources array as vec3 array using the correct uniform method
+                shader.trySetUniform('uniform3fv', 'u_lightSources', lightSources);
+                shader.trySetUniformInt('u_numLightSources', lightSources.length / 3);
                 shader.trySetUniformFloatVector(
                     'u_resolution',
                     vec(this.fogGraphic.width, this.fogGraphic.height),
                 );
-                const { tilewidth } = this.map.map;
-                const normalizedRadius =
-                    (this.player.get(LightSource).radius * tilewidth * getScale()) /
-                    visualViewport.width;
-                shader.trySetUniformFloat('u_radius', normalizedRadius);
 
                 const bg = Color.fromHex('#151d28');
                 shader.trySetUniformFloat('u_fogR', bg.r / 255);
@@ -148,35 +218,44 @@ export class ExplorationScene extends Scene {
         this.add(this.player);
     }
 
-    private loadMap(isSetup: boolean = false) {
+    private cleanupMap() {
         if (this.map) {
             this.tileMaps.forEach((tileMap) => {
                 this.remove(tileMap);
             });
         }
+        if (this.fog && this.fog.isAdded) {
+            this.createFog();
+        }
+    }
+
+    private loadMap(isSetup: boolean = false) {
+        this.cleanupMap();
         const { map } = useExploration().currentMap.value;
+        const { width, tilewidth, height, tileheight } = map.map;
+        const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
+
         this.map = map;
         map.addToScene(this);
 
         const [groundLayer] = map.getTileLayers();
         this.mapGround = groundLayer;
 
-        const { width, tilewidth, height, tileheight } = map.map;
-        const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
         this.placePlayer(isSetup);
         this.camera.addStrategy(new LimitCameraBoundsStrategy(boundingBox));
 
-        console.log(this.fog.width, this.fog.height);
+        this.placeFog(boundingBox);
+        this.suppressLightSources = true;
+        setTimeout(() => {
+            this.suppressLightSources = false;
+        });
+    }
+
+    private placeFog(boundingBox: BoundingBox) {
         const scale = vec(boundingBox.width / this.fog.width, boundingBox.height / this.fog.height);
         this.fogGraphic.width = boundingBox.width;
         this.fogGraphic.height = boundingBox.height;
         this.fog.scale = scale;
-        console.log(scale);
-        console.log('finished fog dim: ', this.fog.width, this.fog.height);
-        console.log('tilemap bounds: ', boundingBox.width, boundingBox.height);
-    }
-
-    private addFog(_engine: Engine) {
         this.fog.pos = vec(0, 0);
         this.fog.graphics.material = this.fogMaterial;
         this.fog.on('preupdate', this.fogPreupdateHandler);
@@ -194,91 +273,148 @@ export class ExplorationScene extends Scene {
         const tilePos = this.mapGround.getTileByCoordinate(x, y).exTile.pos;
         const spriteTileCenterOffset = vec(12, 12); // Half tile size to center on tile
         this.player.pos = tilePos.add(spriteTileCenterOffset);
-        this.player.z = 10;
+        this.player.z = 1;
 
         // Set camera to follow the actor
         this.camera.strategy.lockToActor(this.player);
+        setTimeout(() => {
+            this.player.pos = this.player.pos.add(this.getTileOffset());
+            playerTileCoord.set(vec(x, y));
+            this.movementAfterEffects();
+        }, 0);
+    }
+
+    private canMove() {
+        if (!this.lastMovement) {
+            this.lastMovement = Date.now();
+            return true;
+        } else if (Date.now() - this.lastMovement < 75) {
+            return false;
+        } else {
+            this.lastMovement = Date.now();
+            return true;
+        }
     }
 
     private setupMovementControls() {
-        // INSTANT MOVEMENT - RESTORED
         const { playerTileCoord } = useExploration();
         registerInputListener(() => {
+            if (!this.canMove()) return;
+
             const currentCoord = playerTileCoord.value;
             const nextCoord = vec(currentCoord.x, currentCoord.y - 1);
 
             if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                this.player.pos = this.player.pos.add(vec(0, -24)); // Move up 1 tile
                 playerTileCoord.set(nextCoord);
+                this.player.pos = this.player.pos.add(vec(0, -24).add(this.getTileOffset())); // Move up 1 tile
                 this.movementAfterEffects();
             }
         }, ['movement_up', 'menu_up']);
 
         registerInputListener(() => {
+            if (!this.canMove()) return;
             const currentCoord = playerTileCoord.value;
             const nextCoord = vec(currentCoord.x, currentCoord.y + 1);
 
             if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                this.player.pos = this.player.pos.add(vec(0, 24)); // Move down 1 tile
                 playerTileCoord.set(nextCoord);
+                this.player.pos = this.player.pos.add(vec(0, 24).add(this.getTileOffset())); // Move down 1 tile
                 this.movementAfterEffects();
             }
         }, ['movement_down', 'menu_down']);
 
         registerInputListener(() => {
+            if (!this.canMove()) return;
             const currentCoord = playerTileCoord.value;
             const nextCoord = vec(currentCoord.x - 1, currentCoord.y);
 
+            this.player.scale = vec(1, 1);
             if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                this.player.pos = this.player.pos.add(vec(-24, 0)); // Move left 1 tile
                 playerTileCoord.set(nextCoord);
-                this.player.scale = vec(1, 1);
+                const offset = this.getTileOffset();
+                this.player.pos = this.player.pos.add(vec(-24, 0).add(offset)); // Move left 1 tile
                 this.movementAfterEffects();
             }
         }, ['movement_left', 'menu_left']);
 
         registerInputListener(() => {
+            if (!this.canMove()) return;
             const currentCoord = playerTileCoord.value;
             const nextCoord = vec(currentCoord.x + 1, currentCoord.y);
 
+            this.player.scale = vec(-1, 1);
             if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                this.player.pos = this.player.pos.add(vec(24, 0)); // Move right 1 tile
                 playerTileCoord.set(nextCoord);
-                this.player.scale = vec(-1, 1);
+                this.player.pos = this.player.pos.add(vec(24, 0).add(this.getTileOffset())); // Move right 1 tile
                 this.movementAfterEffects();
             }
         }, ['movement_right', 'menu_right']);
     }
 
-    private movementAfterEffects() {
+    private getTileOffset() {
+        const { currentMap, playerTileCoord } = useExploration();
+        const { x, y } = playerTileCoord.value;
+        const keyPoint = currentMap.value.keyPoints[`${x}_${y}`];
+
+        if (keyPoint && isBonfire(keyPoint)) {
+            const { bonfireManager } = useExploration();
+            const { offset, playerScale } = bonfireManager.value.getTileOffsets();
+            this.playerOffset = offset;
+            this.player.scale = playerScale;
+            return this.playerOffset;
+        } else if (this.playerOffset) {
+            const revert = this.playerOffset.scale(-1);
+            delete this.playerOffset;
+            return revert;
+        }
+        return vec(0, 0);
+    }
+
+    private async movementAfterEffects() {
         const {
+            tileControlPrompts,
             playerTileCoord,
             currentMap,
             fadeInStart,
-            isZoneChangePoint,
-            setCurrentMap,
+            setTransitionMap,
             saveExplorationState,
         } = useExploration();
+        tileControlPrompts.set(null);
+        const { playerPos } = useExploration();
+        playerPos.set({
+            pos: vec(this.player.pos.x, this.player.pos.y),
+            size: this.player.graphics.current.height,
+        });
 
         const { x, y } = playerTileCoord.value;
         const keyPoint = currentMap.value.keyPoints[`${x}_${y}`];
-        if (keyPoint) {
-            if (isZoneChangePoint(keyPoint)) {
-                setCurrentMap(keyPoint.key, keyPoint.posOverride);
-                const waitId = fadeInStart.subscribe(() => {
-                    setTimeout(() => {
-                        saveExplorationState();
-                        fadeInStart.unsubscribe(waitId);
-                    }, 0);
-                });
+
+        setTimeout(() => {
+            if (keyPoint) {
+                if (isZoneChangePoint(keyPoint)) {
+                    setTransitionMap(keyPoint.key, keyPoint.posOverride);
+                    const waitId = fadeInStart.subscribe(() => {
+                        setTimeout(() => {
+                            saveExplorationState();
+                            fadeInStart.unsubscribe(waitId);
+                        }, 0);
+                    });
+                } else if (isBonfire(keyPoint)) {
+                    saveExplorationState();
+                    const { bonfireManager } = useExploration();
+                    bonfireManager.value.onTileEnter(`${x}_${y}`, this.player);
+                } else {
+                    saveExplorationState();
+                    if (keyPoint.type === 'interactable') {
+                        console.log('Show interaction prompt');
+                    }
+                }
             } else {
                 saveExplorationState();
-                if (keyPoint.type === 'interactable') {
-                    console.log('Show interaction prompt');
-                }
             }
-        } else {
-            saveExplorationState();
-        }
+            this.events.emit('moved', {
+                newPos: playerTileCoord.value,
+            });
+        }, 75);
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="low-fi" tilewidth="24" tileheight="24" tilecount="64" columns="8">
- <image source="Low-fi Terrain.png" trans="44344c" width="192" height="192"/>
+<tileset version="1.10" tiledversion="1.11.2" name="thurala" tilewidth="24" tileheight="24" spacing="4" margin="3" tilecount="64" columns="8">
+ <grid orientation="orthogonal" width="25" height="25"/>
+ <image source="Low-fi Terrain-sheet.png" trans="44344c" width="226" height="226"/>
  <tile id="0">
   <properties>
    <property name="edge_e" type="bool" value="false"/>

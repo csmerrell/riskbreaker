@@ -1,11 +1,24 @@
 <script setup lang="ts">
+import { useGameContext } from '@/state/useGameContext';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import {
+    animatedGamepadSpriteMap,
+    animatedKeySpriteMap,
+    GAMEPAD_GRID_CONFIG,
+    gamepadSpriteMap,
+    KEYBOARD_ANIMATED_GRID_CONFIG,
+    KEYBOARD_STATIC_GRID_CONFIG,
+    keySpriteMap,
+} from '../views/PauseMenu/ControlSpriteMap';
+import { MappedCommand } from '@/game/input/InputMap';
+import { useGamepad } from '@/game/input/useGamepads';
+import { useKeyboard } from '@/game/input/useKeyboard';
 
 export type SpriteMap = [number, number, { width?: number; height?: number }];
 
 const props = withDefaults(
     defineProps<{
-        spriteMap: SpriteMap;
+        command: MappedCommand;
         animated?: boolean;
         animationSpeed?: number;
         scale?: number;
@@ -17,27 +30,59 @@ const props = withDefaults(
     },
 );
 
-const imageLoaded = ref(false);
-const spriteScale = ref(2 * props.scale); // Default scale
+const spriteScale = ref(3); // Overridden onMounted
 
-const staticImageUrl = '/image/import/KeyboardUI/Keyboard_UI.png';
-const animatedImageUrl = '/image/import/KeyboardUI/Keyboard_UI_Black_Animated.png';
+const gamepadImageUrl = '/image/import/ControllerUI/UI_Gamepad.png';
+const keyboardStaticImageUrl = '/image/import/KeyboardUI/Keyboard_UI.png';
+const keyboardAnimatedImageUrl = '/image/import/KeyboardUI/Keyboard_UI_Black_Animated.png';
+
+const { inputType: inputTypeState } = useGameContext();
+const inputType = ref(inputTypeState.value);
+inputTypeState.subscribe((next) => {
+    inputType.value = next;
+});
+
+const imageUrl = computed(() => {
+    return inputType.value === 'controller'
+        ? gamepadImageUrl
+        : props.animated
+          ? keyboardAnimatedImageUrl
+          : keyboardStaticImageUrl;
+});
+
+const gridConfig = computed(() => {
+    return inputType.value === 'controller'
+        ? GAMEPAD_GRID_CONFIG
+        : props.animated
+          ? KEYBOARD_ANIMATED_GRID_CONFIG
+          : KEYBOARD_STATIC_GRID_CONFIG;
+});
+
+const spriteMap = computed(() => {
+    if (inputType.value === 'controller') {
+        const { getUnmappedButton } = useGamepad();
+        const unmappedKey = getUnmappedButton(props.command);
+        // Use animated sprite map for animated sprites, static for static sprites
+        const map = props.animated ? animatedGamepadSpriteMap : gamepadSpriteMap;
+        return map[unmappedKey];
+    } else {
+        const { getUnmappedKey } = useKeyboard();
+        const unmappedKey = getUnmappedKey(props.command);
+        // Use animated sprite map for animated sprites, static for static sprites
+        const map = props.animated ? animatedKeySpriteMap : keySpriteMap;
+        return map[unmappedKey];
+    }
+});
 
 // Function to get the current sprite scale from CSS variable
 const updateSpriteScale = () => {
     const computedStyle = getComputedStyle(document.documentElement);
-    const scale = parseFloat(computedStyle.getPropertyValue('--sprite-scale').trim()) || 2;
+    const scale = parseFloat(computedStyle.getPropertyValue('--keysprite-scale').trim()) || 3;
     spriteScale.value = scale * props.scale;
 };
 
 // Preload images and setup resize listener
 onMounted(() => {
-    const img = new Image();
-    img.onload = () => {
-        imageLoaded.value = true;
-    };
-    img.src = props.animated ? animatedImageUrl : staticImageUrl;
-
     // Get initial scale
     updateSpriteScale();
 
@@ -49,71 +94,29 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateSpriteScale);
 });
 
-// Grid configuration for static sprites
-const STATIC_GRID_CONFIG = {
-    columns: 23,
-    rows: 15,
-    spriteWidth: 16,
-    spriteHeight: 16,
-};
-
-// Grid configuration for animated sprites (4 frames vertically per sprite)
-const ANIMATED_GRID_CONFIG = {
-    columns: 23, // Same columns as static
-    rows: 60, // More rows to accommodate 4 frames per sprite (15 * 4 = 60, but could be more)
-    spriteWidth: 16,
-    spriteHeight: 16,
-    animationFrames: 4,
-};
-
-// Preload images
-onMounted(() => {
-    const img = new Image();
-    img.onload = () => {
-        imageLoaded.value = true;
-    };
-    img.src = props.animated ? animatedImageUrl : staticImageUrl;
-});
-
 const spriteStyles = computed(() => {
-    if (!props.spriteMap) return {};
+    if (!spriteMap.value) return {};
 
-    const [x, y, options = {}] = props.spriteMap;
+    const [x, y, options = {}] = spriteMap.value;
 
-    if (props.animated && imageLoaded.value) {
-        // Use animated grid configuration
-        const width = (options?.width || 1) * ANIMATED_GRID_CONFIG.spriteWidth;
-        const height = (options?.height || 1) * ANIMATED_GRID_CONFIG.spriteHeight;
+    const width = (options?.width || 1) * gridConfig.value.spriteWidth;
+    const height = (options?.height || 1) * gridConfig.value.spriteHeight;
 
-        return {
-            width: `${width * spriteScale.value}px`,
-            height: `${height * spriteScale.value}px`,
-            backgroundImage: `url(${animatedImageUrl})`,
-            backgroundPosition: `-${x * ANIMATED_GRID_CONFIG.spriteWidth * spriteScale.value}px -${y * ANIMATED_GRID_CONFIG.spriteHeight * spriteScale.value + 3}px`,
-            backgroundSize: `${ANIMATED_GRID_CONFIG.columns * ANIMATED_GRID_CONFIG.spriteWidth * spriteScale.value}px auto`, // Full sheet width scaled
-            '--animation-duration': `${props.animationSpeed}ms`,
-            '--base-x': `${x * ANIMATED_GRID_CONFIG.spriteWidth * spriteScale.value}px`,
-            '--frame-width': `${(options?.width || 1) * ANIMATED_GRID_CONFIG.spriteWidth * spriteScale.value - 3}px`, // Move by sprite width scaled
-        };
-    } else {
-        // Use static grid configuration
-        const width = (options?.width || 1) * STATIC_GRID_CONFIG.spriteWidth;
-        const height = (options?.height || 1) * STATIC_GRID_CONFIG.spriteHeight;
-        const staticSheetWidth = STATIC_GRID_CONFIG.columns * STATIC_GRID_CONFIG.spriteWidth;
-
-        return {
-            width: `${width * spriteScale.value}px`,
-            height: `${height * spriteScale.value}px`,
-            backgroundImage: `url(${staticImageUrl})`,
-            backgroundPosition: `-${x * STATIC_GRID_CONFIG.spriteWidth * spriteScale.value}px -${y * STATIC_GRID_CONFIG.spriteHeight * spriteScale.value}px`,
-            backgroundSize: `${staticSheetWidth * spriteScale.value}px auto`,
-        };
-    }
+    return {
+        width: `${width * spriteScale.value}px`,
+        height: `${height * spriteScale.value}px`,
+        backgroundImage: `url(${imageUrl.value})`,
+        backgroundPosition: `-${x * gridConfig.value.spriteWidth * spriteScale.value}px -${y * gridConfig.value.spriteHeight * spriteScale.value + 3}px`,
+        backgroundSize: `${gridConfig.value.columns * gridConfig.value.spriteWidth * spriteScale.value}px auto`, // Full sheet width scaled
+        '--animation-duration': `${props.animationSpeed}ms`,
+        '--base-x': `${x * gridConfig.value.spriteWidth * spriteScale.value}px`,
+        '--frame-width': `${(options?.width || 1) * gridConfig.value.spriteWidth * spriteScale.value}px`, // Move by sprite width scaled
+    };
 });
 </script>
 
 <template>
-    <div class="key-sprite" :class="{ animated: animated && imageLoaded }" :style="spriteStyles" />
+    <div class="key-sprite" :class="{ animated: animated }" :style="spriteStyles" />
 </template>
 
 <style scoped>
@@ -130,24 +133,24 @@ const spriteStyles = computed(() => {
 @keyframes button-press-animation {
     /* Frame 1: idle/normal state (0-50%) */
     0%,
-    74.99% {
+    82.99% {
         background-position-x: calc(-1 * var(--base-x));
     }
 
     /* Frame 2: slight press (50-65%) */
-    75%,
-    82.99% {
+    83%,
+    88.99% {
         background-position-x: calc(-1 * var(--base-x) - var(--frame-width));
     }
 
     /* Frame 3: full press (65-85%) */
-    83%,
-    91.99% {
+    89%,
+    94.99% {
         background-position-x: calc(-1 * var(--base-x) - 2 * var(--frame-width));
     }
 
     /* Frame 4: release/return (85-100%) */
-    92%,
+    95%,
     100% {
         background-position-x: calc(-1 * var(--base-x) - 3 * var(--frame-width));
     }

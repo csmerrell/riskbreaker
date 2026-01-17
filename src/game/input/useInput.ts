@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { useGameContext } from '@/state/useGameContext';
 import { useKeyboard } from './useKeyboard';
 import { TypedKeys } from '@/lib/types/ClassHelper';
+import { makeState } from '@/state/Observable';
 
 export function initControls(engine: Engine) {
     engine.input.toggleEnabled(true);
@@ -24,6 +25,8 @@ export type InputListener = {
     cb: (commands?: InputMap) => boolean | void;
     opts: InputListenerOptions;
 };
+const stackOwners = ['root'];
+const stackOwner = makeState<string>(stackOwners[0]);
 const listenerStack: Record<string, InputListener[]>[] = [{}];
 const currentListeners = () => listenerStack[listenerStack.length - 1];
 function notifyListeners(result: InputMap) {
@@ -57,6 +60,21 @@ function notifyListeners(result: InputMap) {
     );
 }
 
+export function consumeCollisions(inputs: InputMap, commands: MappedCommand[]) {
+    const { buttonMap, getUnmappedButton } = useGamepad();
+    const { keyMap, getUnmappedKey } = useKeyboard();
+
+    commands.forEach((commandKey) => {
+        const sharedInputs = [
+            ...(buttonMap[getUnmappedButton(commandKey)] ?? []),
+            ...(keyMap[getUnmappedKey(commandKey)] ?? []),
+        ];
+        sharedInputs.forEach((key) => {
+            delete inputs[key];
+        });
+    });
+}
+
 function notifyHoldListeners(result: InputMap) {
     currentListeners()['all']?.forEach((listener) => {
         const shouldRemove = listener.cb(result);
@@ -66,12 +84,24 @@ function notifyHoldListeners(result: InputMap) {
     });
 }
 
-export function captureControls() {
+export function captureControls(key?: string) {
+    const ownerKey = key ?? nanoid(16);
     listenerStack.push({});
+    stackOwners.push(ownerKey);
+    stackOwner.set(ownerKey);
+    return ownerKey;
 }
 
 export function unCaptureControls() {
+    if (listenerStack.length === 1) {
+        throw new Error(
+            'Tried to pop the root listenerStack. Someone called unCaptureControls without a preceding call to captureControls',
+        );
+    }
     listenerStack.pop();
+    const poppedOwner = stackOwners.pop();
+    stackOwner.set(stackOwners[stackOwners.length - 1]);
+    return poppedOwner;
 }
 
 export const inputGlobalDebounce = 50;
@@ -188,4 +218,10 @@ function pause() {
 export function provideInput() {
     requestAnimationFrame(readInput);
     registerInputListener(pause, 'pause_menu');
+}
+
+export function useInput() {
+    return {
+        stackOwner,
+    };
 }

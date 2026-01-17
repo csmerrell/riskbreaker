@@ -1,7 +1,7 @@
 import { gameEnum } from '@/lib/enum/game.enum';
 import { BattleScene } from '@/game/scenes/battle.scene';
 import { LiteLoader } from '@/resource/loader';
-import { Color, DisplayMode, Engine } from 'excalibur';
+import { Color, DisplayMode, Engine, ImageFiltering } from 'excalibur';
 import { TitleScene } from '@/game/scenes/title.scene';
 import { makeState } from './Observable';
 import { initControls, provideInput } from '@/game/input/useInput';
@@ -9,14 +9,16 @@ import { ref } from 'vue';
 import { TestScene } from '@/game/scenes/test.scene';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
 import { useSFX } from './useSFX';
+import { CampScene } from '@/game/scenes/camp.scene';
 
 const loader = new LiteLoader();
 
 type AvailableScenes = 'battle' | 'title' | 'test';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
-const explorationEngine = makeState<Engine<'exploration'>>();
-const battleEngine = makeState<Engine<'battle'>>();
+const explorationEngine = makeState<Engine>();
+const battleEngine = makeState<Engine>();
+const campEngine = makeState<Engine>();
 const hasFrame = makeState<boolean>(true);
 const inputType = makeState<'keyboard' | 'controller'>('controller');
 
@@ -57,37 +59,27 @@ export function initGame() {
     return game.value;
 }
 
-export async function initExplorationEngine() {
-    explorationEngine.set(
-        new Engine<'exploration'>({
-            canvasElementId: 'exploration-canvas',
-            pixelArt: true,
-            pixelRatio: 2,
-            width: gameEnum.nativeWidth,
-            height: gameEnum.nativeHeight,
-            enableCanvasTransparency: true,
-            backgroundColor: Color.Transparent,
-            displayMode: DisplayMode.FitContainerAndZoom,
-            suppressPlayButton: true,
-            antialiasing: false,
-            scenes: {
-                exploration: {
-                    scene: ExplorationScene,
-                    loader: loader,
-                },
-            },
-        }),
-    );
-
-    return explorationEngine.value.start(new LiteLoader());
+type EngineKey = 'exploration' | 'battle' | 'camp';
+function getEngine(key: EngineKey) {
+    switch (key) {
+        case 'battle':
+            return { engine: battleEngine, scene: BattleScene };
+        case 'exploration':
+            return { engine: explorationEngine, scene: ExplorationScene };
+        case 'camp':
+            return { engine: campEngine, scene: CampScene };
+        default:
+            throw new Error(`Engine [${key}] does not exist`);
+    }
 }
 
-export function initBattleEngine() {
-    battleEngine.set(
-        new Engine<'battle'>({
-            canvasElementId: 'battle-canvas',
+export function initEngine(key: EngineKey) {
+    const { engine, scene } = getEngine(key);
+    engine.set(
+        new Engine({
+            canvasElementId: `${key}-canvas`,
             pixelArt: true,
-            pixelRatio: 1,
+            pixelRatio: 3,
             width: gameEnum.nativeWidth,
             height: gameEnum.nativeHeight,
             enableCanvasTransparency: true,
@@ -96,15 +88,15 @@ export function initBattleEngine() {
             suppressPlayButton: true,
             antialiasing: false,
             scenes: {
-                battle: {
-                    scene: BattleScene,
+                [key]: {
+                    scene,
                     loader: loader,
                 },
             },
         }),
     );
 
-    battleEngine.value.start(new LiteLoader());
+    return engine.value.start(new LiteLoader());
 }
 
 let storedTimescale = -1;
@@ -127,6 +119,7 @@ export const gameContext = {
     game,
     explorationEngine,
     battleEngine,
+    campEngine,
     hasFrame,
     paused,
     inputType,

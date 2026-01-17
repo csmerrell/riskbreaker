@@ -1,36 +1,32 @@
 <script setup lang="ts">
 import KeySprite from './KeySprite.vue';
-import { keySpriteMap, animatedKeySpriteMap } from '@/ui/views/PauseMenu/ControlSpriteMap';
-import { useKeyboard } from '@/game/input/useKeyboard';
 import type { MappedCommand } from '@/game/input/InputMap';
+import { ref } from 'vue';
+import { useGameContext } from '@/state/useGameContext';
 
 interface ControlCommand {
     key: MappedCommand;
     label: string;
+    animated?: boolean;
 }
 
-const props = withDefaults(
-    defineProps<{
-        commands: ControlCommand[];
-        scale?: number;
-        animationSpeed?: number;
-        globalAnimated?: boolean;
-    }>(),
-    {
-        animationSpeed: 400,
-        globalAnimated: false,
-        scale: 1,
-    },
-);
+const {
+    commands,
+    scale = 1,
+    animationSpeed,
+    animateAll = false,
+} = defineProps<{
+    commands: ControlCommand[];
+    scale?: number;
+    animationSpeed?: number;
+    animateAll?: boolean;
+}>();
 
-const { getUnmappedKey } = useKeyboard();
-
-const getSpriteMapForCommand = (command: ControlCommand, isAnimated: boolean = false) => {
-    const unmappedKey = getUnmappedKey(command.key);
-    // Use animated sprite map for animated sprites, static for static sprites
-    const spriteMap = isAnimated ? animatedKeySpriteMap : keySpriteMap;
-    return spriteMap[unmappedKey];
-};
+const { inputType: inputTypeState } = useGameContext();
+const inputType = ref(inputTypeState.value);
+inputTypeState.subscribe((next) => {
+    inputType.value = next;
+});
 </script>
 
 <template>
@@ -42,9 +38,9 @@ const getSpriteMapForCommand = (command: ControlCommand, isAnimated: boolean = f
         >
             <span class="whitespace-nowrap text-white"> {{ command.label }}: </span>
             <KeySprite
-                :sprite-map="getSpriteMapForCommand(command, props.globalAnimated)"
-                :animated="props.globalAnimated"
-                :animation-speed="props.animationSpeed"
+                :command="command.key"
+                :animated="command.animated ?? animateAll"
+                :animation-speed="animationSpeed"
                 :scale="scale"
                 class="shrink-0"
             />

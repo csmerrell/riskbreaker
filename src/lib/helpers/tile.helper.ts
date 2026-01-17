@@ -125,19 +125,19 @@ export function getTileEdgesAt(layer: TileLayer, x: number, y: number): TileEdge
 
     // Decode GID and apply transformations
     const { flipH, flipV, flipD } = decodeGID(gid);
-    
+
     let transformed = { ...baseEdges };
-    
+
     // Apply diagonal flip (transpose) first if needed
     if (flipD) {
         transformed = applyDiagonalFlip(transformed);
     }
-    
+
     // Then apply horizontal/vertical flips
     if (flipH || flipV) {
         transformed = applyFlip(transformed, flipH, flipV);
     }
-    
+
     return transformed;
 }
 

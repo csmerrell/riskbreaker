@@ -25,15 +25,25 @@ export const defaultKeyboardMap: Partial<Record<Keys, MappedCommand[]>> = {
     [Keys.Tab]: ['context_menu_2'],
     [Keys.Space]: ['pause_menu'],
     [Keys.Num1]: ['hotbar1'],
+    [Keys.Key1]: ['hotbar1'],
     [Keys.Num2]: ['hotbar2'],
+    [Keys.Key2]: ['hotbar2'],
     [Keys.Num3]: ['hotbar3'],
+    [Keys.Key3]: ['hotbar3'],
     [Keys.Num4]: ['hotbar4'],
+    [Keys.Key4]: ['hotbar4'],
     [Keys.Num5]: ['hotbar5'],
+    [Keys.Key5]: ['hotbar5'],
     [Keys.Num6]: ['hotbar6'],
+    [Keys.Key6]: ['hotbar6'],
     [Keys.Num7]: ['hotbar7'],
+    [Keys.Key7]: ['hotbar7'],
     [Keys.Num8]: ['hotbar8'],
+    [Keys.Key8]: ['hotbar8'],
     [Keys.Num9]: ['hotbar9'],
+    [Keys.Key9]: ['hotbar9'],
     [Keys.Num0]: ['hotbar10'],
+    [Keys.Key0]: ['hotbar10'],
 };
 
 const heldKeys = [
@@ -73,7 +83,7 @@ const debounceCounts = debouncedInputs.reduce(
 const keyboardInputs = new InputMap();
 
 export function useKeyboard() {
-    const keymap = { ...defaultKeyboardMap };
+    const keyMap = { ...defaultKeyboardMap };
 
     function initKeyboard() {
         const keyMap = { ...defaultKeyboardMap };
@@ -143,12 +153,13 @@ export function useKeyboard() {
     }
 
     function getUnmappedKey(mapped: MappedCommand) {
-        return (Object.entries(keymap) as [Keys, MappedCommand[]][]).find(([_key, value]) =>
+        return (Object.entries(keyMap) as [Keys, MappedCommand[]][]).find(([_key, value]) =>
             value.includes(mapped),
-        )[0];
+        )?.[0];
     }
 
     return {
+        keyMap,
         clear,
         getKeyboardInputs,
         getUnmappedKey,

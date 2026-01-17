@@ -73,7 +73,16 @@ const heldButtons = [
     Buttons.RightTrigger,
     Buttons.LeftTrigger,
 ];
-const debouncedInputs: MappedCommand[] = ['menu_right', 'menu_left', 'menu_down', 'menu_up'];
+const debouncedInputs: MappedCommand[] = [
+    'movement_left',
+    'movement_right',
+    'movement_down',
+    'movement_up',
+    'menu_right',
+    'menu_left',
+    'menu_down',
+    'menu_up',
+];
 const debounceCounts = debouncedInputs.reduce(
     (acc: Partial<Record<MappedCommand, number>>, key) => {
         return {
@@ -87,8 +96,8 @@ const debounceCounts = debouncedInputs.reduce(
 const gamepadInputs = new InputMap();
 
 export function useGamepad() {
+    const buttonMap = { ...defaultGamepadMap };
     function initGamepads() {
-        const buttonMap = { ...defaultGamepadMap };
         const { game, inputType } = useGameContext();
         const { input } = game.value;
 
@@ -175,9 +184,17 @@ export function useGamepad() {
         });
     }
 
+    function getUnmappedButton(mapped: MappedCommand) {
+        return (Object.entries(buttonMap) as unknown as [Buttons, MappedCommand[]][]).find(
+            ([_key, value]) => value.includes(mapped),
+        )?.[0];
+    }
+
     return {
+        buttonMap,
         clear: () => gamepadInputs.clear(),
         getGamepadInputs,
+        getUnmappedButton,
         initGamepads,
     };
 }

@@ -6,20 +6,16 @@ import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
 import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
 
-import {
-    initGame,
-    initExplorationEngine,
-    useGameContext,
-    initBattleEngine,
-} from './state/useGameContext';
+import { initGame, initEngine, useGameContext } from './state/useGameContext';
 import { useSFX } from './state/useSFX';
 
 import { LiteLoader } from './resource/loader';
-import { usePlayerSprites } from './state/usePlayerSprites';
+import { useSprites } from './state/useSprites';
 import { useGameState } from './state/useGameState';
 import SFXDriver from './ui/components/SFXDriver.vue';
 import BattleCanvas from './ui/views/BattleScreen/BattleCanvas.vue';
 import { useShader } from './state/useShader';
+import CampCanvas from './ui/views/CampScreen/CampCanvas.vue';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
@@ -33,16 +29,17 @@ onMounted(() => {
     const promises: Promise<void | void[]>[] = [];
     promises.push(game.start(new LiteLoader()));
     promises.push(loadSave());
-    usePlayerSprites().loadAllSprites();
+    useSprites().loadAllSprites();
 
     Promise.all(promises).then(() => {
         router.replace({ path: '/title' });
     });
     nextTick(() => {
-        initExplorationEngine().then(() => {
-            initShaders();
-        });
-        initBattleEngine();
+        Promise.all([initEngine('exploration'), initEngine('battle'), initEngine('camp')]).then(
+            () => {
+                initShaders();
+            },
+        );
     });
 });
 
@@ -90,7 +87,7 @@ function minimizeGame() {
             </div>
             <div id="main-container" class="relative grow">
                 <canvas id="main-canvas" class="absolute inset-0 z-10 p-1" />
-                <div class="absolute inset-0 z-20 pt-1">
+                <div class="absolute inset-0 z-20">
                     <PauseMenu v-if="paused && ready" />
                     <LoadingScreen v-if="!ready" />
                     <RouterView :key="currentRoute.fullPath" />
@@ -100,6 +97,9 @@ function minimizeGame() {
                 </div>
                 <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
                     <BattleCanvas />
+                </div>
+                <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
+                    <CampCanvas />
                 </div>
             </div>
         </div>

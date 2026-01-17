@@ -4,6 +4,7 @@ import { vfx } from './vfx';
 import { enemy } from './enemy';
 import { tiles } from './tile';
 import { battleground } from './battleground';
+import { misc } from './misc';
 
 export default {
     battleground,
@@ -12,4 +13,5 @@ export default {
     enemy,
     vfx,
     tiles,
+    misc,
 };

@@ -1,17 +1,22 @@
 import { TiledResource } from '@excaliburjs/plugin-tiled';
 import { vec } from 'excalibur';
-import { MapMeta } from '@/state/useExploration';
+import { MapMeta } from './maps';
 
-export const resources: Record<string, MapMeta> = {
+const thuralaResources = {
     thurala: {
         type: 'region',
         key: 'thurala',
         name: 'Thurala',
-        startPos: vec(3, 9),
+        startPos: vec(2, 11),
         map: new TiledResource('./maps/thurala/thurala.tmx', {
             useTilemapCameraStrategy: true,
         }),
         keyPoints: {
+            '2_9': {
+                type: 'lightSource',
+                radius: 6,
+                offset: vec(12, 12),
+            },
             '13_1': {
                 type: 'subZone',
                 key: 'someForest',
@@ -20,6 +25,13 @@ export const resources: Record<string, MapMeta> = {
                 type: 'subZone',
                 key: 'someCave',
             },
+            ...['13_3', '16_1', '23_1', '22_13', '28_18', '28_1'].reduce(
+                (acc, key) => ({
+                    ...acc,
+                    [key]: { type: 'bonfire' },
+                }),
+                {},
+            ),
         },
     },
     someForest: {
@@ -54,4 +66,9 @@ export const resources: Record<string, MapMeta> = {
             },
         },
     },
-};
+} as const satisfies Record<string, MapMeta>;
+
+export const resources = thuralaResources satisfies Record<
+    keyof typeof thuralaResources,
+    MapMeta & { key: keyof typeof thuralaResources }
+>;

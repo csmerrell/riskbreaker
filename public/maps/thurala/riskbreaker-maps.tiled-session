@@ -3,11 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "someForest.tmx",
+    "activeFile": "thurala.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "low-fi.tsx": {
             "scaleInDock": 2,
             "scaleInEditor": 4
@@ -24,20 +27,35 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 206.83333333333331,
-                "y": 135.83333333333331
+                "x": 234.66666666666666,
+                "y": 148.16666666666669
             }
         },
         "thurala.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 331.66666666666663,
-                "y": 214.33333333333337
+                "x": 321.3333333333333,
+                "y": 251.66666666666663
             }
+        },
+        "thurala.tmx#Low-fi Terrain-sheet": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "thurala.tmx#Thurala": {
+            "scaleInDock": 1
+        },
+        "thurala.tmx#thurala": {
+            "scaleInDock": 1
+        },
+        "thurala.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 4
         }
     },
-    "last.imagePath": "C:/code/riskbreaker-maps",
+    "last.externalTilesetPath": "C:/code/riskbreaker/public/maps/thurala",
+    "last.imagePath": "C:/code/riskbreaker/public/maps/thurala",
     "map.height": 12,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 24,
@@ -45,20 +63,25 @@
     "map.width": 20,
     "openFiles": [
         "thurala.tmx",
-        "low-fi.tsx",
-        "someForest.tmx"
+        "someForest.tmx",
+        "low-fi.tsx"
     ],
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "thurala.tmx",
+        "someForest.tmx",
         "low-fi.tsx",
-        "someForest.tmx"
+        "thurala.tsx",
+        "thurala.tmx"
     ],
+    "tileset.embedInMap": false,
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 1,
+    "tileset.spacing": 1,
     "tileset.tileSize": {
-        "height": 24,
-        "width": 24
+        "height": 25,
+        "width": 25
     },
     "tileset.transparentColor": "#44344c",
     "tileset.useTransparentColor": true

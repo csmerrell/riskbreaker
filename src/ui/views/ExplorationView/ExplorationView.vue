@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { useGameContext } from '@/state/useGameContext';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useExploration } from '../../../state/useExploration';
 import MapTransition from './MapTransition.vue';
-import ControlLegend from '@/ui/components/ControlLegend.vue';
 import BattleScreen from '../BattleScreen/BattleScreen.vue';
-import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    captureControls,
+    registerInputListener,
+    unregisterInputListener,
+    useInput,
+} from '@/game/input/useInput';
+import TilePrompts from './TilePrompts.vue';
+import CampScreen from '../CampScreen/CampScreen.vue';
 
 const { explorationEngine } = useGameContext();
-const { currentMap, setCurrentMap } = useExploration();
+const { currentMap, campOpen, setCurrentMap } = useExploration();
+const { stackOwner } = useInput();
+
+const inputKey = captureControls('ExplorationRoot');
+const inputOwner = ref(stackOwner.value);
+stackOwner.subscribe(() => {
+    inputOwner.value = stackOwner.value;
+});
+const hasControl = computed(() => inputOwner.value === inputKey);
 
 const sceneLoaded = ref(false);
 
@@ -31,6 +45,13 @@ function registerInputListeners() {
     }, 'confirm');
 }
 
+const campScreen = ref();
+campOpen.subscribe((next) => {
+    if (next) {
+        campScreen.value.visible = true;
+    }
+});
+
 onUnmounted(() => {
     unregisterInputListener(battleDebug);
 });
@@ -40,16 +61,8 @@ onUnmounted(() => {
     <div class="relative size-full">
         <div id="exploration-container" class="size-full"></div>
         <BattleScreen ref="battleScreen" />
-        <ControlLegend
-            class="text-standard-sm absolute bottom-8 right-16"
-            :scale="0.5"
-            :commands="[
-                {
-                    key: 'confirm',
-                    label: 'Battle Debug',
-                },
-            ]"
-        />
+        <CampScreen ref="campScreen" />
+        <TilePrompts v-if="hasControl" />
         <MapTransition />
     </div>
 </template>

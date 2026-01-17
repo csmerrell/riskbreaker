@@ -1,7 +1,7 @@
 // delete-db.js
 import PouchDB from 'pouchdb';
 
-const dbName = 'necrohell';
+const dbName = 'riskbreaker';
 const db = new PouchDB(dbName);
 db.destroy()
     .then(() => {
