@@ -23,8 +23,9 @@ const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'newGame',
         label: 'New Game',
-        onSelect: () => {},
-        disabled: true,
+        onSelect: () => {
+            router.replace('/scripted?scene=intro');
+        },
     },
     {
         key: 'settings',

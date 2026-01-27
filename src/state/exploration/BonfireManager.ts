@@ -4,7 +4,7 @@ import { resources } from '@/resource';
 import type { MapMeta } from '@/resource/maps/maps';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { TileControlPrompt, useExploration } from '../useExploration';
-import { getTileCenter, getTileCenter_Raw } from '@/resource/maps';
+import { getTileCenter_Raw } from '@/resource/maps';
 
 export type BonfireState = {
     intensityScale: number;
@@ -19,14 +19,14 @@ export class BonfireManager {
 
     constructor(opts: { scene: Scene }) {
         this.scene = opts.scene;
-        if (!resources.image.misc.bonfire.isLoaded()) {
-            this.ready = resources.image.misc.bonfire.load();
+        if (!resources.image.misc.bonfireMap.isLoaded()) {
+            this.ready = resources.image.misc.bonfireMap.load();
         } else {
             this.ready = Promise.resolve();
         }
         this.ready.then(() => {
             this.spriteSheet = SpriteSheet.fromImageSource({
-                image: resources.image.misc.bonfire,
+                image: resources.image.misc.bonfireMap,
                 grid: {
                     spriteHeight: 24,
                     spriteWidth: 24,

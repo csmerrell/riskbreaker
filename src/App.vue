@@ -50,7 +50,7 @@ const ready = computed(() => !Object.keys(dependencies.value).some((k) => !depen
 const { paused, hasFrame } = useGameContext();
 const showFrame = ref(true);
 hasFrame.subscribe((val) => {
-    showFrame.value = val;
+    showFrame.value = false;
 });
 const { initSFX } = useSFX();
 initSFX().then(() => {
@@ -72,7 +72,7 @@ function minimizeGame() {
     <div class="app size-full overflow-hidden bg-bg">
         <div class="flex size-full flex-col">
             <div
-                v-if="showFrame"
+                v-if="false"
                 class="flex flex-row items-center justify-start bg-zinc-900 text-white shadow-sm shadow-black"
             >
                 <div class="title-bar grow px-4 py-1 hover:bg-blue-500">Riskbreaker</div>

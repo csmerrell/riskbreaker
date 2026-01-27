@@ -55,7 +55,7 @@ function setTransitionMap(key: keyof typeof maps, posOverride?: Vector) {
 }
 
 function openCamp() {
-    this.campOpen.set(true);
+    campOpen.set(true);
 }
 
 export type SavedExplorationState = {

@@ -4,6 +4,10 @@ A two person party with 5-lane turn based combat.
 Each character gets: 
 - 3 deep specializations
 
+## Title Candidates
+- Estelle Igni: To Light Fires in the Night Sky
+
+
 ## Specializations
 - **Riskbreaker**
 - Bladesealer

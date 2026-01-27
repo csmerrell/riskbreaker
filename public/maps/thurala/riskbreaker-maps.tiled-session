@@ -27,16 +27,16 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 234.66666666666666,
-                "y": 148.16666666666669
+                "x": 240.16666666666666,
+                "y": 144.16666666666666
             }
         },
         "thurala.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 321.3333333333333,
-                "y": 251.66666666666663
+                "x": 619.3333333333333,
+                "y": 313.66666666666663
             }
         },
         "thurala.tmx#Low-fi Terrain-sheet": {
@@ -69,10 +69,10 @@
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "someForest.tmx",
         "low-fi.tsx",
-        "thurala.tsx",
-        "thurala.tmx"
+        "someForest.tmx",
+        "thurala.tmx",
+        "thurala.tsx"
     ],
     "tileset.embedInMap": false,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",

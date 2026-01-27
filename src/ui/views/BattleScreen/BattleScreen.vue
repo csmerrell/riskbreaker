@@ -45,17 +45,9 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateScale);
 });
 
-let cancelBattle: string;
-function registerInputListeners() {
-    cancelBattle = registerInputListener(() => {
-        setVisible(false);
-        onBlur();
-    }, 'cancel');
-}
+function registerInputListeners() {}
 
-function onBlur() {
-    unregisterInputListener(cancelBattle);
-}
+function onBlur() {}
 
 // Compute CSS custom properties
 const containerStyles = computed(() => ({

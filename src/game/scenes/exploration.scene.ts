@@ -101,7 +101,7 @@ export class ExplorationScene extends Scene {
         // Set up graphics
         this.player.graphics.add('idle', staticSprite);
         this.player.graphics.use('idle');
-        this.player.addComponent(new LightSource({ radius: 2 }));
+        this.player.addComponent(new LightSource({ radius: 1 }));
     }
 
     private createFog() {

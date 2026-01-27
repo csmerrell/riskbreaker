@@ -48,7 +48,7 @@ function registerInputListeners() {
 const campScreen = ref();
 campOpen.subscribe((next) => {
     if (next) {
-        campScreen.value.visible = true;
+        campScreen.value.setVisible(true);
     }
 });
 

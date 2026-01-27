@@ -26,7 +26,7 @@ const inputOwner = ref(stackOwner.value);
 stackOwner.subscribe((next) => {
     inputOwner.value = next;
 });
-const hasControl = computed(() => inputOwner.value === inputKey);
+const _hasControl = computed(() => inputOwner.value === inputKey);
 watch(visible, (next) => {
     if (next) {
         campEngine.value.goToScene('camp');
