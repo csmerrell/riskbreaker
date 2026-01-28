@@ -6,5 +6,5 @@ export const resources = {
 };
 
 export function isResource(obj: unknown): obj is Resource<unknown> {
-    return (obj as Resource<unknown>).bustCache !== undefined;
+    return (obj as Resource<unknown>)?.bustCache !== undefined;
 }

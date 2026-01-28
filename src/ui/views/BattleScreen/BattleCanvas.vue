@@ -21,7 +21,10 @@ watch(
         const canvas = el.value;
         if (!canvas) return;
 
-        const targetId = path.startsWith('/exploration') ? 'battle-container' : 'battle-ph';
+        const targetId =
+            path.startsWith('/exploration') || path.startsWith('/scripted')
+                ? 'battle-container'
+                : 'battle-ph';
 
         const target = document.getElementById(targetId);
         if (!target) return;

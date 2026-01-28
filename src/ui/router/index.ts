@@ -6,6 +6,7 @@ import BattleScreen from '../views/BattleScreen/BattleScreen.vue';
 import TestView from '../views/TestView/TestView.vue';
 import SettingsView from '../views/SettingsView/SettingsView.vue';
 import ExplorationView from '../views/ExplorationView/ExplorationView.vue';
+import ScriptedView from '../views/Scripted/ScriptedView.vue';
 
 const router = createRouter({
     history: createWebHashHistory('/'),
@@ -34,6 +35,11 @@ const router = createRouter({
             path: '/party',
             name: 'party_menu',
             component: PartyMenu,
+        },
+        {
+            path: '/scripted',
+            name: 'scripted',
+            component: ScriptedView,
         },
         {
             path: '/battle',

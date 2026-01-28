@@ -9,6 +9,7 @@ export const units = {
     hair,
     unique,
     weapon,
+    mannequin: new ImageSource('/image/units/Mannequin.png'),
     Netherfencer: new ImageSource(
         '/image/import/TinyCharacterPack/Characters/Swordsman/Swordsman.png',
     ),

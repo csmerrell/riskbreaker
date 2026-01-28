@@ -98,7 +98,7 @@ function minimizeGame() {
                 <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
                     <BattleCanvas />
                 </div>
-                <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
+                <div id="camp-ph" class="invisible absolute inset-x-0 top-full h-full">
                     <CampCanvas />
                 </div>
             </div>

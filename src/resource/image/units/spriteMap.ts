@@ -118,4 +118,5 @@ const map = {
     },
 } as const satisfies Record<string, FrameMap>;
 
-export const spriteMap = map satisfies Record<keyof typeof map, FrameMap>;
+export type AnimationKey = keyof typeof map;
+export const spriteMap = map satisfies Record<AnimationKey, FrameMap>;

@@ -1,53 +1,25 @@
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { BattleScene } from '@/game/scenes/battle.scene';
-import { resources } from '@/resource';
-import { Actor, Scene, SpriteSheet } from 'excalibur';
+import { vec } from 'excalibur';
+import { ScriptedScene } from '.';
 
-type ScriptedEventBase = {
-    type: 'dialogue' | 'characterMotion';
-    endSignal: 'playerConfirm' | 'animationEnd' | 'actorFrame';
-};
+const stonecaller = new CompositeActor({
+    hair: 'poofyBob',
+    armor: 'stonecallerRobe',
+    pos: vec(-72, 24),
+});
 
-type CharacterMotionEvent = {
-    type: 'characterMotion';
-    actor: Actor;
-};
-
-type DialogueEvent = {
-    type: 'dialogue';
-    actor: Actor;
-    messages: {
-        message: string;
-        intensity: 'standard' | 'whisper' | 'urgent';
-    }[];
-};
-
-type ScriptedEvent = ScriptedEventBase & (CharacterMotionEvent | DialogueEvent);
-
-type ScriptedScene = {
-    scene: Scene;
-    map: string;
-    actors: Actor[];
-    events: ScriptedEvent[];
-};
-
-const stonecaller = new Actor();
-stonecaller.graphics.add(
-    'static',
-    SpriteSheet.fromImageSource({
-        image: resources.image.units.unique.stonecaller,
-        grid: {
-            rows:
-        },
-    }),
-);
-
-const introMetadata: ScriptedScene = {
+export const introMetadata: ScriptedScene = {
+    type: 'battle',
     scene: new BattleScene(),
     map: 'grass',
-    actors: [],
+    actors: [stonecaller],
     events: [
         {
-            type: 'characterMotion',
+            type: 'characterAnimation',
+            actor: stonecaller,
+            animationKey: 'raiseItem',
+            preDelay: 3000,
         },
     ],
 };
