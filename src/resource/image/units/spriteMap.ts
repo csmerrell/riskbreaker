@@ -7,12 +7,19 @@ export const COMPOSITE_SPRITE_GRID = {
     spriteHeight: 24,
     spriteWidth: 24,
     rows: 12,
-    columns: 8,
+    columns: 12,
 };
 
 const map = {
     static: {
         frames: [[0, 0, 0]],
+    },
+    walkFace: {
+        frames: [
+            [9, 0, 4],
+            [10, 0, 4],
+            [11, 0, 4],
+        ],
     },
     runFace: {
         frames: [
@@ -70,6 +77,9 @@ const map = {
     },
     raiseItem: {
         frames: [[4, 2, 0]],
+    },
+    handForward: {
+        frames: [[5, 2, 0]],
     },
     hurt: {
         frames: [[0, 3, 0]],

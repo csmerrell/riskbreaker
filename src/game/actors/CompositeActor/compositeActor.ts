@@ -1,42 +1,81 @@
-import { Actor, ActorArgs } from 'excalibur';
-import { CompositeLayer } from './CompositeLayer';
+import { Actor, ActorArgs, AnimationStrategy } from 'excalibur';
+import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import type { AnimationKey } from '@/resource/image/units/spriteMap';
+import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 
-type Armors = 'riskbreakerLeathers' | 'stonecallerRobe';
-type Weapons = 'sword' | 'shield';
-type HairType = 'shortMessy' | 'poofyBob';
+export type CompositeSpriteLayers = 'armor' | 'hair' | 'weapon' | 'accessory' | 'mannequin';
 
 export class CompositeActor extends Actor {
     private armor: CompositeLayer;
     private weapons: CompositeLayer[] = [];
     private hair: CompositeLayer;
     private mannequin: CompositeLayer;
+    private accessory: CompositeLayer;
 
-    constructor(opts: ActorArgs & { armor?: Armors; weapons?: Weapons[]; hair: HairType }) {
-        super(opts);
-        const { armor: armorKey, weapons: weaponKeys = [], hair: hairKey } = opts;
-        this.mannequin = new CompositeLayer({ key: 'mannequin', type: 'mannequin' });
-        this.addChild(this.mannequin);
+    constructor(
+        opts: ActorArgs & {
+            armor?: ArmorType;
+            weapons?: WeaponType[];
+            hair?: HairType;
+            accessory?: AccessoryType;
+        },
+    ) {
+        const {
+            armor: armorKey,
+            weapons: weaponKeys = [],
+            hair: hairKey,
+            accessory: accessoryKey,
+            ...excalOpts
+        } = opts;
+        super(excalOpts);
+
+        this.equipLayer({ key: 'mannequin', type: 'mannequin' });
         if (armorKey) {
-            this.armor = new CompositeLayer({ key: armorKey, type: 'armor' });
-            this.addChild(this.armor);
+            this.equipLayer({ key: armorKey, type: 'armor' });
         }
-        weaponKeys.forEach((key) => {
-            const weapon = new CompositeLayer({ key, type: 'weapon' });
-            this.weapons.push(weapon);
-            this.addChild(weapon);
+        weaponKeys.forEach((weaponKey) => {
+            this.equipLayer({ key: weaponKey, type: 'weapon' });
         });
         if (hairKey) {
-            this.hair = new CompositeLayer({ key: hairKey, type: 'hair' });
+            this.equipLayer({ key: hairKey, type: 'hair' });
+        }
+        if (accessoryKey) {
+            this.equipLayer({ key: accessoryKey, type: 'accessory' });
         }
     }
 
-    public async useAnimation(key: AnimationKey) {
+    public equipLayer(opts: CompositeSpriteMapping) {
+        const layer = new CompositeLayer(opts);
+        if (opts.type === 'weapon') {
+            this.weapons.push(layer);
+        } else {
+            this[opts.type] = layer;
+        }
+        this.addChild(layer);
+    }
+
+    public async useAnimation(
+        key: AnimationKey,
+        opts: {
+            strategy?: AnimationStrategy;
+            next?: Animation;
+        },
+    ) {
         const promises: Promise<void>[] = [];
-        promises.push(this.armor?.useAnimation(key));
-        promises.concat(this.weapons.map((w) => w.useAnimation(key)));
-        promises.push(this.hair?.useAnimation(key));
-        promises.push(this.mannequin.useAnimation(key));
+        const { strategy } = opts;
+        promises.push(this.armor?.useAnimation(key, { strategy }));
+        promises.concat(this.weapons.map((w) => w.useAnimation(key, { strategy })));
+        promises.push(this.hair?.useAnimation(key, { strategy }));
+        promises.push(this.accessory?.useAnimation(key, { strategy }));
+        promises.push(this.mannequin.useAnimation(key, { strategy }));
         return Promise.all(promises);
+    }
+
+    public stopAnimation() {
+        this.armor?.stopAnimation();
+        this.hair?.stopAnimation();
+        this.accessory?.stopAnimation();
+        this.mannequin?.stopAnimation();
+        this.weapons.forEach((w) => w.stopAnimation());
     }
 }

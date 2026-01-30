@@ -1,7 +1,8 @@
-import { Actor, Scene } from 'excalibur';
+import { Actor, AnimationStrategy, Scene, Vector } from 'excalibur';
 import { introMetadata } from './intro';
 import { AnimationKey } from '@/resource/image/units/spriteMap';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { CharacterLine } from '@/state/useDialogue';
 
 type ScriptedEventBase = {
     type: 'dialogue' | 'characterAnimation';
@@ -10,22 +11,30 @@ type ScriptedEventBase = {
     postDelay?: number;
 };
 
-type CharacterAnimationEvent = {
+type MovementArgs = {
+    destination: Vector;
+    type: 'walk' | 'run' | 'jump' | 'teleport';
+    duration?: number;
+};
+
+type JumpMovementArgs = MovementArgs & {
+    type: 'jump';
+    duration: number;
+};
+
+export type CharacterAnimationEvent = {
     type: 'characterAnimation';
     actor: CompositeActor;
     animationKey: AnimationKey;
+    strategy?: AnimationStrategy;
+    movement?: MovementArgs | JumpMovementArgs;
 };
 
-type DialogueEvent = {
+export type DialogueEvent = {
     type: 'dialogue';
-    actor: Actor;
-    messages: {
-        message: string;
-        intensity: 'standard' | 'whisper' | 'urgent';
-    }[];
-};
+} & CharacterLine;
 
-type ScriptedEvent = ScriptedEventBase & (CharacterAnimationEvent | DialogueEvent);
+export type ScriptedEvent = ScriptedEventBase & (CharacterAnimationEvent | DialogueEvent);
 
 export type ScriptedScene = {
     type: 'exploration' | 'battle';

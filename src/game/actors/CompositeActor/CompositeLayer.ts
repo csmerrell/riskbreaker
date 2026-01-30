@@ -6,34 +6,53 @@ import {
     FrameMap,
     spriteMap,
 } from '@/resource/image/units/spriteMap';
-import { Actor, Animation, AnimationStrategy, Engine, ImageSource, SpriteSheet } from 'excalibur';
+import {
+    Actor,
+    Animation,
+    AnimationStrategy,
+    Engine,
+    ImageSource,
+    Material,
+    SpriteSheet,
+} from 'excalibur';
+import { CompositeSpriteLayers } from './CompositeActor';
+import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
+import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 
-type CompositeType = 'armor' | 'weapon' | 'hair' | 'mannequin';
-
-type CompositeResourceOpts = {
-    type: CompositeType;
-    isBack?: boolean;
+export type CompositeSpriteMapping = {
+    type: CompositeSpriteLayers;
 } & (
     | {
           type: 'armor';
-          key: keyof typeof resources.image.units.armor;
+          key: ArmorType;
       }
     | {
           type: 'weapon';
-          key: keyof typeof resources.image.units.weapon;
+          key: WeaponType;
       }
     | {
           type: 'hair';
-          key: keyof typeof resources.image.units.hair;
+          key: HairType;
+      }
+    | {
+          type: 'accessory';
+          key: AccessoryType;
       }
     | {
           type: 'mannequin';
           key: 'mannequin';
       }
 );
+type CompositeResourceOpts = CompositeSpriteMapping & {
+    isBack?: boolean;
+};
+
 export class CompositeLayer extends Actor {
     private spriteSheet: SpriteSheet;
     private animations: Partial<Record<AnimationKey, Animation>> = {};
+    private strategyRestore: Partial<Record<AnimationKey, AnimationStrategy>> = {};
+    private activeAnimation: Animation;
+    private footShadow: Material;
 
     constructor(opts: CompositeResourceOpts) {
         super();
@@ -48,7 +67,10 @@ export class CompositeLayer extends Actor {
                 src = isBack ? weaponRoot.back : weaponRoot.front;
                 break;
             case 'hair':
-                src = resources.image.units.hair[opts.key];
+                src = resources.image.units.hair[key];
+                break;
+            case 'accessory':
+                src = resources.image.units.accessory[key];
                 break;
             case 'mannequin':
                 src = resources.image.units.mannequin;
@@ -64,9 +86,19 @@ export class CompositeLayer extends Actor {
         });
     }
 
-    onInitialize(_engine: Engine): void {
+    onInitialize(engine: Engine): void {
         this.graphics.use('static');
         this.buildAnimations();
+        this.footShadow = engine.graphicsContext.createMaterial({
+            name: 'footShadow',
+            fragmentSource: FOOT_SHADOW,
+        });
+        this.graphics.material = this.footShadow;
+        this.graphics.material.update((shader) => {
+            shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
+            shader.trySetUniformFloat('u_width', 0.25);
+            shader.trySetUniformFloat('u_height', 0.05);
+        });
     }
 
     private buildAnimations() {
@@ -74,7 +106,7 @@ export class CompositeLayer extends Actor {
             this.animations[key] = new Animation({
                 frames: val.frames.map((f) => ({
                     graphic: this.spriteSheet.getSprite(f[0], f[1]),
-                    duration: Math.min(f[2] * gameEnum.frameMs, 1),
+                    duration: Math.max(f[2] * gameEnum.frameMs, 1),
                 })),
                 strategy: AnimationStrategy.Freeze,
             });
@@ -82,17 +114,39 @@ export class CompositeLayer extends Actor {
         });
     }
 
-    public async useAnimation(key: AnimationKey, next?: AnimationKey) {
+    public async useAnimation(
+        key: AnimationKey,
+        opts: {
+            strategy?: AnimationStrategy;
+            next?: AnimationKey;
+        } = {},
+    ) {
+        const { strategy, next } = opts;
         return new Promise<void>((resolve) => {
+            if (strategy) {
+                this.strategyRestore[key] = this.animations[key].strategy;
+                this.animations[key].strategy = strategy;
+            } else if (this.strategyRestore[key]) {
+                this.animations[key].strategy = strategy;
+            }
             this.animations[key].reset();
+            this.activeAnimation = this.animations[key];
             this.graphics.use(key);
             this.animations[key].events.on('end', () => {
                 resolve();
-                console.log(`[${key}] animation ended`);
                 if (next) {
                     this.useAnimation(next);
                 }
             });
         });
+    }
+
+    public stopAnimation() {
+        if (this.activeAnimation) {
+            this.activeAnimation.pause();
+            this.activeAnimation.reset();
+            delete this.activeAnimation;
+            this.graphics.use('static');
+        }
     }
 }

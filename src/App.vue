@@ -16,6 +16,7 @@ import SFXDriver from './ui/components/SFXDriver.vue';
 import BattleCanvas from './ui/views/BattleScreen/BattleCanvas.vue';
 import { useShader } from './state/useShader';
 import CampCanvas from './ui/views/CampScreen/CampCanvas.vue';
+import DialogueBus from './ui/components/dialogue/DialogueBus.vue';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
@@ -32,7 +33,7 @@ onMounted(() => {
     useSprites().loadAllSprites();
 
     Promise.all(promises).then(() => {
-        router.replace({ path: '/title' });
+        router.replace({ path: '/title', query: { selectedKey: 'newGame' } });
     });
     nextTick(() => {
         Promise.all([initEngine('exploration'), initEngine('battle'), initEngine('camp')]).then(
@@ -103,6 +104,7 @@ function minimizeGame() {
                 </div>
             </div>
         </div>
+        <DialogueBus />
         <SFXDriver />
     </div>
 </template>

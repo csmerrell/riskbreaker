@@ -17,3 +17,11 @@ export function getGameCoords(coordinates: { x: number; y: number }) {
         ~~((coordinates.y - window.innerHeight / 2) / scale),
     );
 }
+
+export function getScreenCoords(coordinates: { x: number; y: number }) {
+    const scale = getScale();
+    return vec(
+        ~~(coordinates.x * scale + window.innerWidth / 2),
+        ~~(coordinates.y * scale + window.innerHeight / 2),
+    );
+}

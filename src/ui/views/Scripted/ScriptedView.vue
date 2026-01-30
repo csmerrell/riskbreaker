@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import BattleScreen from '../BattleScreen/BattleScreen.vue';
-import { scenes } from './scenes';
+import { scenes, ScriptedEvent } from './scenes';
 import { useGameContext } from '@/state/useGameContext';
 import { onMounted, ref } from 'vue';
+import { scriptCharacterAnimation } from './scripts/characterAnimation';
+import { scriptDialogue } from './scripts/dialogue';
 
 const scene = scenes[useRoute().query.scene as string];
 const { explorationEngine, battleEngine } = useGameContext();
@@ -32,19 +34,27 @@ onMounted(() => {
     Promise.all(readyPromises).then(async () => {
         while (scene.events.length > 0) {
             const event = scene.events.shift();
-            await new Promise<void>((resolve) => {
-                setTimeout(async () => {
-                    switch (event.type) {
-                        case 'characterAnimation':
-                            await event.actor.useAnimation(event.animationKey);
-                    }
-
-                    resolve();
-                }, event.preDelay ?? 0);
-            });
+            await handleEvent(event);
         }
     });
 });
+
+function handleEvent(event: ScriptedEvent) {
+    return new Promise<void>((resolve) => {
+        setTimeout(async () => {
+            switch (event.type) {
+                case 'characterAnimation':
+                    await scriptCharacterAnimation(event);
+                    break;
+                case 'dialogue':
+                    await scriptDialogue(event);
+                    break;
+            }
+
+            resolve();
+        }, event.preDelay ?? 0);
+    });
+}
 </script>
 
 <template>

@@ -31,21 +31,29 @@ float bayer4(vec2 p) {
     ip == ivec2(2,3) ? 13 :
                         5;
 
-  return float(index) / 16.0;
+  return float(index) /20.0;
+}
+
+float normalizeFrameCoordinate(float coord, int numFramesInAxis) {
+    int frameIndex = int(floor(coord * float(numFramesInAxis))); 
+    float zeroFrameMapped = coord - float(frameIndex) / float(numFramesInAxis);
+    return zeroFrameMapped * float(numFramesInAxis);
 }
 
 void main() {
     vec4 spriteFrag = texture(u_graphic, v_uv);
 
+    vec2 normalizedCoord = vec2(normalizeFrameCoordinate(v_uv.x, 12), normalizeFrameCoordinate(v_uv.y, 12));
+
     if(spriteFrag.a != 0.0) {
         fragColor = spriteFrag;
     } else {
-        vec2 p = v_uv - u_origin;
+        vec2 p = normalizedCoord - u_origin;
         vec2 r = vec2(u_width, u_height);
 
         float ellipse = dot(p / r, p / r);
 
-        float edgeStrength = smoothstep(1.0, 0.4, ellipse);
+        float edgeStrength = mix(0.8, 0.4, ellipse);
         float dither = bayer4(gl_FragCoord.xy);
 
         if(ellipse >= 1.0 || dither > edgeStrength) {

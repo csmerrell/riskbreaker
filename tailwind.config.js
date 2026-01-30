@@ -10,6 +10,7 @@ module.exports = {
                 'blue-300': '#a38529',
                 'yellow-500': '#D2BF55',
                 'yellow-700': '#7D6C0C',
+                paper: '#f1f1da',
             },
         },
     },
