@@ -30,11 +30,11 @@ posState.subscribe((next) => {
     playerPos.value = next;
 });
 
-const { explorationEngine } = useGameContext();
+const engine = useGameContext().game.value;
 const playerSize = computed<number>(() => playerPos.value.size * getScale());
 const playerCenter = computed<Vector>(() => {
     const { x, y } = playerPos.value.pos;
-    return explorationEngine.value.worldToScreenCoordinates(vec(x, y)).scale(getScale());
+    return engine.worldToScreenCoordinates(vec(x, y)).scale(getScale());
 });
 
 const positioningStyles = ref<CSSProperties>();

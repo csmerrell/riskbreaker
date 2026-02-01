@@ -6,7 +6,7 @@ import { makeState } from '@/state/Observable';
 import { vec, Vector } from 'excalibur';
 import { BonfireManager } from './exploration/BonfireManager';
 
-const ready = makeState<boolean>(false);
+const sceneReady = makeState<boolean>(false);
 
 //saved state
 const playerPos = makeState<{
@@ -16,6 +16,8 @@ const playerPos = makeState<{
 const currentMap = makeState<MapMetaKeyed>();
 const transitionMap = makeState<MapMetaKeyed>();
 const playerTileCoord = makeState<Vector>();
+const scriptReady = makeState<boolean>();
+const battleOpen = makeState<boolean>();
 const campOpen = makeState<boolean>();
 const bonfireManager = makeState<BonfireManager>();
 
@@ -31,6 +33,21 @@ const tileControlPrompts = makeState<TileControlPrompt>();
 const fadeOutEnd = makeState<boolean>(false);
 const fadeInStart = makeState<boolean>(false);
 const loaded = makeState<boolean>(false);
+
+function awaitScene() {
+    if (sceneReady.value) {
+        return Promise.resolve();
+    } else {
+        return new Promise<void>((resolve) => {
+            const listener = sceneReady.subscribe((next) => {
+                if (next) {
+                    resolve();
+                    sceneReady.unsubscribe(listener);
+                }
+            });
+        });
+    }
+}
 
 function setCurrentMap(key: keyof typeof maps, posOverride?: Vector) {
     currentMap.set(
@@ -56,6 +73,10 @@ function setTransitionMap(key: keyof typeof maps, posOverride?: Vector) {
 
 function openCamp() {
     campOpen.set(true);
+}
+
+function openBattle() {
+    battleOpen.set(true);
 }
 
 export type SavedExplorationState = {
@@ -84,21 +105,25 @@ async function loadExplorationState() {
 
 export function useExploration() {
     return {
-        ready,
+        sceneReady,
         currentMap,
         playerPos,
         transitionMap,
         bonfireManager,
+        scriptReady,
         campOpen,
+        battleOpen,
         playerTileCoord,
         tileControlPrompts,
         fadeOutEnd,
         fadeInStart,
         loaded,
+        awaitScene,
         loadExplorationState,
         saveExplorationState,
         setCurrentMap,
         setTransitionMap,
         openCamp,
+        openBattle,
     };
 }

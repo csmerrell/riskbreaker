@@ -1,5 +1,6 @@
 import { Actor } from 'excalibur';
 import { ref } from 'vue';
+import { useSettings } from './useSettings';
 
 type DialogueMessage = {
     text: string;
@@ -7,6 +8,7 @@ type DialogueMessage = {
     start?: number;
     tempo?: { start: number; length: number; scale: number }[];
     pauses?: { idx: number; duration: number }[];
+    autoAdvance?: number;
 };
 export type CharacterLine = {
     actor: Actor;
@@ -20,9 +22,24 @@ function addCharacterLine(line: CharacterLine) {
     characterLines.value = [...characterLines.value, line];
 }
 
+function getLetterTiming() {
+    const textSpeed = useSettings().settingsState.value.textSpeed;
+    switch (textSpeed) {
+        case 'slow':
+            return 72;
+        case 'fast':
+            return 36;
+        case '2x':
+            return 18;
+        case 'instant':
+            return 0;
+    }
+}
+
 export function useDialogue() {
     return {
         characterLines,
         addCharacterLine,
+        getLetterTiming,
     };
 }

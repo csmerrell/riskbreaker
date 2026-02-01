@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
-import { onUnmounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-const router = useRouter();
+import { useGameContext } from '@/state/useGameContext';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 type MenuItemMeta = {
     key: string;
@@ -12,26 +10,27 @@ type MenuItemMeta = {
     selected?: boolean;
     disabled?: boolean;
 };
+const { activeView } = useGameContext();
 const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'continue',
         label: 'Continue',
         onSelect: () => {
-            router.replace('/exploration');
+            activeView.value = 'exploration';
         },
     },
     {
         key: 'newGame',
         label: 'New Game',
         onSelect: () => {
-            router.replace('/scripted?scene=intro');
+            console.log('TODO - Run new game script');
         },
     },
     {
         key: 'settings',
         label: 'Settings',
         onSelect: () => {
-            router.replace('/settings');
+            activeView.value = 'settings';
         },
     },
     {
@@ -43,51 +42,63 @@ const menuItems = ref<MenuItemMeta[]>([
     },
 ]);
 
-const route = useRoute();
-const selectedIdx = Math.max(
-    menuItems.value.findIndex((i) => i.key === route.query.selectedKey),
-    menuItems.value.findIndex((i) => !i.disabled),
-);
+const selectedIdx = Math.max(menuItems.value.findIndex((i) => !i.disabled));
 menuItems.value[selectedIdx].selected = true;
 
-const menuDown = registerInputListener(() => {
-    const idx = menuItems.value.findIndex((i) => i.selected);
-    let next = Math.min(menuItems.value.length - 1, idx + 1);
-    while (next < menuItems.value.length - 1 && menuItems.value[next].disabled) {
-        next = Math.min(menuItems.value.length - 1, next + 1);
+watch(activeView, (next) => {
+    if (next === 'title') {
+        registerInputListeners();
     }
-    const item = menuItems.value[next];
-    if (!item.disabled) {
-        menuItems.value[idx] = { ...menuItems.value[idx], selected: false };
-        menuItems.value[next] = { ...menuItems.value[next], selected: true };
+});
+onMounted(() => {
+    if (activeView.value === 'title') {
+        registerInputListeners();
     }
-}, ['menu_down', 'movement_down']);
+});
+const listeners: string[] = [];
+function registerInputListeners() {
+    listeners.push(
+        registerInputListener(() => {
+            const idx = menuItems.value.findIndex((i) => i.selected);
+            let next = Math.min(menuItems.value.length - 1, idx + 1);
+            while (next < menuItems.value.length - 1 && menuItems.value[next].disabled) {
+                next = Math.min(menuItems.value.length - 1, next + 1);
+            }
+            const item = menuItems.value[next];
+            if (!item.disabled) {
+                menuItems.value[idx] = { ...menuItems.value[idx], selected: false };
+                menuItems.value[next] = { ...menuItems.value[next], selected: true };
+            }
+        }, ['menu_down', 'movement_down']),
+    );
 
-const menuUp = registerInputListener(() => {
-    const idx = menuItems.value.findIndex((i) => i.selected);
-    let next = Math.max(0, idx - 1);
-    while (next > 0 && menuItems.value[next].disabled) {
-        next = Math.max(0, next - 1);
-    }
-    const item = menuItems.value[next];
-    if (!item.disabled) {
-        menuItems.value[idx] = { ...menuItems.value[idx], selected: false };
-        menuItems.value[next] = { ...menuItems.value[next], selected: true };
-    }
-}, ['menu_up', 'movement_up']);
+    listeners.push(
+        registerInputListener(() => {
+            const idx = menuItems.value.findIndex((i) => i.selected);
+            let next = Math.max(0, idx - 1);
+            while (next > 0 && menuItems.value[next].disabled) {
+                next = Math.max(0, next - 1);
+            }
+            const item = menuItems.value[next];
+            if (!item.disabled) {
+                menuItems.value[idx] = { ...menuItems.value[idx], selected: false };
+                menuItems.value[next] = { ...menuItems.value[next], selected: true };
+            }
+        }, ['menu_up', 'movement_up']),
+    );
 
-const menuConfirm = registerInputListener(() => {
-    const menuItem = menuItems.value.find((i) => i.selected);
-    menuItem.onSelect();
-}, 'confirm');
+    listeners.push(
+        registerInputListener(() => {
+            const menuItem = menuItems.value.find((i) => i.selected);
+            menuItem.onSelect();
+        }, 'confirm'),
+    );
 
-const disablePause = registerInputListener(() => {}, ['pause_menu']);
+    listeners.push(registerInputListener(() => {}, ['pause_menu']));
+}
 
 onUnmounted(() => {
-    unregisterInputListener(disablePause);
-    unregisterInputListener(menuUp);
-    unregisterInputListener(menuDown);
-    unregisterInputListener(menuConfirm);
+    listeners.forEach((l) => unregisterInputListener(l));
 });
 </script>
 

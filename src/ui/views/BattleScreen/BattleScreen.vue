@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { getScale } from '@/lib/helpers/screen.helper';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import {
-    captureControls,
-    registerInputListener,
-    unCaptureControls,
-    unregisterInputListener,
-} from '@/game/input/useInput';
-import { useGameContext } from '@/state/useGameContext';
+import { captureControls, unCaptureControls } from '@/game/input/useInput';
 
-const { battleEngine } = useGameContext();
 const visible = ref(false);
 defineExpose({
     setVisible,
@@ -21,7 +14,6 @@ function setVisible(val: boolean) {
 
 watch(visible, (next) => {
     if (next) {
-        battleEngine.value.goToScene('battle');
         captureControls();
         registerInputListeners();
     } else {
@@ -59,7 +51,6 @@ const containerStyles = computed(() => ({
     <Transition name="fade" mode="out-in">
         <div v-show="visible" class="absolute inset-0 z-50" :style="containerStyles">
             <div class="z-60 absolute inset-0 bg-bg opacity-75" />
-            <div id="battle-container" class="z-100 absolute inset-0" />
         </div>
     </Transition>
 </template>

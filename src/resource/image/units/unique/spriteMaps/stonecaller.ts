@@ -4,6 +4,9 @@ export const stonecallerSpriteMap = {
     static: {
         frames: [[0, 6, 0]],
     },
+    poisedSlide: {
+        frames: [[3, 6, 0]],
+    },
     stomp: {
         frames: [
             [1, 6, 2],

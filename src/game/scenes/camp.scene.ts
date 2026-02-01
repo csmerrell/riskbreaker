@@ -53,9 +53,8 @@ class FirelightPostProcessor implements PostProcessor {
                     this.fireOrigin.y,
                 ]);
             } else {
-                console.log(
-                    'Shader does not have expected uniform methods, shader type:',
-                    typeof shader,
+                throw new Error(
+                    `Shader does not have expected uniform methods, shader type: ${typeof shader}`,
                 );
             }
         } catch (error) {

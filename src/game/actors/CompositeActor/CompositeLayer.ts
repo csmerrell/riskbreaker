@@ -8,9 +8,11 @@ import {
 } from '@/resource/image/units/spriteMap';
 import {
     Actor,
+    ActorArgs,
     Animation,
     AnimationStrategy,
     Engine,
+    Graphic,
     ImageSource,
     Material,
     SpriteSheet,
@@ -53,10 +55,12 @@ export class CompositeLayer extends Actor {
     private strategyRestore: Partial<Record<AnimationKey, AnimationStrategy>> = {};
     private activeAnimation: Animation;
     private footShadow: Material;
+    private graphicSnapshot: Graphic;
 
-    constructor(opts: CompositeResourceOpts) {
-        super();
-        const { type, key, isBack = false } = opts;
+    constructor(opts: ActorArgs & CompositeResourceOpts) {
+        const { type, key, isBack = false, ...excalOpts } = opts;
+
+        super(excalOpts);
         let src: ImageSource;
         switch (type) {
             case 'armor':
@@ -148,5 +152,15 @@ export class CompositeLayer extends Actor {
             delete this.activeAnimation;
             this.graphics.use('static');
         }
+    }
+
+    public hide() {
+        this.graphicSnapshot = this.graphics.current;
+        this.graphics.hide();
+    }
+
+    public show() {
+        this.graphics.use(this.graphicSnapshot);
+        delete this.graphicSnapshot;
     }
 }

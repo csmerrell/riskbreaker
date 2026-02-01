@@ -1,57 +1,55 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
-import ExplorationCanvas from './ui/views/ExplorationView/ExplorationCanvas.vue';
+import DialogueBus from './ui/components/dialogue/DialogueBus.vue';
+import ExplorationView from './ui/views/ExplorationView/ExplorationView.vue';
+import TitleScreen from './ui/views/TitleScreen/TitleScreen.vue';
 
-import { initGame, initEngine, useGameContext } from './state/useGameContext';
+import { initGame, useGameContext } from './state/useGameContext';
 import { useSFX } from './state/useSFX';
 
 import { LiteLoader } from './resource/loader';
 import { useSprites } from './state/useSprites';
 import { useGameState } from './state/useGameState';
 import SFXDriver from './ui/components/SFXDriver.vue';
-import BattleCanvas from './ui/views/BattleScreen/BattleCanvas.vue';
 import { useShader } from './state/useShader';
-import CampCanvas from './ui/views/CampScreen/CampCanvas.vue';
-import DialogueBus from './ui/components/dialogue/DialogueBus.vue';
+import SettingsView from './ui/views/SettingsView/SettingsView.vue';
+import { loadAllMaps, loadAllResources, resources } from './resource';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
 
-const router = useRouter();
-const currentRoute = router.currentRoute;
-
+const dependencies = ref<Record<string, boolean>>({
+    game: false,
+    sfx: false,
+});
+const ready = computed(() => !Object.keys(dependencies.value).some((k) => !dependencies.value[k]));
 onMounted(() => {
-    router.replace({ path: '/' });
     const game = initGame();
     const promises: Promise<void | void[]>[] = [];
     promises.push(game.start(new LiteLoader()));
     promises.push(loadSave());
     useSprites().loadAllSprites();
 
-    Promise.all(promises).then(() => {
-        router.replace({ path: '/title', query: { selectedKey: 'newGame' } });
-    });
-    nextTick(() => {
-        Promise.all([initEngine('exploration'), initEngine('battle'), initEngine('camp')]).then(
-            () => {
-                initShaders();
-            },
-        );
+    Promise.all(promises).then(async () => {
+        await nextTick(() => {
+            initShaders();
+            loadAllResources(resources);
+            loadAllMaps();
+        });
+        dependencies.value = {
+            ...dependencies.value,
+            game: true,
+        };
     });
 });
 
-const dependencies = ref<Record<string, boolean>>({
-    sfx: false,
-});
-const ready = computed(() => !Object.keys(dependencies.value).some((k) => !dependencies.value[k]));
-const { paused, hasFrame } = useGameContext();
+const { activeView, paused, hasFrame } = useGameContext();
 const showFrame = ref(true);
 hasFrame.subscribe((val) => {
-    showFrame.value = false;
+    showFrame.value = val;
 });
 const { initSFX } = useSFX();
 initSFX().then(() => {
@@ -87,20 +85,28 @@ function minimizeGame() {
                 />
             </div>
             <div id="main-container" class="relative grow">
-                <canvas id="main-canvas" class="absolute inset-0 z-10 p-1" />
                 <div class="absolute inset-0 z-20">
-                    <PauseMenu v-if="paused && ready" />
-                    <LoadingScreen v-if="!ready" />
-                    <RouterView :key="currentRoute.fullPath" />
-                </div>
-                <div id="exploration-ph" class="invisible absolute inset-x-0 top-full h-full">
-                    <ExplorationCanvas />
-                </div>
-                <div id="battle-ph" class="invisible absolute inset-x-0 top-full h-full">
-                    <BattleCanvas />
-                </div>
-                <div id="camp-ph" class="invisible absolute inset-x-0 top-full h-full">
-                    <CampCanvas />
+                    <div class="relative size-full">
+                        <LoadingScreen v-if="!ready" />
+                        <div v-show="ready">
+                            <div class="mask absolute inset-0 z-10 bg-bg" />
+                            <canvas id="main-canvas" class="absolute inset-0 z-20 p-1" />
+                            <TitleScreen
+                                class="absolute inset-0"
+                                :class="activeView === 'title' && 'z-30'"
+                            />
+                            <SettingsView
+                                class="absolute inset-0"
+                                :class="activeView === 'settings' && 'z-30'"
+                                @exit="activeView = 'title'"
+                            />
+                            <ExplorationView
+                                class="absolute inset-0"
+                                :class="activeView === 'exploration' && 'z-30'"
+                            />
+                        </div>
+                        <PauseMenu v-if="paused" />
+                    </div>
                 </div>
             </div>
         </div>

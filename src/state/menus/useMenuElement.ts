@@ -152,7 +152,6 @@ export function useMenuElement() {
             listeners[nextCommand] = {
                 command: nextCommand,
                 listener: () => {
-                    console.log('right fired');
                     const activeElement = getActiveMenuElement();
                     if (activeElement) {
                         const newFocus = menu.focusNext(activeElement);
@@ -178,7 +177,6 @@ export function useMenuElement() {
             listeners[prevCommand] = {
                 command: prevCommand,
                 listener: () => {
-                    console.log('left fired');
                     const activeElement = getActiveMenuElement();
                     if (activeElement) {
                         const newFocus = menu.focusPrev(activeElement);

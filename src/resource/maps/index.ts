@@ -43,7 +43,7 @@ export function getTileCoords(key: string) {
 }
 
 export function getTileCenter(key: string) {
-    const engine = useGameContext().explorationEngine.value;
+    const engine = useGameContext().game.value;
     const map = useExploration().currentMap.value.map.map;
     const coord = getTileCoords(key);
     return engine

@@ -78,9 +78,7 @@ const spriteMap = computed(() => {
 const updateSpriteScale = () => {
     const computedStyle = getComputedStyle(document.documentElement);
     const scale = parseFloat(computedStyle.getPropertyValue('--keysprite-scale').trim()) || 3;
-    console.log('props scale', props.scale);
     spriteScale.value = scale * props.scale;
-    console.log('sprite scale', spriteScale.value);
 };
 
 // Preload images and setup resize listener

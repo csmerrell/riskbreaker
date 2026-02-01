@@ -3,7 +3,6 @@ import {
     Engine,
     Scene,
     Actor,
-    SpriteSheet,
     vec,
     BoundingBox,
     LimitCameraBoundsStrategy,
@@ -16,7 +15,6 @@ import {
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
 import { registerInputListener } from '@/game/input/useInput';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
-import { resources } from '@/resource';
 import { useExploration } from '@/state/useExploration';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
 import { useShader } from '@/state/useShader';
@@ -26,6 +24,8 @@ import { gameEnum } from '@/lib/enum/game.enum';
 import { LanternStateMachine } from '@/state/exploration/LanternStateMachine';
 import { getTileCenter, isBonfire, isZoneChangePoint } from '@/resource/maps';
 import { BonfireManager } from '@/state/exploration/BonfireManager';
+import { CompositeActor } from '../actors/CompositeActor/CompositeActor';
+import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 
 export class ExplorationScene extends Scene {
     private player: Actor;
@@ -80,27 +80,12 @@ export class ExplorationScene extends Scene {
 
     private createPlayer() {
         // Create a plain ExcaliburJS Actor
-        this.player = new Actor();
-
-        // Create sprite sheet manually
-        const imageSource = resources.image.units.Naturalist;
-        const spriteSheet = SpriteSheet.fromImageSource({
-            image: imageSource,
-            grid: {
-                spriteHeight: 24,
-                spriteWidth: 24,
-                columns: 3,
-                rows: 1,
-            },
+        this.player = new CompositeActor({
+            hair: 'shortMessy',
+            armor: 'riskbreakerLeathers',
+            offset: vec(0, -4),
         });
 
-        // Get the static sprite (idle frame 0,0)
-        const staticSprite = spriteSheet.getSprite(0, 0);
-        this.player.offset = vec(0, -4);
-
-        // Set up graphics
-        this.player.graphics.add('idle', staticSprite);
-        this.player.graphics.use('idle');
         this.player.addComponent(new LightSource({ radius: 1 }));
     }
 
@@ -383,7 +368,7 @@ export class ExplorationScene extends Scene {
         const { playerPos } = useExploration();
         playerPos.set({
             pos: vec(this.player.pos.x, this.player.pos.y),
-            size: this.player.graphics.current.height,
+            size: this.player.height,
         });
 
         const { x, y } = playerTileCoord.value;
@@ -402,11 +387,11 @@ export class ExplorationScene extends Scene {
                 } else if (isBonfire(keyPoint)) {
                     saveExplorationState();
                     const { bonfireManager } = useExploration();
-                    bonfireManager.value.onTileEnter(`${x}_${y}`, this.player);
+                    bonfireManager.value.onTileEnter(`${x}_${y}`);
                 } else {
                     saveExplorationState();
                     if (keyPoint.type === 'interactable') {
-                        console.log('Show interaction prompt');
+                        console.log('TODO: Show interaction prompt');
                     }
                 }
             } else {

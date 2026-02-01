@@ -5,7 +5,7 @@ import MenuBox from '../MenuBox.vue';
 
 import { useSettings } from '@/state/useSettings';
 import { getScreenCoords } from '@/lib/helpers/screen.helper';
-import { CharacterLine } from '@/state/useDialogue';
+import { CharacterLine, useDialogue } from '@/state/useDialogue';
 import {
     captureControls,
     registerInputListener,
@@ -42,22 +42,6 @@ const alignmentStyles = computed(() => {
 });
 
 const intervalMs = ref(100);
-function setIntervalRate(speedSetting: 'slow' | 'fast' | '2x' | 'instant') {
-    switch (speedSetting) {
-        case 'slow':
-            intervalMs.value = 100;
-            break;
-        case 'fast':
-            intervalMs.value = 50;
-            break;
-        case '2x':
-            intervalMs.value = 25;
-            break;
-        case 'instant':
-            intervalMs.value = 0;
-            break;
-    }
-}
 
 const message = computed(() => messages.value[0] ?? { text: '' });
 
@@ -66,7 +50,7 @@ const procMessage = computed(() => message.value.text.slice(0, letterProgress.va
 let scaleMod: number[] = [];
 function progressMessage() {
     const textSpeed = useSettings().settingsState.value.textSpeed;
-    setIntervalRate(textSpeed);
+    intervalMs.value = useDialogue().getLetterTiming();
     if (message.value.tempo?.length > 0 && letterProgress.value === message.value.tempo[0].start) {
         const tempo = message.value.tempo.shift();
         scaleMod = Array.from({ length: tempo.length }, () => tempo.scale);
@@ -102,11 +86,19 @@ watch(animationDone, () => {
         showPrompt.value = false;
     } else {
         inputDebounce.value = Date.now();
-        setTimeout(() => {
-            if (animationDone.value) {
-                showPrompt.value = true;
-            }
-        }, 2000);
+        if (message.value.autoAdvance) {
+            setTimeout(() => {
+                if (animationDone.value) {
+                    nextMessage();
+                }
+            }, message.value.autoAdvance);
+        } else {
+            setTimeout(() => {
+                if (animationDone.value) {
+                    showPrompt.value = true;
+                }
+            }, 2000);
+        }
     }
 });
 
@@ -152,21 +144,25 @@ function registerInputListeners() {
                 letterProgress.value = message.value.text.length;
                 showPrompt.value = true;
             } else if (Date.now() - inputDebounce.value > 250) {
-                messages.value = [...messages.value.slice(1)];
-                letterProgress.value = message.value.start ?? 0;
-                showPrompt.value = false;
-                nextTick(() => {
-                    progressMessage();
-                });
-                unregisterInputListeners();
-                if (messages.value.length === 0) {
-                    emit('done');
-                }
+                nextMessage();
             } else {
                 inputDebounce.value = 0;
             }
         }, ['confirm', 'cancel']),
     );
+}
+
+function nextMessage() {
+    messages.value = [...messages.value.slice(1)];
+    letterProgress.value = message.value.start ?? 0;
+    showPrompt.value = false;
+    nextTick(() => {
+        progressMessage();
+    });
+    unregisterInputListeners();
+    if (messages.value.length === 0) {
+        emit('done');
+    }
 }
 
 function unregisterInputListeners() {

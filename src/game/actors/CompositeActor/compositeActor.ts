@@ -1,16 +1,24 @@
-import { Actor, ActorArgs, AnimationStrategy } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine, Material } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import type { AnimationKey } from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
+import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 
 export type CompositeSpriteLayers = 'armor' | 'hair' | 'weapon' | 'accessory' | 'mannequin';
 
+export function isCompositeActor(a: Actor): a is CompositeActor {
+    return (a as CompositeActor).type === 'CompositeActor';
+}
+
 export class CompositeActor extends Actor {
+    public type = 'CompositeActor';
     private armor: CompositeLayer;
     private weapons: CompositeLayer[] = [];
     private hair: CompositeLayer;
     private mannequin: CompositeLayer;
     private accessory: CompositeLayer;
+    private footShadow: Material;
+    private excalOpts: ActorArgs;
 
     constructor(
         opts: ActorArgs & {
@@ -29,22 +37,36 @@ export class CompositeActor extends Actor {
         } = opts;
         super(excalOpts);
 
-        this.equipLayer({ key: 'mannequin', type: 'mannequin' });
+        this.excalOpts = excalOpts;
+        this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
         if (armorKey) {
-            this.equipLayer({ key: armorKey, type: 'armor' });
+            this.equipLayer({ key: armorKey, type: 'armor', ...excalOpts });
         }
         weaponKeys.forEach((weaponKey) => {
-            this.equipLayer({ key: weaponKey, type: 'weapon' });
+            this.equipLayer({ key: weaponKey, type: 'weapon', ...excalOpts });
         });
         if (hairKey) {
-            this.equipLayer({ key: hairKey, type: 'hair' });
+            this.equipLayer({ key: hairKey, type: 'hair', ...excalOpts });
         }
         if (accessoryKey) {
-            this.equipLayer({ key: accessoryKey, type: 'accessory' });
+            this.equipLayer({ key: accessoryKey, type: 'accessory', ...excalOpts });
         }
     }
 
-    public equipLayer(opts: CompositeSpriteMapping) {
+    onInitialize(engine: Engine): void {
+        this.footShadow = engine.graphicsContext.createMaterial({
+            name: 'footShadow',
+            fragmentSource: FOOT_SHADOW,
+        });
+        this.graphics.material = this.footShadow;
+        this.graphics.material.update((shader) => {
+            shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
+            shader.trySetUniformFloat('u_width', 0.25);
+            shader.trySetUniformFloat('u_height', 0.05);
+        });
+    }
+
+    public equipLayer(opts: ActorArgs & CompositeSpriteMapping) {
         const layer = new CompositeLayer(opts);
         if (opts.type === 'weapon') {
             this.weapons.push(layer);
@@ -77,5 +99,21 @@ export class CompositeActor extends Actor {
         this.accessory?.stopAnimation();
         this.mannequin?.stopAnimation();
         this.weapons.forEach((w) => w.stopAnimation());
+    }
+
+    public hide() {
+        this.armor.hide();
+        this.weapons.forEach((w) => w.hide());
+        this.hair.hide();
+        this.mannequin.hide();
+        this.accessory.hide();
+    }
+
+    public show() {
+        this.armor.show();
+        this.weapons.forEach((w) => w.show());
+        this.hair.show();
+        this.mannequin.show();
+        this.accessory.show();
     }
 }

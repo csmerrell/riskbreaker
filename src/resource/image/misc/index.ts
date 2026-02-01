@@ -6,4 +6,5 @@ export const misc = {
     arrowIndicator: new ImageSource('image/misc/ArrowIndicator.png'),
     bonfire: new ImageSource('image/misc/Bonfire.png'),
     bonfireMap: new ImageSource('image/misc/BonfireMap.png'),
+    dialogueMarkers: new ImageSource('image/misc/DialogueMarkers.png'),
 };

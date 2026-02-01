@@ -80,7 +80,6 @@ export class BonfireManager {
 
         fire.actor = this.generateBonfire();
         fire.actor.pos = getTileCenter_Raw(key);
-        console.log(fire.actor.pos);
         fire.actor.anchor = vec(0, 0);
         fire.actor.z = 1;
         fire.actor.graphics.use('main');

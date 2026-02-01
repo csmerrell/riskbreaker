@@ -124,7 +124,7 @@ function menuUp() {
 </script>
 
 <template>
-    <div class="absolute inset-0 z-[9999]">
+    <div id="pause-menu" class="absolute inset-0 z-[9999]">
         <div class="mask absolute inset-0 bg-gray-950 opacity-80" />
         <div v-if="!settingsOpen">
             <MenuBox
