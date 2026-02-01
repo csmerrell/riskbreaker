@@ -18,7 +18,8 @@ export class CompositeActor extends Actor {
     private mannequin: CompositeLayer;
     private accessory: CompositeLayer;
     private footShadow: Material;
-    private excalOpts: ActorArgs;
+    private currentAnimationKey: AnimationKey = 'static';
+    private velCheckCt: number = 0;
 
     constructor(
         opts: ActorArgs & {
@@ -37,7 +38,6 @@ export class CompositeActor extends Actor {
         } = opts;
         super(excalOpts);
 
-        this.excalOpts = excalOpts;
         this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
         if (armorKey) {
             this.equipLayer({ key: armorKey, type: 'armor', ...excalOpts });
@@ -66,6 +66,26 @@ export class CompositeActor extends Actor {
         });
     }
 
+    onPreUpdate(_engine: Engine, _elapsed: number): void {
+        if (this.currentAnimationKey.match(/static|walkFace|runFace/)) {
+            if (this.vel.magnitude > 0) {
+                this.useAnimation('walkFace', { strategy: AnimationStrategy.Loop, noReset: true });
+            } else {
+                setTimeout(() => {
+                    if (this.vel.magnitude === 0) {
+                        if (this.velCheckCt > 4) {
+                            this.useAnimation('static');
+                        } else {
+                            this.velCheckCt++;
+                        }
+                    } else {
+                        this.velCheckCt = 0;
+                    }
+                }, 25);
+            }
+        }
+    }
+
     public equipLayer(opts: ActorArgs & CompositeSpriteMapping) {
         const layer = new CompositeLayer(opts);
         if (opts.type === 'weapon') {
@@ -78,18 +98,20 @@ export class CompositeActor extends Actor {
 
     public async useAnimation(
         key: AnimationKey,
-        opts: {
+        opts?: {
             strategy?: AnimationStrategy;
-            next?: Animation;
+            next?: AnimationKey;
+            scale?: number;
+            noReset?: boolean;
         },
     ) {
+        this.currentAnimationKey = key;
         const promises: Promise<void>[] = [];
-        const { strategy } = opts;
-        promises.push(this.armor?.useAnimation(key, { strategy }));
-        promises.concat(this.weapons.map((w) => w.useAnimation(key, { strategy })));
-        promises.push(this.hair?.useAnimation(key, { strategy }));
-        promises.push(this.accessory?.useAnimation(key, { strategy }));
-        promises.push(this.mannequin.useAnimation(key, { strategy }));
+        promises.push(this.armor?.useAnimation(key, opts));
+        promises.concat(this.weapons.map((w) => w.useAnimation(key, opts)));
+        promises.push(this.hair?.useAnimation(key, opts));
+        promises.push(this.accessory?.useAnimation(key, opts));
+        promises.push(this.mannequin.useAnimation(key, opts));
         return Promise.all(promises);
     }
 

@@ -123,6 +123,8 @@ export class CompositeLayer extends Actor {
         opts: {
             strategy?: AnimationStrategy;
             next?: AnimationKey;
+            noReset?: boolean;
+            scale?: number;
         } = {},
     ) {
         const { strategy, next } = opts;
@@ -133,7 +135,9 @@ export class CompositeLayer extends Actor {
             } else if (this.strategyRestore[key]) {
                 this.animations[key].strategy = strategy;
             }
-            this.animations[key].reset();
+            if (!opts.noReset) {
+                this.animations[key].reset();
+            }
             this.activeAnimation = this.animations[key];
             this.graphics.use(key);
             this.animations[key].events.on('end', () => {
