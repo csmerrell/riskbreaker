@@ -7,6 +7,7 @@ import { initControls, provideInput } from '@/game/input/useInput';
 import { ref } from 'vue';
 import { useSFX } from './useSFX';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
+import { colors } from '@/lib/enum/colors.enum';
 
 const loader = new LiteLoader();
 
@@ -14,6 +15,7 @@ type AvailableScenes = 'title' | 'exploration';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
 const activeView = ref('title');
+const activeScript = ref<null | string>();
 const hasFrame = makeState<boolean>(true);
 const inputType = makeState<'keyboard' | 'controller'>('controller');
 
@@ -26,7 +28,7 @@ export function initGame() {
             pixelArt: true,
             pixelRatio: 2,
             enableCanvasTransparency: true,
-            backgroundColor: Color.Transparent,
+            backgroundColor: Color.fromHex(colors.bg),
             displayMode: DisplayMode.FitContainerAndZoom,
             suppressPlayButton: true,
             antialiasing: false,
@@ -68,6 +70,7 @@ function togglePause() {
 
 export const gameContext = {
     activeView,
+    activeScript,
     game,
     hasFrame,
     paused,

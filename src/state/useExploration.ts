@@ -3,8 +3,9 @@ import { MappedCommand } from '@/game/input/InputMap';
 import { maps } from '@/resource/maps';
 import { MapMetaKeyed } from '@/resource/maps/maps';
 import { makeState } from '@/state/Observable';
-import { vec, Vector } from 'excalibur';
+import { Scene, vec, Vector } from 'excalibur';
 import { BonfireManager } from './exploration/BonfireManager';
+import { ExplorationManager } from './exploration/ExplorationManager';
 
 const sceneReady = makeState<boolean>(false);
 
@@ -16,10 +17,8 @@ const playerPos = makeState<{
 const currentMap = makeState<MapMetaKeyed>();
 const transitionMap = makeState<MapMetaKeyed>();
 const playerTileCoord = makeState<Vector>();
-const scriptReady = makeState<boolean>();
-const battleOpen = makeState<boolean>();
-const campOpen = makeState<boolean>();
 const bonfireManager = makeState<BonfireManager>();
+const explorationManager = makeState<ExplorationManager>();
 
 //temp state
 export type TileControlPrompt = {
@@ -49,6 +48,14 @@ function awaitScene() {
     }
 }
 
+function initExplorationManager(scene: Scene) {
+    explorationManager.set(new ExplorationManager({ scene }));
+}
+
+function getExplorationManager() {
+    return explorationManager.value;
+}
+
 function setCurrentMap(key: keyof typeof maps, posOverride?: Vector) {
     currentMap.set(
         posOverride
@@ -69,14 +76,6 @@ function setTransitionMap(key: keyof typeof maps, posOverride?: Vector) {
               }
             : maps[key],
     );
-}
-
-function openCamp() {
-    campOpen.set(true);
-}
-
-function openBattle() {
-    battleOpen.set(true);
 }
 
 export type SavedExplorationState = {
@@ -110,20 +109,17 @@ export function useExploration() {
         playerPos,
         transitionMap,
         bonfireManager,
-        scriptReady,
-        campOpen,
-        battleOpen,
         playerTileCoord,
         tileControlPrompts,
         fadeOutEnd,
         fadeInStart,
         loaded,
         awaitScene,
+        initExplorationManager,
+        getExplorationManager,
         loadExplorationState,
         saveExplorationState,
         setCurrentMap,
         setTransitionMap,
-        openCamp,
-        openBattle,
     };
 }

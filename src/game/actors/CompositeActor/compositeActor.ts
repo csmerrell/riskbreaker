@@ -53,6 +53,16 @@ export class CompositeActor extends Actor {
         }
     }
 
+    isLoaded() {
+        return Promise.all([
+            ...(this.hair ? [this.hair.isLoaded()] : []),
+            ...(this.armor ? [this.armor.isLoaded()] : []),
+            ...(this.accessory ? [this.accessory.isLoaded()] : []),
+            ...(this.mannequin ? [this.mannequin.isLoaded()] : []),
+            ...this.weapons.map((w) => w.isLoaded()),
+        ]);
+    }
+
     onInitialize(engine: Engine): void {
         this.footShadow = engine.graphicsContext.createMaterial({
             name: 'footShadow',

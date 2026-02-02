@@ -50,6 +50,7 @@ type CompositeResourceOpts = CompositeSpriteMapping & {
 };
 
 export class CompositeLayer extends Actor {
+    private loaded: Promise<boolean>;
     private spriteSheet: SpriteSheet;
     private animations: Partial<Record<AnimationKey, Animation>> = {};
     private strategyRestore: Partial<Record<AnimationKey, AnimationStrategy>> = {};
@@ -80,14 +81,29 @@ export class CompositeLayer extends Actor {
                 src = resources.image.units.mannequin;
                 break;
         }
-        src.load().then(() => {
-            this.spriteSheet = SpriteSheet.fromImageSource({
-                image: src,
-                grid: COMPOSITE_SPRITE_GRID,
-            });
-            const [x, y] = spriteMap.static.frames[0];
-            this.graphics.add('static', this.spriteSheet.getSprite(x, y));
+
+        if (!src.isLoaded()) {
+            this.loaded = src
+                .load()
+                .then(() => this.setSheet(src))
+                .then(() => true);
+        } else {
+            this.setSheet(src);
+            this.loaded = Promise.resolve(true);
+        }
+    }
+
+    public isLoaded() {
+        return this.loaded;
+    }
+
+    private setSheet(src: ImageSource) {
+        this.spriteSheet = SpriteSheet.fromImageSource({
+            image: src,
+            grid: COMPOSITE_SPRITE_GRID,
         });
+        const [x, y] = spriteMap.static.frames[0];
+        this.graphics.add('static', this.spriteSheet.getSprite(x, y));
     }
 
     onInitialize(engine: Engine): void {

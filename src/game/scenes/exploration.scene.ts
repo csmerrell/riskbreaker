@@ -1,17 +1,14 @@
-import { ExplorationManager } from '@/state/exploration/ExplorationManager';
-import { useGameContext } from '@/state/useGameContext';
+import { useBattle } from '@/state/useBattle';
+import { useExploration } from '@/state/useExploration';
 import { Engine, Scene } from 'excalibur';
 export class ExplorationScene extends Scene {
-    private manager: ExplorationManager;
     constructor() {
         super();
-        this.manager = new ExplorationManager({
-            engine: useGameContext().game.value,
-            scene: this,
-        });
+        useExploration().initExplorationManager(this);
+        useBattle().initBattleManager(this);
     }
 
     onInitialize(_engine: Engine): void {
-        this.manager.initialize();
+        useExploration().getExplorationManager().initialize();
     }
 }

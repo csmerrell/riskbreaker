@@ -10,7 +10,7 @@ type MenuItemMeta = {
     selected?: boolean;
     disabled?: boolean;
 };
-const { activeView } = useGameContext();
+const { activeView, activeScript } = useGameContext();
 const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'continue',
@@ -23,7 +23,8 @@ const menuItems = ref<MenuItemMeta[]>([
         key: 'newGame',
         label: 'New Game',
         onSelect: () => {
-            console.log('TODO - Run new game script');
+            activeView.value = 'exploration';
+            activeScript.value = 'unique.intro';
         },
     },
     {

@@ -6,6 +6,8 @@ uniform float u_fogR;
 uniform float u_fogG;
 uniform float u_fogB;
 
+uniform bool u_hasMask;
+
 out vec4 color;
 
 // Screen-space info
@@ -75,11 +77,10 @@ void main() {
     }
   }
   
-  // Discard pixels that are in any light source
   if (inLightSource) {
     discard;
+  } else {
+    // Full fog for pixels not in any light source
+    color = vec4(u_fogR, u_fogG, u_fogB, 1.0);
   }
-  
-  // Full fog for pixels not in any light source
-  color = vec4(u_fogR, u_fogG, u_fogB, 1.0);
 }

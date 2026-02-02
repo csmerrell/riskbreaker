@@ -86,7 +86,7 @@ function minimizeGame() {
             </div>
             <div id="main-container" class="relative grow">
                 <div class="absolute inset-0 z-20">
-                    <div class="relative size-full">
+                    <div class="relative size-full bg-bg">
                         <LoadingScreen v-if="!ready" />
                         <div v-show="ready">
                             <div class="mask absolute inset-0 z-10 bg-bg" />

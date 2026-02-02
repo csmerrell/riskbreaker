@@ -12,7 +12,7 @@ export function isGameScript(o: unknown): o is GameScript {
 }
 
 export function getScript(path: string): GameScript {
-    const parts = path.split('_');
+    const parts = path.split('.');
     const found = parts.reduce(
         (acc, pathPart) => {
             let found;

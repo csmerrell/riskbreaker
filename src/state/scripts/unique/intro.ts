@@ -4,15 +4,14 @@ import { GameScript } from '../types/GameScript';
 import { resources } from '@/resource';
 import { COMPOSITE_SPRITE_GRID } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
-import { useScript } from '@/state/useScript';
-import { useExploration } from '@/state/useExploration';
 import { useGameContext } from '@/state/useGameContext';
-import { scripts } from '..';
+import { useBattle } from '@/state/useBattle';
 
 const stonecaller = new CompositeActor({
+    name: 'stonecaller',
     hair: 'stonecallerHood',
     armor: 'stonecallerRobe',
-    pos: vec(0, 12),
+    z: 9999,
 });
 
 const stonecallerUniqueSheet = SpriteSheet.fromImageSource({
@@ -30,15 +29,18 @@ const poisedSlideAnimation = new Animation({
 export const intro: GameScript = {
     events: [
         async () => {
-            await scripts.common.openBattle();
-            const { battleEngine } = useGameContext();
-            battleEngine.value.add(stonecaller);
-            await useScript()
-                .renderTick.value()
-                .then(() => {
-                    useExploration().scriptReady.set(true);
-                });
-            return useScript().renderTick.value();
+            useBattle().getBattleManager().openBattle();
+        },
+        async () => {
+            const engine = useGameContext().game.value;
+            return new Promise((resolve) => {
+                setTimeout(async () => {
+                    await stonecaller.isLoaded();
+                    stonecaller.pos = engine.currentScene.camera.pos.add(vec(-8, 18));
+                    engine.currentScene.add(stonecaller);
+                    resolve();
+                }, 100);
+            });
         },
         {
             type: 'compositeAnimation',
@@ -47,7 +49,7 @@ export const intro: GameScript = {
             preDelay: 1000,
             strategy: AnimationStrategy.Loop,
             movement: {
-                destination: vec(-82, -2),
+                direction: vec(-82, -12),
                 type: 'walk',
             },
         },

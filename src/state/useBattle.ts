@@ -1,5 +1,6 @@
-import { vec } from 'excalibur';
+import { Scene, vec } from 'excalibur';
 import { makeState } from './Observable';
+import { BattleManager } from './battle/BattleManager';
 
 const positions = makeState({
     left: {
@@ -29,8 +30,23 @@ const positions = makeState({
     },
 });
 
-export function useBattleState() {
+const battleManager = makeState<BattleManager>();
+
+function initBattleManager(scene: Scene) {
+    battleManager.set(new BattleManager({ scene }));
+}
+function getBattleManager() {
+    if (!battleManager) {
+        throw new Error('Battle manager retrieved before initialization');
+    }
+
+    return battleManager.value;
+}
+
+export function useBattle() {
     return {
         positions,
+        getBattleManager,
+        initBattleManager,
     };
 }

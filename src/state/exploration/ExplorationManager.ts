@@ -28,8 +28,9 @@ import { getTileCenter, isBonfire, isHaltingKeypoint, isZoneChangePoint } from '
 import { BonfireManager } from '@/state/exploration/BonfireManager';
 import { CompositeActor } from '../../game/actors/CompositeActor/CompositeActor';
 import { InputMap } from '@/game/input/InputMap';
+import { SceneManager, SceneManagerOpts } from '../SceneManager';
 
-export class ExplorationManager {
+export class ExplorationManager extends SceneManager {
     private player: CompositeActor;
     private fog: Actor;
     private fogGraphic: Graphic;
@@ -39,15 +40,13 @@ export class ExplorationManager {
     private fogPreupdateHandler: () => void;
     private lanternStateMachine: LanternStateMachine;
     private suppressLightSources: boolean;
-    private engine: Engine;
-    private scene: Scene;
 
     // No animated movement properties needed
 
-    constructor(opts: { engine: Engine; scene: Scene }) {
-        const { scene, engine } = opts;
-        this.engine = engine;
-        this.scene = scene;
+    constructor(opts: SceneManagerOpts) {
+        const { scene } = opts;
+        super(opts);
+
         this.createPlayer();
         this.createFog();
         this.setupMovementControls();
@@ -81,7 +80,6 @@ export class ExplorationManager {
     }
 
     private createPlayer() {
-        // Create a plain ExcaliburJS Actor
         this.player = new CompositeActor({
             hair: 'shortMessy',
             armor: 'riskbreakerLeathers',
@@ -99,7 +97,7 @@ export class ExplorationManager {
             width: gameEnum.nativeWidth,
             height: gameEnum.nativeHeight,
             anchor: vec(0, 0),
-            z: 9999, // draw on top
+            z: 100, // draw on top
         });
         if (this.fog && this.fog.isAdded) {
             this.fog.kill();
@@ -264,11 +262,9 @@ export class ExplorationManager {
 
         // Set camera to follow the actor
         this.scene.camera.strategy.lockToActor(this.player);
-        setTimeout(() => {
-            this.player.pos = this.player.pos.add(this.getTileOffset());
-            playerTileCoord.set(vec(x, y));
-            this.movementAfterEffects();
-        }, 0);
+        this.player.pos = this.player.pos.add(this.getTileOffset());
+        playerTileCoord.set(vec(x, y));
+        this.movementAfterEffects();
     }
 
     private bufferedInput: Vector | undefined;

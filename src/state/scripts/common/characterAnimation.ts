@@ -7,8 +7,8 @@ import type {
     DirectionMovementArgs,
     MovementArgs,
     UniqueAnimationEvent,
-} from '../scenes/types/CharacterAnimation';
-import type { ScriptedEvent } from '../scenes';
+} from '../types/CharacterAnimation';
+import type { ScriptedEvent } from '../types/GameScript';
 
 function isCompositeAnimation(event: CharacterAnimationEvent): event is CompositeAnimationEvent {
     return (event as CompositeAnimationEvent).animationKey !== undefined;

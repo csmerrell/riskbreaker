@@ -2,13 +2,13 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useExploration } from '../../../state/useExploration';
 import MapTransition from './MapTransition.vue';
-import BattleScreen from '../BattleScreen/BattleScreen.vue';
 import { captureControls, useInput } from '@/game/input/useInput';
 import TilePrompts from './TilePrompts.vue';
-import CampScreen from '../CampScreen/CampScreen.vue';
 import { useGameContext } from '@/state/useGameContext';
+import { useScript } from '@/state/useScript';
+import { getScript } from '@/state/scripts';
 
-const { activeView } = useGameContext();
+const { activeView, activeScript } = useGameContext();
 const { currentMap, setCurrentMap } = useExploration();
 const { stackOwner } = useInput();
 
@@ -16,7 +16,14 @@ const inputKey = ref();
 watch(activeView, (next) => {
     if (next === 'exploration') {
         inputKey.value = captureControls('ExplorationRoot');
-        useGameContext().game.value.goToScene('exploration');
+        useGameContext()
+            .game.value.goToScene('exploration')
+            .then(() => {
+                if (activeScript.value) {
+                    const { runScript } = useScript();
+                    runScript(getScript(activeScript.value));
+                }
+            });
     }
 });
 const inputOwner = ref(stackOwner.value);
@@ -45,8 +52,6 @@ defineExpose({
 
 <template>
     <div class="relative size-full">
-        <BattleScreen ref="battleScreen" />
-        <CampScreen ref="campScreen" />
         <TilePrompts v-if="hasControl" />
         <MapTransition />
     </div>
