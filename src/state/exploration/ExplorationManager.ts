@@ -12,9 +12,10 @@ import {
     Graphic,
     Vector,
     AnimationStrategy,
+    EasingFunctions,
 } from 'excalibur';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
-import { registerInputListener } from '@/game/input/useInput';
+import { registerHoldListener, registerInputListener } from '@/game/input/useInput';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
 import { useExploration } from '@/state/useExploration';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
@@ -23,9 +24,10 @@ import { LightSource } from '../../game/actors/LightSource/LightSource.component
 import { getScale } from '@/lib/helpers/screen.helper';
 import { gameEnum } from '@/lib/enum/game.enum';
 import { LanternStateMachine } from '@/state/exploration/LanternStateMachine';
-import { getTileCenter, isBonfire, isZoneChangePoint } from '@/resource/maps';
+import { getTileCenter, isBonfire, isHaltingKeypoint, isZoneChangePoint } from '@/resource/maps';
 import { BonfireManager } from '@/state/exploration/BonfireManager';
 import { CompositeActor } from '../../game/actors/CompositeActor/CompositeActor';
+import { InputMap } from '@/game/input/InputMap';
 
 export class ExplorationManager {
     private player: CompositeActor;
@@ -35,10 +37,8 @@ export class ExplorationManager {
     private mapGround: TileLayer;
     private fogMaterial: Material; // Store the compiled material
     private fogPreupdateHandler: () => void;
-    private lastMovement: number;
     private lanternStateMachine: LanternStateMachine;
     private suppressLightSources: boolean;
-    private playerOffset?: Vector;
     private engine: Engine;
     private scene: Scene;
 
@@ -271,99 +271,62 @@ export class ExplorationManager {
         }, 0);
     }
 
-    private canMove() {
-        if (!this.lastMovement) {
-            this.lastMovement = Date.now();
-            return true;
-        } else if (Date.now() - this.lastMovement < 75) {
-            return false;
-        } else {
-            this.lastMovement = Date.now();
-            return true;
-        }
+    private bufferedInput: Vector | undefined;
+    private debounceTime = 0;
+    private playerOffset?: Vector;
+    private movementSpeed = 175;
+    private setupMovementControls() {
+        registerHoldListener((commands: InputMap) => {
+            if (this.bufferedInput || Date.now() - this.debounceTime < this.movementSpeed - 20) {
+                return;
+            }
+            let direction: Vector;
+            if (commands.menu_down || commands.movement_down) {
+                direction = vec(0, 1);
+            } else if (commands.menu_up || commands.movement_up) {
+                direction = vec(0, -1);
+            } else if (commands.menu_right || commands.movement_right) {
+                direction = vec(1, 0);
+            } else if (commands.menu_left || commands.movement_left) {
+                direction = vec(-1, 0);
+            } else {
+                return;
+            }
+
+            const currentCoord = useExploration().playerTileCoord.value;
+            if (!this.bufferedInput) {
+                this.move(direction);
+            } else if (canMoveBetween(currentCoord, currentCoord.add(direction), this.mapGround)) {
+                this.bufferedInput = direction;
+            }
+        });
     }
 
-    private setupMovementControls() {
+    private move(direction: Vector) {
+        this.player.scale = vec(direction.x * -1 || this.player.scale.x, 1);
+
         const { playerTileCoord } = useExploration();
-        const duration = 100;
-        registerInputListener(() => {
-            if (!this.canMove()) return;
-
-            const currentCoord = playerTileCoord.value;
-            const nextCoord = vec(currentCoord.x, currentCoord.y - 1);
-
-            if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                playerTileCoord.set(nextCoord);
-                this.player.actions
-                    .moveBy({
-                        offset: vec(0, -24).add(this.getTileOffset()),
-                        duration,
-                    })
-                    .toPromise()
-                    .then(() => {
-                        this.movementAfterEffects();
-                    });
-            }
-        }, ['movement_up', 'menu_up']);
-
-        registerInputListener(() => {
-            if (!this.canMove()) return;
-            const currentCoord = playerTileCoord.value;
-            const nextCoord = vec(currentCoord.x, currentCoord.y + 1);
-
-            if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                playerTileCoord.set(nextCoord);
-                this.player.actions
-                    .moveBy({
-                        offset: vec(0, 24).add(this.getTileOffset()),
-                        duration,
-                    })
-                    .toPromise()
-                    .then(() => {
-                        this.movementAfterEffects();
-                    });
-            }
-        }, ['movement_down', 'menu_down']);
-
-        registerInputListener(() => {
-            if (!this.canMove()) return;
-            const currentCoord = playerTileCoord.value;
-            const nextCoord = vec(currentCoord.x - 1, currentCoord.y);
-
-            this.player.scale = vec(1, 1);
-            if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                playerTileCoord.set(nextCoord);
-                this.player.actions
-                    .moveBy({
-                        offset: vec(-24, 0).add(this.getTileOffset()),
-                        duration,
-                    })
-                    .toPromise()
-                    .then(() => {
-                        this.movementAfterEffects();
-                    });
-            }
-        }, ['movement_left', 'menu_left']);
-
-        registerInputListener(() => {
-            if (!this.canMove()) return;
-            const currentCoord = playerTileCoord.value;
-            const nextCoord = vec(currentCoord.x + 1, currentCoord.y);
-
-            this.player.scale = vec(-1, 1);
-            if (canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
-                playerTileCoord.set(nextCoord);
-                this.player.actions
-                    .moveBy({
-                        offset: vec(24, 0).add(this.getTileOffset()),
-                        duration,
-                    })
-                    .toPromise()
-                    .then(() => {
-                        this.movementAfterEffects();
-                    });
-            }
-        }, ['movement_right', 'menu_right']);
+        const currentCoord = playerTileCoord.value;
+        const nextCoord = currentCoord.add(direction);
+        if (!canMoveBetween(currentCoord, nextCoord, this.mapGround)) {
+            delete this.bufferedInput;
+            return;
+        } else if (
+            this.bufferedInput &&
+            !canMoveBetween(nextCoord, nextCoord.add(this.bufferedInput), this.mapGround)
+        ) {
+            delete this.bufferedInput;
+        }
+        this.debounceTime = Date.now();
+        playerTileCoord.set(playerTileCoord.value.add(direction));
+        const duration = 175;
+        this.player.actions.moveBy({
+            offset: vec(24, 24).scale(direction).add(this.getTileOffset()),
+            duration,
+        });
+        setTimeout(() => {
+            this.movementAfterEffects();
+        }, duration - 10);
     }
 
     private getTileOffset() {
@@ -403,6 +366,11 @@ export class ExplorationManager {
 
         const { x, y } = playerTileCoord.value;
         const keyPoint = currentMap.value.keyPoints[`${x}_${y}`];
+
+        if (this.bufferedInput && !isHaltingKeypoint(keyPoint)) {
+            this.move(this.bufferedInput);
+            delete this.bufferedInput;
+        }
 
         setTimeout(() => {
             if (keyPoint) {

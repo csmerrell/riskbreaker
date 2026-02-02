@@ -37,6 +37,10 @@ export function isBonfire(point: KeyPointMeta): point is KeyPointBase {
     return point.type === 'bonfire';
 }
 
+export function isHaltingKeypoint(point: KeyPointMeta) {
+    return isBonfire(point) || isZoneChangePoint(point);
+}
+
 export function getTileCoords(key: string) {
     const [x, y] = key.split('_').map((p) => Number(p));
     return vec(x, y);
