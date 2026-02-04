@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { useGameContext } from '@/state/useGameContext';
+import { useScript } from '@/state/useScript';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 type MenuItemMeta = {
@@ -10,7 +11,7 @@ type MenuItemMeta = {
     selected?: boolean;
     disabled?: boolean;
 };
-const { activeView, activeScript } = useGameContext();
+const { activeView, activeScript, ready } = useGameContext();
 const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'continue',
@@ -46,9 +47,25 @@ const menuItems = ref<MenuItemMeta[]>([
 const selectedIdx = Math.max(menuItems.value.findIndex((i) => !i.disabled));
 menuItems.value[selectedIdx].selected = true;
 
+const titleMenu = ref<HTMLImageElement>();
+onMounted(() => {
+    document.getElementById('main-canvas').classList.add('hide');
+});
+
 watch(activeView, (next) => {
     if (next === 'title') {
         registerInputListeners();
+        useScript()
+            .runScript('unique.newGameTitle')
+            .then(() => {
+                ready.value = true;
+                setTimeout(() => {
+                    document.getElementById('main-canvas').classList.remove('hide');
+                    setTimeout(() => {
+                        titleMenu.value.classList.remove('hide');
+                    }, 1000);
+                }, 1000);
+            });
     }
 });
 onMounted(() => {
@@ -104,33 +121,39 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="flex h-full flex-col items-center text-white">
-        <div class="h-[18%]" />
-        <h1 class="text-fabled-xl relative">
-            Riskbreaker
-            <span
-                class="text-standard-sm absolute left-full whitespace-nowrap pl-4 tracking-widest text-yellow-100"
-            >
-                (Alpha v0.0.1)
-            </span>
-        </h1>
-        <div class="text-standard-lg mt-16 flex w-72 flex-col gap-2">
-            <div
-                v-for="item in menuItems"
-                :key="`${item.key}-${item.selected}`"
-                class="flex flex-row items-center justify-center gap-3 py-px"
-                :class="[
-                    item.selected
-                        ? 'menu-select-highlight'
-                        : item.disabled
-                          ? 'text-gray-600'
-                          : 'text-gray-200',
-                ]"
-            >
-                <div class="relative top-[3px]">
-                    {{ item.label }}
+    <div
+        ref="titleMenu"
+        class="hide flex h-full flex-col items-end pr-16 text-white transition-opacity duration-1000 ease-linear"
+    >
+        <div class="items-end">
+            <img src="/image/Logo.svg" class="relative -right-8 h-[400px]" />
+            <div class="text-standard-lg mx-auto mr-12 mt-24 flex w-72 flex-col gap-2">
+                <div
+                    v-for="item in menuItems"
+                    :key="`${item.key}-${item.selected}`"
+                    class="flex flex-row items-center justify-center gap-3 py-px"
+                    :class="[
+                        item.selected
+                            ? 'menu-select-highlight'
+                            : item.disabled
+                              ? 'text-gray-600'
+                              : 'text-gray-200',
+                    ]"
+                >
+                    <div class="relative top-[3px]">
+                        {{ item.label }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style>
+#main-canvas {
+    transition: opacity 1s linear;
+}
+.hide {
+    opacity: 0;
+}
+</style>

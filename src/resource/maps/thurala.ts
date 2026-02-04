@@ -8,7 +8,7 @@ const thuralaResources = {
         key: 'thurala',
         name: 'Thurala',
         startPos: vec(2, 11),
-        map: new TiledResource('./maps/thurala/thurala.tmx', {
+        map: new TiledResource('./maps/all/thurala.tmx', {
             useTilemapCameraStrategy: true,
         }),
         keyPoints: {
@@ -39,7 +39,7 @@ const thuralaResources = {
         name: 'Some Forest',
         key: 'someForest',
         startPos: vec(7, 10),
-        map: new TiledResource('./maps/thurala/someForest.tmx', {
+        map: new TiledResource('./maps/all/someForest.tmx', {
             useTilemapCameraStrategy: true,
         }),
         keyPoints: {
@@ -55,7 +55,7 @@ const thuralaResources = {
         name: 'Some Cave',
         key: 'someCave',
         startPos: vec(15, 10),
-        map: new TiledResource('./maps/thurala/someCave.tmx', {
+        map: new TiledResource('./maps/all/someCave.tmx', {
             useTilemapCameraStrategy: true,
         }),
         keyPoints: {

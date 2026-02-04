@@ -67,13 +67,17 @@ export class BattleManager extends SceneManager {
     }
 
     public openBattle(): void {
-        this.scaleMask();
-        this.scene.add(this.mask);
-        this.scene.add(this.terrain);
-        setTimeout(() => {
-            this.mask.pos = this.scene.camera.pos;
-            this.terrain.pos = this.scene.camera.pos;
-        }, 50);
+        useExploration()
+            .getExplorationManager()
+            .ready()
+            .then(() => {
+                this.scaleMask();
+                this.scene.add(this.mask);
+                this.scene.add(this.terrain);
+                this.mask.pos = this.scene.camera.pos;
+                this.terrain.pos = this.scene.camera.pos;
+                this.setReady();
+            });
         captureControls('battle');
     }
 

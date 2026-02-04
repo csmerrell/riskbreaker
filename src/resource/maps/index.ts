@@ -1,11 +1,13 @@
 import { vec, Vector } from 'excalibur';
 import { KeyPointBase, KeyPointMeta, KeyPointType, MapMeta, ZoneOmittedKeyPoint } from './maps';
 import { resources as thuralaResources } from './thurala';
+import { resources as introResources } from './intro';
 import { useGameContext } from '@/state/useGameContext';
 import { useExploration } from '@/state/useExploration';
 
 export const allMaps = {
     ...thuralaResources,
+    ...introResources,
 } satisfies Record<string, MapMeta>;
 
 export const maps = allMaps satisfies Record<

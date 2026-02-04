@@ -6,6 +6,7 @@ import { COMPOSITE_SPRITE_GRID } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
 import { useGameContext } from '@/state/useGameContext';
 import { useBattle } from '@/state/useBattle';
+import { useExploration } from '@/state/useExploration';
 
 const stonecaller = new CompositeActor({
     name: 'stonecaller',
@@ -29,17 +30,17 @@ const poisedSlideAnimation = new Animation({
 export const intro: GameScript = {
     events: [
         async () => {
-            useBattle().getBattleManager().openBattle();
-        },
-        async () => {
             const engine = useGameContext().game.value;
-            return new Promise((resolve) => {
-                setTimeout(async () => {
-                    await stonecaller.isLoaded();
-                    stonecaller.pos = engine.currentScene.camera.pos.add(vec(-8, 18));
-                    engine.currentScene.add(stonecaller);
-                    resolve();
-                }, 100);
+            return new Promise(async (resolve) => {
+                await useExploration().getExplorationManager().ready();
+                const battleManager = useBattle().getBattleManager();
+                battleManager.openBattle();
+                await battleManager.ready();
+
+                engine.currentScene.add(stonecaller);
+                stonecaller.pos = engine.currentScene.camera.pos.add(vec(-8, 18));
+                await stonecaller.isLoaded();
+                resolve();
             });
         },
         {
@@ -49,7 +50,7 @@ export const intro: GameScript = {
             preDelay: 1000,
             strategy: AnimationStrategy.Loop,
             movement: {
-                direction: vec(-82, -12),
+                direction: vec(-76, -12),
                 type: 'walk',
             },
         },

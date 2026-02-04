@@ -11,10 +11,11 @@ import { colors } from '@/lib/enum/colors.enum';
 
 const loader = new LiteLoader();
 
-type AvailableScenes = 'title' | 'exploration';
+type AvailableScenes = 'exploration';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
-const activeView = ref('title');
+const ready = ref(false);
+const activeView = ref('');
 const activeScript = ref<null | string>();
 const hasFrame = makeState<boolean>(true);
 const inputType = makeState<'keyboard' | 'controller'>('controller');
@@ -33,10 +34,6 @@ export function initGame() {
             suppressPlayButton: true,
             antialiasing: false,
             scenes: {
-                title: {
-                    scene: TitleScene,
-                    loader: loader,
-                },
                 exploration: {
                     scene: ExplorationScene,
                     loader: loader,
@@ -72,6 +69,7 @@ export const gameContext = {
     activeView,
     activeScript,
     game,
+    ready,
     hasFrame,
     paused,
     inputType,

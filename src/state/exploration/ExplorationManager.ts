@@ -1,7 +1,4 @@
 import {
-    DefaultLoader,
-    Engine,
-    Scene,
     Actor,
     vec,
     BoundingBox,
@@ -11,11 +8,9 @@ import {
     Material,
     Graphic,
     Vector,
-    AnimationStrategy,
-    EasingFunctions,
 } from 'excalibur';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
-import { registerHoldListener, registerInputListener } from '@/game/input/useInput';
+import { registerHoldListener } from '@/game/input/useInput';
 import { TileLayer } from '@excaliburjs/plugin-tiled/build/umd/src/resource/tile-layer';
 import { useExploration } from '@/state/useExploration';
 import { TiledResource } from '@excaliburjs/plugin-tiled';
@@ -31,7 +26,7 @@ import { InputMap } from '@/game/input/InputMap';
 import { SceneManager, SceneManagerOpts } from '../SceneManager';
 
 export class ExplorationManager extends SceneManager {
-    private player: CompositeActor;
+    public player: CompositeActor;
     private fog: Actor;
     private fogGraphic: Graphic;
     private map: TiledResource;
@@ -61,9 +56,9 @@ export class ExplorationManager extends SceneManager {
     }
 
     private async setupScene() {
-        const { transitionMap, fadeOutEnd, fadeInStart, loaded, setCurrentMap, setTransitionMap } =
+        const { transitionMap, fadeOutEnd, fadeInStart, setCurrentMap, setTransitionMap } =
             useExploration();
-        this.loadPlayer();
+        this.scene.add(this.player);
         this.loadMap(true);
 
         // Subscribe to map changes with transition effect
@@ -75,8 +70,6 @@ export class ExplorationManager extends SceneManager {
                 fadeInStart.set(true);
             }
         });
-
-        loaded.set(true);
     }
 
     private createPlayer() {
@@ -198,11 +191,6 @@ export class ExplorationManager extends SceneManager {
         };
     }
 
-    private loadPlayer() {
-        // Player is already created, just add to scene
-        this.scene.add(this.player);
-    }
-
     private cleanupMap() {
         if (this.map) {
             this.scene.tileMaps.forEach((tileMap) => {
@@ -231,8 +219,9 @@ export class ExplorationManager extends SceneManager {
 
         this.placeFog(boundingBox);
         this.suppressLightSources = true;
-        setTimeout(() => {
+        this.awaitCameraSettle().then(() => {
             this.suppressLightSources = false;
+            this.setReady();
         });
     }
 
@@ -247,13 +236,10 @@ export class ExplorationManager extends SceneManager {
         this.scene.add(this.fog);
     }
 
-    private placePlayer(isSetup: boolean = false) {
+    private placePlayer() {
         const { currentMap, playerTileCoord } = useExploration();
         const startPos = currentMap.value.startPos;
-
-        if (!isSetup || !playerTileCoord.value) {
-            playerTileCoord.set(startPos);
-        }
+        playerTileCoord.set(startPos);
         const { x, y } = playerTileCoord.value;
         const tilePos = this.mapGround.getTileByCoordinate(x, y).exTile.pos;
         const spriteTileCenterOffset = vec(12, 12); // Half tile size to center on tile
@@ -261,7 +247,7 @@ export class ExplorationManager extends SceneManager {
         this.player.z = 1;
 
         // Set camera to follow the actor
-        this.scene.camera.strategy.lockToActor(this.player);
+        // this.scene.camera.strategy.lockToActor(this.player);
         this.player.pos = this.player.pos.add(this.getTileOffset());
         playerTileCoord.set(vec(x, y));
         this.movementAfterEffects();

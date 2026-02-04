@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
@@ -17,6 +17,7 @@ import SFXDriver from './ui/components/SFXDriver.vue';
 import { useShader } from './state/useShader';
 import SettingsView from './ui/views/SettingsView/SettingsView.vue';
 import { loadAllMaps, loadAllResources, resources } from './resource';
+import { maps } from './resource/maps';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
@@ -24,8 +25,11 @@ const { initShaders } = useShader();
 const dependencies = ref<Record<string, boolean>>({
     game: false,
     sfx: false,
+    title: false,
 });
+
 const ready = computed(() => !Object.keys(dependencies.value).some((k) => !dependencies.value[k]));
+
 onMounted(() => {
     const game = initGame();
     const promises: Promise<void | void[]>[] = [];
@@ -34,11 +38,10 @@ onMounted(() => {
     useSprites().loadAllSprites();
 
     Promise.all(promises).then(async () => {
-        await nextTick(() => {
-            initShaders();
-            loadAllResources(resources);
-            loadAllMaps();
-        });
+        initShaders();
+        await loadAllResources(resources);
+        await loadAllMaps();
+        activeView.value = 'title';
         dependencies.value = {
             ...dependencies.value,
             game: true,
@@ -46,7 +49,7 @@ onMounted(() => {
     });
 });
 
-const { activeView, paused, hasFrame } = useGameContext();
+const { activeView, paused, hasFrame, ready: titleReady } = useGameContext();
 const showFrame = ref(true);
 hasFrame.subscribe((val) => {
     showFrame.value = val;
@@ -57,6 +60,15 @@ initSFX().then(() => {
         ...dependencies.value,
         sfx: true,
     };
+});
+
+watch(titleReady, (next) => {
+    if (next) {
+        dependencies.value = {
+            ...dependencies.value,
+            title: true,
+        };
+    }
 });
 
 function closeGame() {
@@ -90,7 +102,11 @@ function minimizeGame() {
                         <LoadingScreen v-if="!ready" />
                         <div v-show="ready">
                             <div class="mask absolute inset-0 z-10 bg-bg" />
-                            <canvas id="main-canvas" class="absolute inset-0 z-20 p-1" />
+                            <canvas
+                                id="main-canvas"
+                                class="absolute inset-0 p-1"
+                                :class="activeView !== undefined && 'z-20'"
+                            />
                             <TitleScreen
                                 class="absolute inset-0"
                                 :class="activeView === 'title' && 'z-30'"
