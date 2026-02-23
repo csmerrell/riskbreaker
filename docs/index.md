@@ -7,18 +7,18 @@ Each character gets:
 ## Title Candidates
 - Estelle Igni: To Light Fires in the Night Sky
 
-
 ## Specializations
-- **Riskbreaker**
+- Riskbreaker
 - Bladesealer
 - Moonfang
 - Soulsword
 - Kohr Ascetic
 - Spellblade
-- **Naturalist**
+- Naturalist
 - Shadeweaver
 - Lifebinder
 - Dramaturge
+- Astrologian
 
 
 ## Equipment 

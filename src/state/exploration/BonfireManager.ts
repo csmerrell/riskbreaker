@@ -35,6 +35,11 @@ export class BonfireManager {
                 },
             });
         });
+
+        // Subscribe to keypoint events
+        this.scene.on('keypoint:bonfire', (data: { coord: string; keypoint: any }) => {
+            this.onTileEnter(data.coord);
+        });
     }
 
     private generateBonfire() {

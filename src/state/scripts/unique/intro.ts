@@ -32,10 +32,10 @@ export const intro: GameScript = {
         async () => {
             const engine = useGameContext().game.value;
             return new Promise(async (resolve) => {
-                await useExploration().getExplorationManager().ready();
-                const battleManager = useBattle().getBattleManager();
-                battleManager.openBattle();
-                await battleManager.ready();
+                const explorationManager = useExploration().getExplorationManager();
+                await explorationManager.ready();
+                await explorationManager.battleManager.ready();
+                await explorationManager.battleManager.openBattle();
 
                 engine.currentScene.add(stonecaller);
                 stonecaller.pos = engine.currentScene.camera.pos.add(vec(-8, 18));

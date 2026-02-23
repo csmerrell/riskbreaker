@@ -3,12 +3,8 @@ import { useGameContext } from '@/state/useGameContext';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import {
     animatedGamepadSpriteMap,
-    animatedKeySpriteMap,
     GAMEPAD_GRID_CONFIG,
     gamepadSpriteMap,
-    KEYBOARD_ANIMATED_GRID_CONFIG,
-    KEYBOARD_STATIC_GRID_CONFIG,
-    keySpriteMap,
 } from '../views/PauseMenu/ControlSpriteMap';
 import { MappedCommand } from '@/game/input/InputMap';
 import { useGamepad } from '@/game/input/useGamepads';
@@ -22,19 +18,19 @@ const props = withDefaults(
         animated?: boolean;
         animationSpeed?: number;
         scale?: number;
+        size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
     }>(),
     {
         scale: 1,
         animated: false,
         animationSpeed: 2000,
+        size: 'md',
     },
 );
 
 const spriteScale = ref(3); // Overridden onMounted
 
 const gamepadImageUrl = '/image/import/ControllerUI/UI_Gamepad.png';
-const keyboardStaticImageUrl = '/image/import/KeyboardUI/Keyboard_UI.png';
-const keyboardAnimatedImageUrl = '/image/import/KeyboardUI/Keyboard_UI_Black_Animated.png';
 
 const { inputType: inputTypeState } = useGameContext();
 const inputType = ref(inputTypeState.value);
@@ -42,20 +38,11 @@ inputTypeState.subscribe((next) => {
     inputType.value = next;
 });
 
-const imageUrl = computed(() => {
-    return inputType.value === 'controller'
-        ? gamepadImageUrl
-        : props.animated
-          ? keyboardAnimatedImageUrl
-          : keyboardStaticImageUrl;
-});
-
-const gridConfig = computed(() => {
-    return inputType.value === 'controller'
-        ? GAMEPAD_GRID_CONFIG
-        : props.animated
-          ? KEYBOARD_ANIMATED_GRID_CONFIG
-          : KEYBOARD_STATIC_GRID_CONFIG;
+const keyboardText = computed(() => {
+    if (inputType.value !== 'keyboard') return null;
+    const { getUnmappedKey } = useKeyboard();
+    const unmappedKey = getUnmappedKey(props.command);
+    return unmappedKey ? `[${unmappedKey}]: ` : '';
 });
 
 const spriteMap = computed(() => {
@@ -65,13 +52,8 @@ const spriteMap = computed(() => {
         // Use animated sprite map for animated sprites, static for static sprites
         const map = props.animated ? animatedGamepadSpriteMap : gamepadSpriteMap;
         return map[unmappedKey];
-    } else {
-        const { getUnmappedKey } = useKeyboard();
-        const unmappedKey = getUnmappedKey(props.command);
-        // Use animated sprite map for animated sprites, static for static sprites
-        const map = props.animated ? animatedKeySpriteMap : keySpriteMap;
-        return map[unmappedKey];
     }
+    return null;
 });
 
 // Function to get the current sprite scale from CSS variable
@@ -95,28 +77,29 @@ onUnmounted(() => {
 });
 
 const spriteStyles = computed(() => {
-    if (!spriteMap.value) return {};
+    if (!spriteMap.value || inputType.value !== 'controller') return {};
 
     const [x, y, options = {}] = spriteMap.value;
 
-    const width = (options?.width || 1) * gridConfig.value.spriteWidth;
-    const height = (options?.height || 1) * gridConfig.value.spriteHeight;
+    const width = (options?.width || 1) * GAMEPAD_GRID_CONFIG.spriteWidth;
+    const height = (options?.height || 1) * GAMEPAD_GRID_CONFIG.spriteHeight;
 
     return {
         width: `${width * spriteScale.value}px`,
         height: `${height * spriteScale.value}px`,
-        backgroundImage: `url(${imageUrl.value})`,
-        backgroundPosition: `-${x * gridConfig.value.spriteWidth * spriteScale.value}px -${y * gridConfig.value.spriteHeight * spriteScale.value + 3}px`,
-        backgroundSize: `${gridConfig.value.columns * gridConfig.value.spriteWidth * spriteScale.value}px auto`, // Full sheet width scaled
+        backgroundImage: `url(${gamepadImageUrl})`,
+        backgroundPosition: `-${x * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px -${y * GAMEPAD_GRID_CONFIG.spriteHeight * spriteScale.value + 3}px`,
+        backgroundSize: `${GAMEPAD_GRID_CONFIG.columns * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px auto`, // Full sheet width scaled
         '--animation-duration': `${props.animationSpeed}ms`,
-        '--base-x': `${x * gridConfig.value.spriteWidth * spriteScale.value}px`,
-        '--frame-width': `${(options?.width || 1) * gridConfig.value.spriteWidth * spriteScale.value}px`, // Move by sprite width scaled
+        '--base-x': `${x * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px`,
+        '--frame-width': `${(options?.width || 1) * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px`, // Move by sprite width scaled
     };
 });
 </script>
 
 <template>
-    <div class="key-sprite" :class="{ animated: animated }" :style="spriteStyles" />
+    <span v-if="inputType === 'keyboard'" :class="`text-standard-${size}`">{{ keyboardText }}</span>
+    <div v-else class="key-sprite" :class="{ animated: animated }" :style="spriteStyles" />
 </template>
 
 <style scoped>

@@ -20,6 +20,9 @@ import {
 import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
+import { ReadyComponent } from '../ReadyComponent';
+import { AnimationComponent } from '../AnimationComponent';
+import { KeyedAnimationOptions, useKeyedAnimation } from '../useKeyedAnimation';
 
 export type CompositeSpriteMapping = {
     type: CompositeSpriteLayers;
@@ -50,13 +53,13 @@ type CompositeResourceOpts = CompositeSpriteMapping & {
 };
 
 export class CompositeLayer extends Actor {
-    private loaded: Promise<boolean>;
-    private spriteSheet: SpriteSheet;
+    private loaded!: Promise<void>;
+    private spriteSheet!: SpriteSheet;
     private animations: Partial<Record<AnimationKey, Animation>> = {};
     private strategyRestore: Partial<Record<AnimationKey, AnimationStrategy>> = {};
-    private activeAnimation: Animation;
-    private footShadow: Material;
-    private graphicSnapshot: Graphic;
+    private activeAnimation?: Animation;
+    private footShadow?: Material;
+    private graphicSnapshot?: Graphic;
 
     constructor(opts: ActorArgs & CompositeResourceOpts) {
         const { type, key, isBack = false, ...excalOpts } = opts;
@@ -82,33 +85,26 @@ export class CompositeLayer extends Actor {
                 break;
         }
 
-        if (!src.isLoaded()) {
-            this.loaded = src
-                .load()
-                .then(() => this.setSheet(src))
-                .then(() => true);
-        } else {
-            this.setSheet(src);
-            this.loaded = Promise.resolve(true);
-        }
+        this.addComponent(new ReadyComponent());
+        this.addComponent(
+            new AnimationComponent(
+                this,
+                spriteMap,
+                src,
+                COMPOSITE_SPRITE_GRID,
+                this.get(ReadyComponent),
+            ),
+        );
+
+        this.loaded = this.get(ReadyComponent).ready();
     }
 
     public isLoaded() {
         return this.loaded;
     }
 
-    private setSheet(src: ImageSource) {
-        this.spriteSheet = SpriteSheet.fromImageSource({
-            image: src,
-            grid: COMPOSITE_SPRITE_GRID,
-        });
-        const [x, y] = spriteMap.static.frames[0];
-        this.graphics.add('static', this.spriteSheet.getSprite(x, y));
-    }
-
     onInitialize(engine: Engine): void {
         this.graphics.use('static');
-        this.buildAnimations();
         this.footShadow = engine.graphicsContext.createMaterial({
             name: 'footShadow',
             fragmentSource: FOOT_SHADOW,
@@ -121,57 +117,15 @@ export class CompositeLayer extends Actor {
         });
     }
 
-    private buildAnimations() {
-        (Object.entries(spriteMap) as [AnimationKey, FrameMap][]).forEach(([key, val]) => {
-            this.animations[key] = new Animation({
-                frames: val.frames.map((f) => ({
-                    graphic: this.spriteSheet.getSprite(f[0], f[1]),
-                    duration: Math.max(f[2] * gameEnum.frameMs, 1),
-                })),
-                strategy: AnimationStrategy.Freeze,
-            });
-            this.graphics.add(key, this.animations[key]);
-        });
-    }
-
     public async useAnimation(
         key: AnimationKey,
-        opts: {
-            strategy?: AnimationStrategy;
-            next?: AnimationKey;
-            noReset?: boolean;
-            scale?: number;
-        } = {},
+        opts: KeyedAnimationOptions<typeof spriteMap> = {},
     ) {
-        const { strategy, next } = opts;
-        return new Promise<void>((resolve) => {
-            if (strategy) {
-                this.strategyRestore[key] = this.animations[key].strategy;
-                this.animations[key].strategy = strategy;
-            } else if (this.strategyRestore[key]) {
-                this.animations[key].strategy = strategy;
-            }
-            if (!opts.noReset) {
-                this.animations[key].reset();
-            }
-            this.activeAnimation = this.animations[key];
-            this.graphics.use(key);
-            this.animations[key].events.on('end', () => {
-                resolve();
-                if (next) {
-                    this.useAnimation(next);
-                }
-            });
-        });
+        this.get(AnimationComponent).useKeyedAnimation(key, opts);
     }
 
     public stopAnimation() {
-        if (this.activeAnimation) {
-            this.activeAnimation.pause();
-            this.activeAnimation.reset();
-            delete this.activeAnimation;
-            this.graphics.use('static');
-        }
+        this.get(AnimationComponent).stopAnimation();
     }
 
     public hide() {
@@ -180,6 +134,7 @@ export class CompositeLayer extends Actor {
     }
 
     public show() {
+        if (!this.graphicSnapshot) return;
         this.graphics.use(this.graphicSnapshot);
         delete this.graphicSnapshot;
     }

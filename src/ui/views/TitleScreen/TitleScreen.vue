@@ -11,7 +11,7 @@ type MenuItemMeta = {
     selected?: boolean;
     disabled?: boolean;
 };
-const { activeView, activeScript, ready } = useGameContext();
+const { activeView, ready } = useGameContext();
 const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'continue',
@@ -24,8 +24,7 @@ const menuItems = ref<MenuItemMeta[]>([
         key: 'newGame',
         label: 'New Game',
         onSelect: () => {
-            activeView.value = 'exploration';
-            activeScript.value = 'unique.intro';
+            useScript().runScript('unique.newGameOriginSelect');
         },
     },
     {
@@ -48,23 +47,15 @@ const selectedIdx = Math.max(menuItems.value.findIndex((i) => !i.disabled));
 menuItems.value[selectedIdx].selected = true;
 
 const titleMenu = ref<HTMLImageElement>();
-onMounted(() => {
-    document.getElementById('main-canvas').classList.add('hide');
-});
 
 watch(activeView, (next) => {
     if (next === 'title') {
-        registerInputListeners();
+        ready.value = true;
         useScript()
             .runScript('unique.newGameTitle')
             .then(() => {
-                ready.value = true;
-                setTimeout(() => {
-                    document.getElementById('main-canvas').classList.remove('hide');
-                    setTimeout(() => {
-                        titleMenu.value.classList.remove('hide');
-                    }, 1000);
-                }, 1000);
+                registerInputListeners();
+                titleMenu.value!.classList.remove('hide');
             });
     }
 });
@@ -108,7 +99,7 @@ function registerInputListeners() {
     listeners.push(
         registerInputListener(() => {
             const menuItem = menuItems.value.find((i) => i.selected);
-            menuItem.onSelect();
+            menuItem?.onSelect();
         }, 'confirm'),
     );
 
@@ -122,12 +113,26 @@ onUnmounted(() => {
 
 <template>
     <div
+        id="title-menu"
         ref="titleMenu"
-        class="hide flex h-full flex-col items-end pr-16 text-white transition-opacity duration-1000 ease-linear"
+        class="hide flex h-full flex-col items-end pr-16 text-white transition-opacity duration-[2000ms] ease-in"
     >
-        <div class="items-end">
-            <img src="/image/Logo.svg" class="relative -right-8 h-[400px]" />
-            <div class="text-standard-lg mx-auto mr-12 mt-24 flex w-72 flex-col gap-2">
+        <div>
+            <div class="relative h-[400px] w-[675px]">
+                <div
+                    class="absolute inset-0 z-10"
+                    style="
+                        background: radial-gradient(
+                            ellipse at center,
+                            var(--bg) 0%,
+                            var(--bg) 25%,
+                            transparent 85%
+                        );
+                    "
+                />
+                <img src="/image/Logo.svg" class="absolute -right-8 z-20 h-[400px]" />
+            </div>
+            <div class="text-standard-lg ml-auto mr-0 mt-24 flex w-72 flex-col gap-2">
                 <div
                     v-for="item in menuItems"
                     :key="`${item.key}-${item.selected}`"
@@ -148,12 +153,3 @@ onUnmounted(() => {
         </div>
     </div>
 </template>
-
-<style>
-#main-canvas {
-    transition: opacity 1s linear;
-}
-.hide {
-    opacity: 0;
-}
-</style>

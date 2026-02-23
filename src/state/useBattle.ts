@@ -30,23 +30,8 @@ const positions = makeState({
     },
 });
 
-const battleManager = makeState<BattleManager>();
-
-function initBattleManager(scene: Scene) {
-    battleManager.set(new BattleManager({ scene }));
-}
-function getBattleManager() {
-    if (!battleManager) {
-        throw new Error('Battle manager retrieved before initialization');
-    }
-
-    return battleManager.value;
-}
-
 export function useBattle() {
     return {
         positions,
-        getBattleManager,
-        initBattleManager,
     };
 }

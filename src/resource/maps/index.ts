@@ -50,7 +50,7 @@ export function getTileCoords(key: string) {
 
 export function getTileCenter(key: string) {
     const engine = useGameContext().game.value;
-    const map = useExploration().currentMap.value.map.map;
+    const map = useExploration().getExplorationManager().mapManager.currentMap.value.map.map;
     const coord = getTileCoords(key);
     return engine
         .worldToScreenCoordinates(coord.scale(map.tilewidth))
@@ -58,7 +58,7 @@ export function getTileCenter(key: string) {
 }
 
 export function getTileCenter_Raw(key: string) {
-    const map = useExploration().currentMap.value.map.map;
+    const map = useExploration().getExplorationManager().mapManager.currentMap.value.map.map;
     const coord = getTileCoords(key);
     return coord.scale(map.tilewidth).add(vec(0, -2));
 }

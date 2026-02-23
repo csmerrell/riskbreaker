@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import LoadingScreen from './ui/views/Loading/LoadingScreen.vue';
 import PauseMenu from './ui/views/PauseMenu/PauseMenu.vue';
 import DialogueBus from './ui/components/dialogue/DialogueBus.vue';
 import ExplorationView from './ui/views/ExplorationView/ExplorationView.vue';
 import TitleScreen from './ui/views/TitleScreen/TitleScreen.vue';
+
+import './game/actors/actor.extension';
 
 import { initGame, useGameContext } from './state/useGameContext';
 import { useSFX } from './state/useSFX';
@@ -17,7 +19,7 @@ import SFXDriver from './ui/components/SFXDriver.vue';
 import { useShader } from './state/useShader';
 import SettingsView from './ui/views/SettingsView/SettingsView.vue';
 import { loadAllMaps, loadAllResources, resources } from './resource';
-import { maps } from './resource/maps';
+import MenuLayer from './ui/components/menus/MenuLayer.vue';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
@@ -104,7 +106,7 @@ function minimizeGame() {
                             <div class="mask absolute inset-0 z-10 bg-bg" />
                             <canvas
                                 id="main-canvas"
-                                class="absolute inset-0 p-1"
+                                class="hide absolute inset-0 p-1"
                                 :class="activeView !== undefined && 'z-20'"
                             />
                             <TitleScreen
@@ -121,6 +123,7 @@ function minimizeGame() {
                                 :class="activeView === 'exploration' && 'z-30'"
                             />
                         </div>
+                        <MenuLayer />
                         <PauseMenu v-if="paused" />
                     </div>
                 </div>
@@ -134,5 +137,12 @@ function minimizeGame() {
 <style>
 .title-bar {
     -webkit-app-region: drag;
+}
+
+#main-canvas {
+    transition: opacity 1s linear;
+}
+.hide {
+    opacity: 0;
 }
 </style>

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "thurala.tmx",
+    "activeFile": "intro.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -15,8 +15,8 @@
             "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 360,
-                "y": 240.25
+                "x": 331.5,
+                "y": 309.25
             }
         },
         "low-fi.tsx": {
@@ -78,10 +78,10 @@
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "intro.tmx",
-        "low-fi.tsx",
-        "someForest.tmx",
         "thurala.tmx",
+        "someForest.tmx",
+        "low-fi.tsx",
+        "intro.tmx",
         "thurala.tsx"
     ],
     "tileset.embedInMap": false,

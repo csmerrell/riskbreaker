@@ -7,13 +7,14 @@ import { gameEnum } from '@/lib/enum/game.enum';
 import { useExploration } from '../useExploration';
 
 export class BattleManager extends SceneManager {
+    private mask: Actor;
+
     constructor(opts: SceneManagerOpts & {}) {
         super(opts);
         this.createMask();
         this.setTerrain('grass');
+        this.setReady();
     }
-
-    private mask: Actor;
     private createMask() {
         const graphic = new Rectangle({
             width: gameEnum.nativeWidth,
@@ -48,13 +49,13 @@ export class BattleManager extends SceneManager {
         });
         this.terrain.graphics.add(bgGraphic);
         this.terrain.graphics.use(bgGraphic);
-        this.scene.add(this.terrain);
     }
 
     onPreupdate() {}
 
     private scaleMask() {
-        const { map } = useExploration().currentMap.value;
+        const explorationManager = useExploration().getExplorationManager();
+        const { map } = explorationManager.mapManager.currentMap.value;
         const { width, tilewidth, height, tileheight } = map.map;
         const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
         const scale = vec(
@@ -66,19 +67,22 @@ export class BattleManager extends SceneManager {
         this.mask.scale = scale;
     }
 
-    public openBattle(): void {
-        useExploration()
-            .getExplorationManager()
-            .ready()
-            .then(() => {
-                this.scaleMask();
-                this.scene.add(this.mask);
-                this.scene.add(this.terrain);
-                this.mask.pos = this.scene.camera.pos;
-                this.terrain.pos = this.scene.camera.pos;
-                this.setReady();
-            });
+    public openBattle(): Promise<void> {
         captureControls('battle');
+
+        return new Promise((resolve) => {
+            useExploration()
+                .getExplorationManager()
+                .ready()
+                .then(() => {
+                    this.scaleMask();
+                    this.scene.add(this.mask);
+                    this.scene.add(this.terrain);
+                    this.mask.pos = this.scene.camera.pos;
+                    this.terrain.pos = this.scene.camera.pos;
+                    resolve();
+                });
+        });
     }
 
     public closeBattle() {

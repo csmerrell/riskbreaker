@@ -12,12 +12,12 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
 
 export class CompositeActor extends Actor {
     public type = 'CompositeActor';
-    private armor: CompositeLayer;
+    private mannequin!: CompositeLayer;
     private weapons: CompositeLayer[] = [];
-    private hair: CompositeLayer;
-    private mannequin: CompositeLayer;
-    private accessory: CompositeLayer;
-    private footShadow: Material;
+    private armor?: CompositeLayer;
+    private hair?: CompositeLayer;
+    private accessory?: CompositeLayer;
+    private footShadow?: Material;
     private currentAnimationKey: AnimationKey = 'static';
     private velCheckCt: number = 0;
 
@@ -77,11 +77,15 @@ export class CompositeActor extends Actor {
     }
 
     onPreUpdate(_engine: Engine, _elapsed: number): void {
-        if (this.currentAnimationKey.match(/static|walkFace|runFace/)) {
+        if (
+            !this.suppressMovementAnimation &&
+            this.currentAnimationKey.match(/static|walkFace|runFace/)
+        ) {
             if (this.vel.magnitude > 0) {
                 this.useAnimation('walkFace', { strategy: AnimationStrategy.Loop, noReset: true });
             } else {
                 setTimeout(() => {
+                    if (this.suppressMovementAnimation) return;
                     if (this.vel.magnitude === 0) {
                         if (this.velCheckCt > 4) {
                             this.useAnimation('static');
@@ -106,6 +110,7 @@ export class CompositeActor extends Actor {
         this.addChild(layer);
     }
 
+    private suppressMovementAnimation: boolean = false;
     public async useAnimation(
         key: AnimationKey,
         opts?: {
@@ -115,13 +120,18 @@ export class CompositeActor extends Actor {
             noReset?: boolean;
         },
     ) {
+        if (key !== 'static') {
+            this.suppressMovementAnimation = true;
+        } else {
+            this.suppressMovementAnimation = false;
+        }
         this.currentAnimationKey = key;
         const promises: Promise<void>[] = [];
-        promises.push(this.armor?.useAnimation(key, opts));
+        promises.push(this.armor?.useAnimation(key, opts) ?? Promise.resolve());
         promises.concat(this.weapons.map((w) => w.useAnimation(key, opts)));
-        promises.push(this.hair?.useAnimation(key, opts));
-        promises.push(this.accessory?.useAnimation(key, opts));
-        promises.push(this.mannequin.useAnimation(key, opts));
+        promises.push(this.hair?.useAnimation(key, opts) ?? Promise.resolve());
+        promises.push(this.accessory?.useAnimation(key, opts) ?? Promise.resolve());
+        promises.push(this.mannequin.useAnimation(key, opts) ?? Promise.resolve());
         return Promise.all(promises);
     }
 
@@ -148,4 +158,6 @@ export class CompositeActor extends Actor {
         this.mannequin.show();
         this.accessory.show();
     }
+
+    public insertLayer(child: Actor, layerIdx: number) {}
 }

@@ -3,8 +3,7 @@ import { MappedCommand } from '@/game/input/InputMap';
 import { maps } from '@/resource/maps';
 import { MapMetaKeyed } from '@/resource/maps/maps';
 import { makeState } from '@/state/Observable';
-import { Scene, vec, Vector } from 'excalibur';
-import { BonfireManager } from './exploration/BonfireManager';
+import { Scene, Vector } from 'excalibur';
 import { ExplorationManager } from './exploration/ExplorationManager';
 
 const sceneReady = makeState<boolean>(false);
@@ -14,10 +13,6 @@ const playerPos = makeState<{
     pos: Vector;
     size: number;
 }>();
-const currentMap = makeState<MapMetaKeyed>();
-const transitionMap = makeState<MapMetaKeyed>();
-const playerTileCoord = makeState<Vector>();
-const bonfireManager = makeState<BonfireManager>();
 const explorationManager = makeState<ExplorationManager>();
 
 //temp state
@@ -29,8 +24,6 @@ export type TileControlPrompt = {
     }[];
 };
 const tileControlPrompts = makeState<TileControlPrompt>();
-const fadeOutEnd = makeState<boolean>(false);
-const fadeInStart = makeState<boolean>(false);
 const loaded = makeState<boolean>(false);
 
 function awaitScene() {
@@ -56,70 +49,29 @@ function getExplorationManager() {
     return explorationManager.value;
 }
 
-function setCurrentMap(key: keyof typeof maps, posOverride?: Vector) {
-    currentMap.set(
-        posOverride
-            ? {
-                  ...maps[key],
-                  startPos: posOverride,
-              }
-            : maps[key],
-    );
-}
-
-function setTransitionMap(key: keyof typeof maps, posOverride?: Vector) {
-    transitionMap.set(
-        posOverride
-            ? {
-                  ...maps[key],
-                  startPos: posOverride,
-              }
-            : maps[key],
-    );
-}
-
 export type SavedExplorationState = {
     mapKey: keyof typeof maps;
     playerCoord: Vector;
 };
 
 async function saveExplorationState() {
-    const { x, y } = playerTileCoord.value;
+    if (!explorationManager.value) return;
+    const { x, y } = explorationManager.value.playerTileCoord.value;
     return docManager.upsert('_local/explorationState', {
-        mapKey: currentMap.value.key,
+        mapKey: explorationManager.value.mapManager.currentMap.value.key,
         playerCoord: { x, y },
     });
-}
-
-async function loadExplorationState() {
-    const state = await docManager.tryGet<SavedExplorationState>('_local/explorationState');
-    if (state) {
-        const { mapKey, playerCoord } = state;
-        setCurrentMap(mapKey);
-
-        const { x, y } = playerCoord;
-        playerTileCoord.set(vec(x, y));
-    }
 }
 
 export function useExploration() {
     return {
         sceneReady,
-        currentMap,
         playerPos,
-        transitionMap,
-        bonfireManager,
-        playerTileCoord,
         tileControlPrompts,
-        fadeOutEnd,
-        fadeInStart,
         loaded,
         awaitScene,
         initExplorationManager,
         getExplorationManager,
-        loadExplorationState,
         saveExplorationState,
-        setCurrentMap,
-        setTransitionMap,
     };
 }

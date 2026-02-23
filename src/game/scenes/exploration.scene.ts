@@ -5,7 +5,6 @@ export class ExplorationScene extends Scene {
     constructor() {
         super();
         useExploration().initExplorationManager(this);
-        useBattle().initBattleManager(this);
     }
 
     onInitialize(_engine: Engine): void {
