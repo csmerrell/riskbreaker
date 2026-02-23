@@ -41,7 +41,7 @@ async function loadSettings() {
             resolution = defRes,
             displayMode = defDisp,
             textSpeed = defTextSpd,
-        } = await docManager.tryGet<SettingsState>('_local/settings');
+        } = (await docManager.tryGet<SettingsState>('_local/settings')) as SettingsState;
         settingsState.set({
             resolution,
             displayMode,

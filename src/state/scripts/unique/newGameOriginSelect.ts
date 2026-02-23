@@ -13,6 +13,10 @@ import { captureControls, registerInputListener } from '@/game/input/useInput';
 import PlayerOriginBox from '@/ui/components/menus/unique/PlayerOriginBox.vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { html } from 'lit-html';
+import { useParty } from '@/state/useParty';
+import { nanoid } from 'nanoid';
+import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
+import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 
 type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
 function displayPlayerOrigin(
@@ -54,6 +58,7 @@ function displayPlayerOrigin(
 
     return menus;
 }
+
 function moveCameraToActor(
     actor: Actor,
     options: {
@@ -69,6 +74,51 @@ function moveCameraToActor(
         EasingFunctions.Linear,
     );
 }
+
+const RiskbreakerDefault = {
+    name: 'Riskbreaker',
+    config: {},
+    appearance: {
+        armor: 'riskbreakerLeathers',
+        hair: 'shortMessy',
+    } as CompositeActorConfig,
+    equipment: {
+        mainHand: 'Scimitar',
+        offHand: 'Buckler',
+    },
+    skills: {
+        shieldBash: {
+            name: 'Shield Bash',
+        },
+    },
+    passives: {
+        challengeTheOdds: {
+            name: 'Challenge the Odds',
+        },
+    },
+};
+
+const AstrologianDefault = {
+    name: 'Astrologian',
+    config: {},
+    appearance: {
+        armor: 'stonecallerRobe',
+        hair: 'dragonBob',
+    } as CompositeActorConfig,
+    equipment: {
+        mainHand: 'Worn Tome',
+    },
+    skills: {
+        starflash: {
+            name: 'Starflash',
+        },
+    },
+    passives: {
+        distillLight: {
+            name: 'Distill Light',
+        },
+    },
+};
 
 export const newGameOriginSelect: GameScript = {
     events: [
@@ -96,7 +146,7 @@ export const newGameOriginSelect: GameScript = {
         },
         async () => {
             //Await player origin select
-            await new Promise((resolve) => {
+            await new Promise<void>((resolve) => {
                 const explorationManager = useExploration().getExplorationManager();
                 const actorMgr = explorationManager.actorManager;
                 const [p0, p1] = actorMgr.getPlayers();
@@ -148,6 +198,54 @@ export const newGameOriginSelect: GameScript = {
                         moving = false;
                     });
                 }, ['menu_right', 'movement_right']);
+
+                registerInputListener(() => {
+                    const { addPartyMember } = useParty();
+                    if (focusedPlayer === 'p0') {
+                        addPartyMember({
+                            ...RiskbreakerDefault,
+                            id: nanoid(16),
+                            config: { leader: true },
+                        });
+                        addPartyMember({
+                            ...AstrologianDefault,
+                            id: nanoid(16),
+                        });
+                    } else {
+                        addPartyMember({
+                            ...AstrologianDefault,
+                            id: nanoid(16),
+                            config: { leader: true },
+                        });
+                        addPartyMember({
+                            ...RiskbreakerDefault,
+                            id: nanoid(16),
+                        });
+                    }
+                    while (menus.length > 0) {
+                        const menu = menus.pop()!;
+                        removeMenu(menu.id);
+                        menu.anchor.cleanup();
+                    }
+                    document.getElementById('main-container')!.removeChild(header);
+                    resolve();
+                }, 'confirm');
+            });
+        },
+        async () => {
+            //Rebuild party & actors. Close camp
+            const explorationMgr = useExploration().getExplorationManager();
+            await explorationMgr.campManager.closeCamp();
+            const actorMgr = explorationMgr.actorManager;
+            [...actorMgr.getPlayers()].forEach((player) => {
+                actorMgr.removeActor(player);
+            });
+            useParty().partyState.value.party.forEach((partyMember) => {
+                const actor = new CompositeActor({
+                    ...partyMember.appearance,
+                });
+                actor.addComponent(new LightSource({ radius: 1 }));
+                actorMgr.addPlayer(actor);
             });
         },
     ],

@@ -5,6 +5,12 @@ import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 
 export type CompositeSpriteLayers = 'armor' | 'hair' | 'weapon' | 'accessory' | 'mannequin';
+export type CompositeActorConfig = {
+    armor?: ArmorType;
+    weapons?: WeaponType[];
+    hair?: HairType;
+    accessory?: AccessoryType;
+};
 
 export function isCompositeActor(a: Actor): a is CompositeActor {
     return (a as CompositeActor).type === 'CompositeActor';
@@ -21,14 +27,7 @@ export class CompositeActor extends Actor {
     private currentAnimationKey: AnimationKey = 'static';
     private velCheckCt: number = 0;
 
-    constructor(
-        opts: ActorArgs & {
-            armor?: ArmorType;
-            weapons?: WeaponType[];
-            hair?: HairType;
-            accessory?: AccessoryType;
-        },
-    ) {
+    constructor(opts: ActorArgs & CompositeActorConfig) {
         const {
             armor: armorKey,
             weapons: weaponKeys = [],

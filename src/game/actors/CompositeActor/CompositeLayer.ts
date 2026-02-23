@@ -22,7 +22,7 @@ import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 import { ReadyComponent } from '../ReadyComponent';
 import { AnimationComponent } from '../AnimationComponent';
-import { KeyedAnimationOptions, useKeyedAnimation } from '../useKeyedAnimation';
+import { KeyedAnimationOptions } from '../useKeyedAnimation';
 
 export type CompositeSpriteMapping = {
     type: CompositeSpriteLayers;
