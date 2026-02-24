@@ -6,17 +6,7 @@ import {
     FrameMap,
     spriteMap,
 } from '@/resource/image/units/spriteMap';
-import {
-    Actor,
-    ActorArgs,
-    Animation,
-    AnimationStrategy,
-    Engine,
-    Graphic,
-    ImageSource,
-    Material,
-    SpriteSheet,
-} from 'excalibur';
+import { Actor, ActorArgs, Engine, Graphic, ImageSource, Material } from 'excalibur';
 import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
@@ -54,10 +44,6 @@ type CompositeResourceOpts = CompositeSpriteMapping & {
 
 export class CompositeLayer extends Actor {
     private loaded!: Promise<void>;
-    private spriteSheet!: SpriteSheet;
-    private animations: Partial<Record<AnimationKey, Animation>> = {};
-    private strategyRestore: Partial<Record<AnimationKey, AnimationStrategy>> = {};
-    private activeAnimation?: Animation;
     private footShadow?: Material;
     private graphicSnapshot?: Graphic;
 

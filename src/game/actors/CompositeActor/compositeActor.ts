@@ -82,7 +82,11 @@ export class CompositeActor extends Actor {
             this.currentAnimationKey.match(/static|walkFace|runFace/)
         ) {
             if (this.vel.magnitude > 0) {
-                this.useAnimation('walkFace', { strategy: AnimationStrategy.Loop, noReset: true });
+                this.useAnimation('walkFace', {
+                    strategy: AnimationStrategy.Loop,
+                    noReset: true,
+                    noSuppress: true,
+                });
             } else {
                 setTimeout(() => {
                     if (this.suppressMovementAnimation) return;
@@ -118,9 +122,10 @@ export class CompositeActor extends Actor {
             next?: AnimationKey;
             scale?: number;
             noReset?: boolean;
+            noSuppress?: boolean;
         },
     ) {
-        if (key !== 'static') {
+        if (!opts?.noSuppress && key !== 'static') {
             this.suppressMovementAnimation = true;
         } else {
             this.suppressMovementAnimation = false;
@@ -144,20 +149,18 @@ export class CompositeActor extends Actor {
     }
 
     public hide() {
-        this.armor.hide();
+        this.armor?.hide();
         this.weapons.forEach((w) => w.hide());
-        this.hair.hide();
+        this.hair?.hide();
         this.mannequin.hide();
-        this.accessory.hide();
+        this.accessory?.hide();
     }
 
     public show() {
-        this.armor.show();
+        this.armor?.show();
         this.weapons.forEach((w) => w.show());
-        this.hair.show();
+        this.hair?.show();
         this.mannequin.show();
-        this.accessory.show();
+        this.accessory?.show();
     }
-
-    public insertLayer(child: Actor, layerIdx: number) {}
 }

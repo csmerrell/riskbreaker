@@ -236,7 +236,7 @@ export class CampManager extends SceneManager {
         });
     }
 
-    public async closeCamp(): void {
+    public async closeCamp(): Promise<void> {
         unCaptureControls();
 
         // Remove post processor

@@ -23,5 +23,9 @@ export const newGameExplorationIntro: GameScript = {
             const mapMgr = explorationMgr.mapManager;
             mapMgr.placePlayerAtTile(maps.intro.startPos);
         },
+        async () => {
+            const explorationMgr = useExploration().getExplorationManager();
+            explorationMgr.movementManager.enableMovement();
+        },
     ],
 };

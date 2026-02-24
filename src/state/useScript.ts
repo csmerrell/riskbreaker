@@ -11,9 +11,8 @@ async function runScript(script: GameScript | string) {
     if (typeof script === 'string') {
         script = getScript(script);
     }
-    captureControls();
     while (script.events.length > 0) {
-        const event = script.events.shift();
+        const event = script.events.shift()!;
         if (isTypedEvent(event)) {
             if (event.preDelay) {
                 await new Promise((resolve) => {
@@ -32,7 +31,6 @@ async function runScript(script: GameScript | string) {
             await event();
         }
     }
-    unCaptureControls();
 }
 
 export function useScript() {

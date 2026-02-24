@@ -9,7 +9,12 @@ import {
     removeMenu,
 } from '@/state/ui/useMenuRegistry';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
-import { captureControls, registerInputListener } from '@/game/input/useInput';
+import {
+    captureControls,
+    registerInputListener,
+    unCaptureControls,
+    unregisterInputListener,
+} from '@/game/input/useInput';
 import PlayerOriginBox from '@/ui/components/menus/unique/PlayerOriginBox.vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { html } from 'lit-html';
@@ -177,55 +182,64 @@ export const newGameOriginSelect: GameScript = {
                 </div>`.strings[0];
                 document.getElementById('main-container')!.appendChild(header);
 
-                captureControls();
+                captureControls('OriginSelect');
                 let moving = false;
-                registerInputListener(() => {
-                    if (moving || focusedPlayer === 'p1') return;
-                    focusedPlayer = 'p1';
-                    moving = true;
+                const listeners: string[] = [];
+                listeners.push(
+                    registerInputListener(() => {
+                        if (moving || focusedPlayer === 'p1') return;
+                        focusedPlayer = 'p1';
+                        moving = true;
 
-                    clearMenus();
-                    moveCameraToActor(p1, { xOffset: 24 }).then(() => {
-                        menus = displayPlayerOrigin('astrologian', p1, 'right');
-                        moving = false;
-                    });
-                }, ['menu_left', 'movement_left']);
+                        clearMenus();
+                        moveCameraToActor(p1, { xOffset: 24 }).then(() => {
+                            menus = displayPlayerOrigin('astrologian', p1, 'right');
+                            moving = false;
+                        });
+                    }, ['menu_left', 'movement_left']),
+                );
 
-                registerInputListener(() => {
-                    if (moving || focusedPlayer === 'p0') return;
-                    focusedPlayer = 'p0';
-                    moving = true;
+                listeners.push(
+                    registerInputListener(() => {
+                        if (moving || focusedPlayer === 'p0') return;
+                        focusedPlayer = 'p0';
+                        moving = true;
 
-                    clearMenus();
-                    moveCameraToActor(p0).then(() => {
-                        menus = displayPlayerOrigin('riskbreaker', p0, 'left');
-                        moving = false;
-                    });
-                }, ['menu_right', 'movement_right']);
+                        clearMenus();
+                        moveCameraToActor(p0).then(() => {
+                            menus = displayPlayerOrigin('riskbreaker', p0, 'left');
+                            moving = false;
+                        });
+                    }, ['menu_right', 'movement_right']),
+                );
 
-                registerInputListener(() => {
-                    const { addPartyMember } = useParty();
-                    addPartyMember({
-                        ...RiskbreakerDefault,
-                        id: nanoid(16),
-                        ...(focusedPlayer === 'p0' && { config: { leader: true } }),
-                    });
-                    addPartyMember({
-                        ...AstrologianDefault,
-                        id: nanoid(16),
-                        ...(focusedPlayer === 'p1' && { config: { leader: true } }),
-                    });
+                listeners.push(
+                    registerInputListener(() => {
+                        const { addPartyMember } = useParty();
+                        addPartyMember({
+                            ...RiskbreakerDefault,
+                            id: nanoid(16),
+                            ...(focusedPlayer === 'p0' && { config: { leader: true } }),
+                        });
+                        addPartyMember({
+                            ...AstrologianDefault,
+                            id: nanoid(16),
+                            ...(focusedPlayer === 'p1' && { config: { leader: true } }),
+                        });
 
-                    while (menus.length > 0) {
-                        const menu = menus.pop()!;
-                        removeMenu(menu.id);
-                        menu.anchor.cleanup();
-                    }
-                    document.getElementById('main-container')!.removeChild(header);
-                    actorMgr.removeActor(p0);
-                    actorMgr.removeActor(p1);
-                    resolve();
-                }, 'confirm');
+                        while (menus.length > 0) {
+                            const menu = menus.pop()!;
+                            removeMenu(menu.id);
+                            menu.anchor.cleanup();
+                        }
+                        document.getElementById('main-container')!.removeChild(header);
+                        actorMgr.removeActor(p0);
+                        actorMgr.removeActor(p1);
+                        listeners.forEach((l) => unregisterInputListener(l));
+                        unCaptureControls();
+                        resolve();
+                    }, 'confirm'),
+                );
             });
         },
         async () => {

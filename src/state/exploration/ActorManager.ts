@@ -2,6 +2,7 @@ import { Actor, Vector } from 'excalibur';
 import { SceneManager } from '../SceneManager';
 import type { ExplorationManager } from './ExplorationManager';
 import type { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { useParty } from '../useParty';
 
 export type ActorCategory = 'player' | 'hostile' | 'neutral';
 
@@ -56,6 +57,14 @@ export class ActorManager extends SceneManager {
 
     public getPlayers(): CompositeActor[] {
         return Array.from(this.players);
+    }
+
+    public getLeader(): CompositeActor {
+        const leader = useParty().getLeader();
+        return (
+            (leader && Array.from(this.players).find((p) => p.partyId === leader.id)) ??
+            Array.from(this.players)[0]
+        );
     }
 
     public getHostiles(): Actor[] {

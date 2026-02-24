@@ -53,7 +53,7 @@ void main() {
 
         float ellipse = dot(p / r, p / r);
 
-        float edgeStrength = mix(0.8, 0.4, ellipse);
+        float edgeStrength = mix(0.6, 0.4, ellipse);
         float dither = bayer4(gl_FragCoord.xy);
 
         if(ellipse >= 1.0 || dither > edgeStrength) {

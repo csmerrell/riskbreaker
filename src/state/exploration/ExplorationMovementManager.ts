@@ -23,7 +23,7 @@ export class ExplorationMovementManager extends SceneManager {
     ) {
         super({ scene: parent.scene });
 
-        const { movementSpeed = 175 } = opts ?? {};
+        const { movementSpeed = 250 } = opts ?? {};
         this.movementSpeed = movementSpeed;
     }
 
@@ -79,7 +79,8 @@ export class ExplorationMovementManager extends SceneManager {
         const mapGround = this.parent.mapManager.getMapGround();
         if (!mapGround) return;
 
-        this.parent.player.scale = vec(direction.x * -1 || this.parent.player.scale.x, 1);
+        const player = this.parent.actorManager.getLeader();
+        player.scale = vec(direction.x * -1 || player.scale.x, 1);
 
         const currentCoord = this.getPlayerTileCoord();
         const nextCoord = currentCoord.add(direction);
@@ -93,10 +94,11 @@ export class ExplorationMovementManager extends SceneManager {
             delete this.bufferedInput;
         }
         this.debounceTime = Date.now();
+        const prevOffset = this.getTileOffset().scale(-1);
         this.setPlayerTileCoord(currentCoord.add(direction));
         const duration = this.movementSpeed;
-        this.parent.player.actions.moveBy({
-            offset: vec(24, 24).scale(direction).add(this.getTileOffset()),
+        player.actions.moveBy({
+            offset: vec(24, 24).scale(direction).add(this.getTileOffset()).add(prevOffset),
             duration,
         });
         setTimeout(() => {
@@ -107,26 +109,24 @@ export class ExplorationMovementManager extends SceneManager {
     private getTileOffset() {
         const { x, y } = this.getPlayerTileCoord();
         const keyPoint = this.parent.mapManager.currentMap.value.keyPoints[`${x}_${y}`];
+        const player = this.parent.actorManager.getLeader();
 
         if (keyPoint && isBonfire(keyPoint)) {
             const { offset, playerScale } = this.parent.bonfireManager.getTileOffsets();
             this.playerOffset = offset;
-            this.parent.player.scale = playerScale;
+            player.scale = playerScale;
             return this.playerOffset;
-        } else if (this.playerOffset) {
-            const revert = this.playerOffset.scale(-1);
-            delete this.playerOffset;
-            return revert;
         }
         return vec(0, 0);
     }
 
     private async movementAfterEffects() {
+        const player = this.parent.actorManager.getLeader();
         const { tileControlPrompts, saveExplorationState, playerPos } = useExploration();
         tileControlPrompts.set(null);
         playerPos.set({
-            pos: vec(this.parent.player.pos.x, this.parent.player.pos.y),
-            size: this.parent.player.height,
+            pos: vec(player.pos.x, player.pos.y),
+            size: player.height,
         });
 
         const { x, y } = this.getPlayerTileCoord();

@@ -1,7 +1,6 @@
 import { docManager } from '@/db';
 import { MappedCommand } from '@/game/input/InputMap';
 import { maps } from '@/resource/maps';
-import { MapMetaKeyed } from '@/resource/maps/maps';
 import { makeState } from '@/state/Observable';
 import { Scene, Vector } from 'excalibur';
 import { ExplorationManager } from './exploration/ExplorationManager';
@@ -23,7 +22,7 @@ export type TileControlPrompt = {
         labelColor?: string;
     }[];
 };
-const tileControlPrompts = makeState<TileControlPrompt>();
+const tileControlPrompts = makeState<TileControlPrompt | null>();
 const loaded = makeState<boolean>(false);
 
 function awaitScene() {

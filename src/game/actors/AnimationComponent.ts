@@ -86,7 +86,7 @@ export class AnimationComponent<T extends Record<string, FrameMap>> extends Comp
             if (!opts.noReset) {
                 this.animations[key].reset();
             }
-            this.activeAnimation = this.animations[key].clone();
+            this.activeAnimation = this.animations[key];
             this.activeAnimation.frames.forEach(
                 (f) => f.duration && (f.duration /= opts.scale ?? 1),
             );

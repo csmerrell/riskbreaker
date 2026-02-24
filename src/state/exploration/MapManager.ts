@@ -311,11 +311,11 @@ export class MapManager extends SceneManager {
         // Check if tile has special offset (e.g., bonfire)
         const { x, y } = coord;
         const keyPoint = this.currentMap.value.keyPoints[`${x}_${y}`];
-        let tileOffset = vec(0, 0);
+        let tileOffset = vec(0, -4);
 
         if (keyPoint && isBonfire(keyPoint)) {
             const { offset, playerScale } = this.parent.bonfireManager.getTileOffsets();
-            tileOffset = offset;
+            tileOffset = tileOffset.add(offset);
             player.scale = playerScale;
         }
 
