@@ -24,6 +24,7 @@ import type { ExplorationManager } from './ExplorationManager';
 import { SceneManager } from '../SceneManager';
 import { makeState } from '@/state/Observable';
 import PIXELATE_TRANSITION_SHADER from '@/shader/pixelateTransition.glsl?raw';
+import { useParty } from '../useParty';
 
 interface BufferedMap {
     tiledResource: TiledResource;
@@ -34,8 +35,8 @@ interface BufferedMap {
     mapMeta: MapMetaKeyed;
 }
 
-class PixelateTransitionPostProcessor implements PostProcessor {
-    private _shader: ScreenShader;
+export class PixelateTransitionPostProcessor implements PostProcessor {
+    private _shader!: ScreenShader;
     private progress: number = 0;
 
     initialize(gl: WebGL2RenderingContext): void {
@@ -71,7 +72,7 @@ export class MapManager extends SceneManager {
     private currentMapKey?: string;
     public currentMap = makeState<MapMetaKeyed>();
     private fogMaterial: Material;
-    private fogPreupdateHandler: () => void;
+    private fogPreupdateHandler!: () => void;
     private suppressLightSources: boolean = false;
     private pixelateTransitionProcessor: PixelateTransitionPostProcessor;
 
@@ -171,7 +172,7 @@ export class MapManager extends SceneManager {
         this.suppressLightSources = false;
     }
 
-    public async transitionToMap(key: keyof typeof maps, startPos: Vector): Promise<void> {
+    public async transitionToMap(key: keyof typeof maps, startPos?: Vector): Promise<void> {
         const engine = this.engine;
         const preload = this.preloadMap(key);
 
@@ -179,10 +180,25 @@ export class MapManager extends SceneManager {
 
         await this.animateTransitionProgress(0, 1, 500);
         await preload;
-        await this.loadMap(key, startPos);
+        await this.loadMap(key, startPos ?? maps[key].startPos);
         await this.animateTransitionProgress(1, 0, 500);
 
         engine.graphicsContext.removePostProcessor(this.pixelateTransitionProcessor);
+    }
+
+    public async transitionOut() {
+        const engine = this.engine;
+        engine.graphicsContext.addPostProcessor(this.pixelateTransitionProcessor);
+        return this.animateTransitionProgress(0, 1, 500);
+    }
+
+    public async transitionIn(key: keyof typeof maps, startPos?: Vector) {
+        const engine = this.engine;
+        const preload = this.preloadMap(key);
+        engine.graphicsContext.addPostProcessor(this.pixelateTransitionProcessor);
+        await preload;
+        await this.loadMap(key, startPos ?? maps[key].startPos);
+        return this.animateTransitionProgress(1, 0, 500);
     }
 
     private animateTransitionProgress(from: number, to: number, duration: number): Promise<void> {
@@ -273,7 +289,11 @@ export class MapManager extends SceneManager {
     }
 
     public placePlayerAtTile(coord: Vector): void {
-        const player = this.parent.actorManager.getPlayers()[0];
+        const leader = useParty().getLeader();
+        const player = leader
+            ? this.parent.actorManager.getPlayers().find((p) => p.partyId === leader.id)
+            : this.parent.actorManager.getPlayers()[0];
+
         if (!player) {
             console.warn('Cannot place player: player does not exist');
             return;
@@ -285,7 +305,7 @@ export class MapManager extends SceneManager {
         }
 
         const buffered = this.bufferedMaps[this.currentMapKey];
-        const tilePos = buffered.groundLayer.getTileByCoordinate(coord.x, coord.y).exTile.pos;
+        const tilePos = buffered.groundLayer.getTileByCoordinate(coord.x, coord.y)!.exTile.pos;
         const spriteTileCenterOffset = vec(12, 12); // Half tile size to center on tile
 
         // Check if tile has special offset (e.g., bonfire)

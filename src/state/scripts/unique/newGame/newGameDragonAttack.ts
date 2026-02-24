@@ -1,6 +1,6 @@
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { Animation, AnimationStrategy, EasingFunctions, SpriteSheet, vec } from 'excalibur';
-import { GameScript } from '../types/GameScript';
+import { GameScript } from '../../types/GameScript';
 import { resources } from '@/resource';
 import { COMPOSITE_SPRITE_GRID } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
@@ -27,7 +27,7 @@ const poisedSlideAnimation = new Animation({
     strategy: AnimationStrategy.Freeze,
 });
 
-export const intro: GameScript = {
+export const newGameDragonAttack: GameScript = {
     events: [
         async () => {
             const engine = useGameContext().game.value;

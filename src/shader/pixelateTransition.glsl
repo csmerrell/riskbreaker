@@ -11,9 +11,8 @@ uniform int u_steps;           // quantization steps (e.g., 50)
 out vec4 fragColor;
 
 void main() {
-    // Calculate distance from center of transition (peaks at 0.5)
-    float d = min(u_progress, 1.0 - u_progress);
-    
+    float d = clamp(u_progress, 0.0, 1.0);
+
     // Quantize the distance for stepped effect
     float dist = u_steps > 0 ? ceil(d * float(u_steps)) / float(u_steps) : d;
     
@@ -25,6 +24,10 @@ void main() {
     
     // Sample the scene at pixelated coordinates
     vec4 sceneColor = texture(u_image, pixelatedUV);
+
+    // Mix toward #151d28 as progress increases
+    vec3 targetColor = vec3(0.082, 0.114, 0.157);
+    sceneColor.rgb = mix(sceneColor.rgb, targetColor, d);
     
     fragColor = sceneColor;
 }

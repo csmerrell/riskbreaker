@@ -21,6 +21,10 @@ const partyState = makeState<PartyState>({
     party: [],
 });
 
+function getLeader() {
+    return partyState.value.party.find((m) => m.config.leader)!;
+}
+
 function addPartyMember(member: PartyMember) {
     if (partyState.value.party.length === 2) {
         throw new Error('Cannot safely support more than 2 party members');
@@ -80,6 +84,7 @@ export function useParty() {
     return {
         loaded,
         partyState,
+        getLeader,
         loadParty,
         addPartyMember,
         removePartyMember,

@@ -49,6 +49,7 @@ export class ActorManager extends SceneManager {
         this.hostiles.delete(actor);
         this.neutrals.delete(actor);
         this.detachMovementStrategy(actor);
+        actor.kill();
         this.scene.remove(actor);
         this.scene.events.emit('actor:removed', { actor });
     }

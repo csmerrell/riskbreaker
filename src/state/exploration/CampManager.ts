@@ -236,27 +236,36 @@ export class CampManager extends SceneManager {
         });
     }
 
-    public closeCamp(): void {
+    public async closeCamp(): void {
         unCaptureControls();
 
         // Remove post processor
         this.engine.graphicsContext.removePostProcessor(this.firePostProcessor);
 
         // Set opacity to 0 for mask and camp actors
-        this.mask.graphics.opacity = 0;
-        this.bgActor.graphics.opacity = 0;
-        this.fire.graphics.opacity = 0;
+        while (this.mask.graphics.opacity > 0) {
+            const nextOpacity = Math.max(0, this.mask.graphics.opacity - 0.05);
+            this.mask.graphics.opacity = nextOpacity;
+            this.bgActor.graphics.opacity = nextOpacity;
+            this.fire.graphics.opacity = nextOpacity;
 
-        if (this.shadow1Actor) {
-            this.shadow1Actor.graphics.opacity = 0;
-        }
-        if (this.shadow2Actor) {
-            this.shadow2Actor.graphics.opacity = 0;
-        }
+            if (this.shadow1Actor) {
+                this.shadow1Actor.graphics.opacity = nextOpacity;
+            }
+            if (this.shadow2Actor) {
+                this.shadow2Actor.graphics.opacity = nextOpacity;
+            }
 
-        this.parent.actorManager.getPlayers().forEach((actor) => {
-            actor.graphics.opacity = 0;
-        });
+            this.parent.actorManager.getPlayers().forEach((actor) => {
+                actor.graphics.opacity = nextOpacity;
+            });
+
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 25);
+            });
+        }
 
         // Restore camera zoom
         this.scene.camera.zoom = 1;

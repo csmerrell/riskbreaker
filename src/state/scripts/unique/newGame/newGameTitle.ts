@@ -1,5 +1,5 @@
 import { useGameContext } from '@/state/useGameContext';
-import { GameScript } from '../types/GameScript';
+import { GameScript } from '../../types/GameScript';
 import { useExploration } from '@/state/useExploration';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
@@ -17,7 +17,7 @@ export const newGameTitle: GameScript = {
                 hair: 'shortMessy',
                 armor: 'riskbreakerLeathers',
             });
-            player.addComponent(new LightSource({ radius: 1 }));
+            player.addComponent(new LightSource({ radius: 2 }));
 
             const player2 = new CompositeActor({
                 hair: 'dragonBob',

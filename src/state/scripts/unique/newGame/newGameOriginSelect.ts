@@ -1,4 +1,4 @@
-import { GameScript } from '../types/GameScript';
+import { GameScript } from '../../types/GameScript';
 import { useExploration } from '@/state/useExploration';
 import { Actor, EasingFunctions, vec } from 'excalibur';
 import { getActorAnchor, MenuAnchor } from '@/state/ui/useActorAnchors';
@@ -17,6 +17,9 @@ import { useParty } from '@/state/useParty';
 import { nanoid } from 'nanoid';
 import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
+import { useGameContext } from '@/state/useGameContext';
+import { useScript } from '@/state/useScript';
+import { maps } from '@/resource/maps';
 
 type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
 function displayPlayerOrigin(
@@ -126,6 +129,7 @@ export const newGameOriginSelect: GameScript = {
             //zoom in on p0
             const explorationManager = useExploration().getExplorationManager();
             await explorationManager.ready();
+            explorationManager.mapManager.preloadMap('intro');
             const camera = explorationManager.scene.camera;
             const actorMgr = explorationManager.actorManager;
             const p0 = actorMgr.getPlayers()[0];
@@ -201,52 +205,34 @@ export const newGameOriginSelect: GameScript = {
 
                 registerInputListener(() => {
                     const { addPartyMember } = useParty();
-                    if (focusedPlayer === 'p0') {
-                        addPartyMember({
-                            ...RiskbreakerDefault,
-                            id: nanoid(16),
-                            config: { leader: true },
-                        });
-                        addPartyMember({
-                            ...AstrologianDefault,
-                            id: nanoid(16),
-                        });
-                    } else {
-                        addPartyMember({
-                            ...AstrologianDefault,
-                            id: nanoid(16),
-                            config: { leader: true },
-                        });
-                        addPartyMember({
-                            ...RiskbreakerDefault,
-                            id: nanoid(16),
-                        });
-                    }
+                    addPartyMember({
+                        ...RiskbreakerDefault,
+                        id: nanoid(16),
+                        ...(focusedPlayer === 'p0' && { config: { leader: true } }),
+                    });
+                    addPartyMember({
+                        ...AstrologianDefault,
+                        id: nanoid(16),
+                        ...(focusedPlayer === 'p1' && { config: { leader: true } }),
+                    });
+
                     while (menus.length > 0) {
                         const menu = menus.pop()!;
                         removeMenu(menu.id);
                         menu.anchor.cleanup();
                     }
                     document.getElementById('main-container')!.removeChild(header);
+                    actorMgr.removeActor(p0);
+                    actorMgr.removeActor(p1);
                     resolve();
                 }, 'confirm');
             });
         },
         async () => {
-            //Rebuild party & actors. Close camp
             const explorationMgr = useExploration().getExplorationManager();
             await explorationMgr.campManager.closeCamp();
-            const actorMgr = explorationMgr.actorManager;
-            [...actorMgr.getPlayers()].forEach((player) => {
-                actorMgr.removeActor(player);
-            });
-            useParty().partyState.value.party.forEach((partyMember) => {
-                const actor = new CompositeActor({
-                    ...partyMember.appearance,
-                });
-                actor.addComponent(new LightSource({ radius: 1 }));
-                actorMgr.addPlayer(actor);
-            });
+            useGameContext().activeView.value = 'exploration';
+            useScript().runScript('unique.newGameExplorationIntro');
         },
     ],
 };

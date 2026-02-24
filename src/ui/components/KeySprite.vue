@@ -42,7 +42,9 @@ const keyboardText = computed(() => {
     if (inputType.value !== 'keyboard') return null;
     const { getUnmappedKey } = useKeyboard();
     const unmappedKey = getUnmappedKey(props.command);
-    return unmappedKey ? `[${unmappedKey}]: ` : '';
+    return unmappedKey
+        ? `[${unmappedKey.startsWith('Key') ? unmappedKey.substring(3) : unmappedKey}]: `
+        : '';
 });
 
 const spriteMap = computed(() => {

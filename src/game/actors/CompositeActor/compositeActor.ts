@@ -18,6 +18,7 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
 
 export class CompositeActor extends Actor {
     public type = 'CompositeActor';
+    public partyId?: string;
     private mannequin!: CompositeLayer;
     private weapons: CompositeLayer[] = [];
     private armor?: CompositeLayer;
