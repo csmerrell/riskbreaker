@@ -28,7 +28,6 @@ export function initGame() {
             height: gameEnum.nativeHeight,
             pixelArt: true,
             pixelRatio: 2,
-            enableCanvasTransparency: true,
             backgroundColor: Color.fromHex(colors.bg),
             displayMode: DisplayMode.FitContainerAndZoom,
             suppressPlayButton: true,

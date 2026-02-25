@@ -1,13 +1,20 @@
 import { vec, Vector } from 'excalibur';
-import { KeyPointBase, KeyPointMeta, KeyPointType, MapMeta, ZoneOmittedKeyPoint } from './maps';
+import {
+    KeyPointBase,
+    KeyPointMeta,
+    KeyPointScriptTrigger,
+    KeyPointType,
+    MapMeta,
+    ZoneOmittedKeyPoint,
+} from './maps';
 import { resources as thuralaResources } from './thurala';
-import { resources as introResources } from './intro';
+import { resources as westDarklands } from './westDarklands';
 import { useGameContext } from '@/state/useGameContext';
 import { useExploration } from '@/state/useExploration';
 
 export const allMaps = {
     ...thuralaResources,
-    ...introResources,
+    ...westDarklands,
 } satisfies Record<string, MapMeta>;
 
 export const maps = allMaps satisfies Record<
@@ -39,8 +46,12 @@ export function isBonfire(point: KeyPointMeta): point is KeyPointBase {
     return point.type === 'bonfire';
 }
 
+export function isScriptTriggerKeypoint(point: KeyPointMeta): point is KeyPointScriptTrigger {
+    return point.type === 'scriptTrigger';
+}
+
 export function isHaltingKeypoint(point: KeyPointMeta) {
-    return isBonfire(point) || isZoneChangePoint(point);
+    return isBonfire(point) || isZoneChangePoint(point) || isScriptTriggerKeypoint(point);
 }
 
 export function getTileCoords(key: string) {

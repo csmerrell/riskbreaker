@@ -2,10 +2,16 @@ import { vec, Vector } from 'excalibur';
 import { canMoveBetween } from '@/lib/helpers/tile.helper';
 import { registerHoldListener, unregisterInputListener } from '@/game/input/useInput';
 import { useExploration } from '@/state/useExploration';
-import { isBonfire, isHaltingKeypoint, isZoneChangePoint } from '@/resource/maps';
+import {
+    isBonfire,
+    isHaltingKeypoint,
+    isScriptTriggerKeypoint,
+    isZoneChangePoint,
+} from '@/resource/maps';
 import { InputMap } from '@/game/input/InputMap';
 import { SceneManager } from '../SceneManager';
 import type { ExplorationManager } from './ExplorationManager';
+import { useScript } from '../useScript';
 
 export type ExplorationMovementManagerOpts = {
     movementSpeed?: number;
@@ -120,7 +126,7 @@ export class ExplorationMovementManager extends SceneManager {
         return vec(0, 0);
     }
 
-    private async movementAfterEffects() {
+    public async movementAfterEffects() {
         const player = this.parent.actorManager.getLeader();
         const { tileControlPrompts, saveExplorationState, playerPos } = useExploration();
         tileControlPrompts.set(null);
@@ -145,6 +151,8 @@ export class ExplorationMovementManager extends SceneManager {
                 } else if (isBonfire(keyPoint)) {
                     this.scene.events.emit('keypoint:bonfire', { coord, keypoint: keyPoint });
                     saveExplorationState();
+                } else if (isScriptTriggerKeypoint(keyPoint)) {
+                    useScript().runScript(keyPoint.scriptName);
                 } else {
                     saveExplorationState();
                     if (keyPoint.type === 'interactable') {

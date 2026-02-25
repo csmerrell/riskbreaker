@@ -11,6 +11,7 @@ import { CameraManager } from './CameraManager';
 import { ActorManager } from './ActorManager';
 import { CampManager } from './CampManager';
 import { BattleManager } from '../battle/BattleManager';
+import { captureControls } from '@/game/input/useInput';
 
 export class ExplorationManager extends SceneManager {
     public playerTileCoord = makeState<Vector>();
@@ -24,7 +25,6 @@ export class ExplorationManager extends SceneManager {
     public bonfireManager: BonfireManager;
 
     constructor(opts: SceneManagerOpts) {
-        const { scene } = opts;
         super(opts);
 
         this.actorManager = new ActorManager(this);
@@ -33,12 +33,13 @@ export class ExplorationManager extends SceneManager {
         this.cameraManager = new CameraManager(this);
         this.campManager = new CampManager(this);
         this.lanternManager = new LanternManager(this);
-        this.bonfireManager = new BonfireManager({ scene });
+        this.bonfireManager = new BonfireManager(this);
         this.battleManager = new BattleManager(this);
     }
 
     public initialize() {
         // Load the test map and create actor
+        captureControls('Exploration');
         this.setReady();
     }
 

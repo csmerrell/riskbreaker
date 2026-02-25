@@ -192,13 +192,12 @@ export class MapManager extends SceneManager {
         return this.animateTransitionProgress(0, 1, 500);
     }
 
-    public async transitionIn(key: keyof typeof maps, startPos?: Vector) {
+    public async transitionIn() {
         const engine = this.engine;
-        const preload = this.preloadMap(key);
         engine.graphicsContext.addPostProcessor(this.pixelateTransitionProcessor);
-        await preload;
-        await this.loadMap(key, startPos ?? maps[key].startPos);
-        return this.animateTransitionProgress(1, 0, 500);
+        return this.animateTransitionProgress(1, 0, 500).then(() => {
+            engine.graphicsContext.removePostProcessor(this.pixelateTransitionProcessor);
+        });
     }
 
     private animateTransitionProgress(from: number, to: number, duration: number): Promise<void> {
@@ -288,7 +287,7 @@ export class MapManager extends SceneManager {
         this.scene.camera.addStrategy(new LimitCameraBoundsStrategy(buffered.boundingBox));
     }
 
-    public placePlayerAtTile(coord: Vector): void {
+    public async placePlayerAtTile(coord: Vector) {
         const leader = useParty().getLeader();
         const player = leader
             ? this.parent.actorManager.getPlayers().find((p) => p.partyId === leader.id)
@@ -324,6 +323,8 @@ export class MapManager extends SceneManager {
 
         // Update player tile coord
         this.parent.playerTileCoord.set(coord);
+
+        return this.parent.movementManager.movementAfterEffects();
     }
 
     public placePlayerAtPosition(pos: Vector): void {

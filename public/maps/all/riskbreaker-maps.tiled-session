@@ -3,21 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "intro.tmx",
+    "activeFile": "westDarklands.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
             "scaleInDock": 1
-        },
-        "intro.tmx": {
-            "scale": 2,
-            "selectedLayer": 0,
-            "viewCenter": {
-                "x": 331.5,
-                "y": 309.25
-            }
         },
         "low-fi.tsx": {
             "scaleInDock": 2,
@@ -35,16 +28,16 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 240,
-                "y": 143.83333333333331
+                "x": 240.16666666666666,
+                "y": 144.16666666666666
             }
         },
         "thurala.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 354.66666666666663,
-                "y": 230.99999999999997
+                "x": 381.66666666666663,
+                "y": 239.66666666666666
             }
         },
         "thurala.tmx#Low-fi Terrain-sheet": {
@@ -60,6 +53,14 @@
         "thurala.tsx": {
             "scaleInDock": 2,
             "scaleInEditor": 4
+        },
+        "westDarklands.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 602,
+                "y": 339.75
+            }
         }
     },
     "last.externalTilesetPath": "C:/code/riskbreaker/public/maps/thurala",
@@ -73,7 +74,7 @@
         "thurala.tmx",
         "someForest.tmx",
         "low-fi.tsx",
-        "intro.tmx"
+        "westDarklands.tmx"
     ],
     "project": "riskbreaker-maps.tiled-project",
     "property.type": "bool",
@@ -81,7 +82,7 @@
         "thurala.tmx",
         "someForest.tmx",
         "low-fi.tsx",
-        "intro.tmx",
+        "westDarklands.tmx",
         "thurala.tsx"
     ],
     "tileset.embedInMap": false,

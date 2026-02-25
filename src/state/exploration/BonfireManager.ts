@@ -1,10 +1,11 @@
 import { Actor, Animation, AnimationStrategy, Scene, SpriteSheet, vec } from 'excalibur';
 import { resources } from '@/resource';
 
-import type { MapMeta } from '@/resource/maps/maps';
+import type { KeyPointMeta, MapMeta } from '@/resource/maps/maps';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { TileControlPrompt, useExploration } from '../useExploration';
 import { getTileCenter_Raw } from '@/resource/maps';
+import { ExplorationManager } from './ExplorationManager';
 
 export type BonfireState = {
     intensityScale: number;
@@ -13,12 +14,10 @@ export type BonfireState = {
 
 export class BonfireManager {
     private bonfires: Record<string, BonfireState & { actor?: Actor }> = {};
-    private scene: Scene;
-    private spriteSheet: SpriteSheet;
+    private spriteSheet!: SpriteSheet;
     private ready: Promise<void | HTMLElement>;
 
-    constructor(opts: { scene: Scene }) {
-        this.scene = opts.scene;
+    constructor(private parent: ExplorationManager) {
         if (!resources.image.misc.bonfireMap.isLoaded()) {
             this.ready = resources.image.misc.bonfireMap.load();
         } else {
@@ -37,8 +36,8 @@ export class BonfireManager {
         });
 
         // Subscribe to keypoint events
-        this.scene.on('keypoint:bonfire', (data: { coord: string; keypoint: any }) => {
-            this.onTileEnter(data.coord);
+        this.parent.scene.on('keypoint:bonfire', (data) => {
+            this.onTileEnter((data as { coord: string; keypoint: KeyPointMeta }).coord);
         });
     }
 
@@ -88,11 +87,11 @@ export class BonfireManager {
         fire.actor.anchor = vec(0, 0);
         fire.actor.z = 1;
         fire.actor.graphics.use('main');
-        this.scene.add(fire.actor);
-        this.scene.on('moved', () => {
+        this.parent.scene.add(fire.actor);
+        this.parent.scene.on('moved', () => {
             fire.health = Math.max(0, fire.health - 1);
             if (fire.health === 0) {
-                fire.actor.kill();
+                fire.actor!.kill();
             }
         });
     }
@@ -183,11 +182,10 @@ export class BonfireManager {
             this.ignite(key);
         }, 'confirm');
         const campCb = registerInputListener(() => {
-            const { openCamp } = useExploration();
-            openCamp();
+            this.parent.campManager.openCamp();
         }, 'inspect_details');
         setTimeout(() => {
-            this.scene.on('moved', () => {
+            this.parent.scene.on('moved', () => {
                 unregisterInputListener(igniteCb);
                 unregisterInputListener(campCb);
             });

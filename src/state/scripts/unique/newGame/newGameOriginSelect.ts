@@ -23,7 +23,6 @@ import { nanoid } from 'nanoid';
 import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { useGameContext } from '@/state/useGameContext';
-import { useScript } from '@/state/useScript';
 import { maps } from '@/resource/maps';
 
 type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
@@ -134,7 +133,6 @@ export const newGameOriginSelect: GameScript = {
             //zoom in on p0
             const explorationManager = useExploration().getExplorationManager();
             await explorationManager.ready();
-            explorationManager.mapManager.preloadMap('intro');
             const camera = explorationManager.scene.camera;
             const actorMgr = explorationManager.actorManager;
             const p0 = actorMgr.getPlayers()[0];
@@ -244,9 +242,34 @@ export const newGameOriginSelect: GameScript = {
         },
         async () => {
             const explorationMgr = useExploration().getExplorationManager();
+            await explorationMgr.ready();
+
+            //add leader to exploration screen
+            const leader = useParty().getLeader();
+            const actor = new CompositeActor({
+                ...leader.appearance,
+            });
+            actor.partyId = leader.id;
+            actor.addComponent(new LightSource({ radius: 1 }));
+
+            const actorMgr = explorationMgr.actorManager;
+            actorMgr.addPlayer(actor);
+
+            const mapMgr = explorationMgr.mapManager;
+            await mapMgr.placePlayerAtTile(maps.westDarklands.startPos);
+
+            //close camp
             await explorationMgr.campManager.closeCamp();
+
+            //load exploration UI
             useGameContext().activeView.value = 'exploration';
-            useScript().runScript('unique.newGameExplorationIntro');
+
+            //enable movement
+            explorationMgr.movementManager.enableMovement();
+
+            registerInputListener(() => {
+                explorationMgr.battleManager.openBattle();
+            }, 'context_menu_2');
         },
     ],
 };

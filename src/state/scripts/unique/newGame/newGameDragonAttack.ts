@@ -30,6 +30,11 @@ const poisedSlideAnimation = new Animation({
 export const newGameDragonAttack: GameScript = {
     events: [
         async () => {
+            await new Promise(() => {
+                console.warn('TODO: Need to implement the front half of dragon attack script.');
+            });
+        },
+        async () => {
             const engine = useGameContext().game.value;
             return new Promise(async (resolve) => {
                 const explorationManager = useExploration().getExplorationManager();

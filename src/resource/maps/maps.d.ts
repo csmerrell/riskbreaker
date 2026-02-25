@@ -17,10 +17,14 @@ type KeyPointLightSource = {
     offset?: Vector;
 };
 
+type KeyPointScriptTrigger = {
+    type: 'scriptTrigger';
+    scriptName: string;
+};
+
 type KeyPointBase = {
     type: 'bonfire';
 };
-export type ZoneOmittedKeyPoint = KeyPointInteraction | KeyPointLightSource | KeyPointBase;
 
 export type KeyPointType =
     | 'region'
@@ -29,10 +33,18 @@ export type KeyPointType =
     | 'city'
     | 'interactable'
     | 'lightSource'
-    | 'bonfire';
+    | 'bonfire'
+    | 'scriptTrigger';
 export type KeyPointMeta = {
     type: KeyPointType;
-} & (KeyPointZone | KeyPointInteraction | KeyPointLightSource | KeyPointBase);
+} & (
+    | KeyPointZone
+    | KeyPointInteraction
+    | KeyPointLightSource
+    | KeyPointBase
+    | KeyPointScriptTrigger
+);
+export type ZoneOmittedKeyPoint = Exclude<KeyPointMeta, KeyPointZone>;
 
 export type MapMeta = {
     type: KeyPointType;

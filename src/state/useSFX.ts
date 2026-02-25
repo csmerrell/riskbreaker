@@ -6,15 +6,16 @@ const sfxMuted = makeState<boolean>(false);
 
 // Semantic SFX manifest
 export const SFX_MANIFEST = {
-    actionPrompt: { path: 'Building Interface 6-1.wav', volume: 100 },
-    menuNav: { path: 'Interface 4-1.wav', volume: 80 },
-    menuConfirm: { path: 'Interface 1-1.wav', volume: 80, bufferMs: 400 },
-    menuBack: { path: 'Interface 4-2.wav', volume: 80, bufferMs: 250 },
+    roar: { path: 'UniversalSFX-Game1/GS1_Beast_1.ogg', volume: 100 },
+    actionPrompt: { path: 'UniversalSFX-UI/Building Interface 6-1.wav', volume: 100 },
+    menuNav: { path: 'UniversalSFX-UI/Interface 4-1.wav', volume: 80 },
+    menuConfirm: { path: 'UniversalSFX-UI/Interface 1-1.wav', volume: 80, bufferMs: 400 },
+    menuBack: { path: 'UniversalSFX-UI/Interface 4-2.wav', volume: 80, bufferMs: 250 },
 } as Record<string, { path: string; volume: number; bufferMs?: number }>;
 
 export type SFXKey = keyof typeof SFX_MANIFEST;
 
-const SFX_PATH = '/audio/ui_sfx/';
+const SFX_PATH = '/audio/sfx/';
 
 // Internal state
 const sfxCache: Partial<Record<SFXKey, AudioBuffer>> = {};
@@ -80,11 +81,17 @@ function initSFX(): Promise<void> {
     return ensureAudioContext().then(async (ctx) => {
         await Promise.all(
             manifestKeys.map(async (key) => {
-                const { path } = SFX_MANIFEST[key];
-                const response = await fetch(SFX_PATH + path);
-                const arrayBuffer = await response.arrayBuffer();
-                const buffer = await ctx.decodeAudioData(arrayBuffer);
-                sfxCache[key] = buffer;
+                try {
+                    const { path } = SFX_MANIFEST[key];
+                    const response = await fetch(SFX_PATH + path);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const buffer = await ctx.decodeAudioData(arrayBuffer);
+                    sfxCache[key] = buffer;
+                } catch (_e) {
+                    console.error(
+                        `Failed to load audio SFX [${key}]. Path [${SFX_MANIFEST[key].path}] is probably incorrect.`,
+                    );
+                }
             }),
         );
 
