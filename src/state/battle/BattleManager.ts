@@ -13,6 +13,7 @@ import { useExploration } from '../useExploration';
 import { loopUntil } from '@/lib/helpers/async.helper';
 import { ExplorationManager } from '../exploration/ExplorationManager';
 import FADE_BG_SHADER from '@/shader/fadeBg.glsl?raw';
+import { useGameContext } from '../useGameContext';
 
 export class BattleManager extends SceneManager {
     private mask!: Actor;
@@ -91,8 +92,12 @@ export class BattleManager extends SceneManager {
 
     private terrainMaterial!: Material;
     private terrainShaderProgress = 1;
+    private previousView: string = '';
     public async openBattle(): Promise<void> {
         captureControls('Battle');
+        const activeView = useGameContext().activeView;
+        this.previousView = activeView.value;
+        activeView.value = '';
 
         return new Promise((resolve) => {
             useExploration()
@@ -123,6 +128,8 @@ export class BattleManager extends SceneManager {
 
                     this.terrain.graphics.material = null;
 
+                    activeView.value = 'battle';
+
                     this.registerInput();
                     resolve();
                 });
@@ -130,6 +137,9 @@ export class BattleManager extends SceneManager {
     }
 
     public async closeBattle() {
+        const activeView = useGameContext().activeView;
+        activeView.value = '';
+
         this.terrainShaderProgress = 0;
         this.terrain.graphics.material = this.terrainMaterial;
         //Fade out
@@ -146,6 +156,8 @@ export class BattleManager extends SceneManager {
         this.scene.remove(this.terrain);
         this.scene.remove(this.mask);
 
+        activeView.value = this.previousView;
+        this.previousView = '';
         unCaptureControls();
     }
 

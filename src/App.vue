@@ -20,6 +20,7 @@ import { useShader } from './state/useShader';
 import SettingsView from './ui/views/SettingsView/SettingsView.vue';
 import { loadAllMaps, loadAllResources, resources } from './resource';
 import MenuLayer from './ui/components/menus/MenuLayer.vue';
+import BattleView from './ui/views/BattleScreen/BattleView.vue';
 
 const { loadSave } = useGameState();
 const { initShaders } = useShader();
@@ -53,7 +54,7 @@ onMounted(() => {
 
 const { activeView, paused, hasFrame, ready: titleReady } = useGameContext();
 const showFrame = ref(true);
-hasFrame.subscribe((val) => {
+hasFrame.subscribe((val = false) => {
     showFrame.value = val;
 });
 const { initSFX } = useSFX();
@@ -121,6 +122,10 @@ function minimizeGame() {
                             <ExplorationView
                                 class="absolute inset-0"
                                 :class="activeView === 'exploration' && 'z-30'"
+                            />
+                            <BattleView
+                                class="absolute inset-0"
+                                :class="activeView === 'battle' && 'z-30'"
                             />
                         </div>
                         <MenuLayer />
