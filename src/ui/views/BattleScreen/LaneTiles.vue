@@ -38,7 +38,7 @@ onUnmounted(() => {
 });
 
 function adjustScale() {
-    document.getElementById('tile-container').style.setProperty('--scale', `${getScale()}`);
+    document.getElementById('tile-container')!.style.setProperty('--scale', `${getScale()}`);
 }
 </script>
 

@@ -14,6 +14,9 @@ import { loopUntil } from '@/lib/helpers/async.helper';
 import { ExplorationManager } from '../exploration/ExplorationManager';
 import FADE_BG_SHADER from '@/shader/fadeBg.glsl?raw';
 import { useGameContext } from '../useGameContext';
+import { LaneKey, PartyMember, useParty } from '../useParty';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { LANE_POSITIONS } from './lanePositions.enum';
 
 export class BattleManager extends SceneManager {
     private mask!: Actor;
@@ -176,6 +179,34 @@ export class BattleManager extends SceneManager {
             opacityStep < 0
                 ? Math.max(0, this.mask.graphics.opacity + opacityStep)
                 : Math.min(this.mask.graphics.opacity + opacityStep, 0.6);
+    }
+
+    private laneUnitMap: Record<LaneKey, CompositeActor[]> = {
+        'left-2': [],
+        'left-1': [],
+        mid: [],
+        'right-1': [],
+        'right-2': [],
+    } as const satisfies Record<string, Actor[]>;
+    public placePlayer(player: PartyMember, lane: LaneKey) {
+        const actor = new CompositeActor(player.appearance);
+        actor.pos = LANE_POSITIONS[lane][this.laneUnitMap[lane].length];
+        this.laneUnitMap[lane].push(actor);
+        this.parent.scene.add(actor);
+    }
+
+    public placeParty() {
+        useParty().partyState.value.party.forEach((p) => {
+            this.placePlayer(p, 'left-1');
+        });
+    }
+
+    public startBattle() {
+        Object.values(this.laneUnitMap).forEach((laneUnits) => {
+            laneUnits.forEach((a) => {
+                a.useAnimation('idle');
+            });
+        });
     }
 
     private listeners: string[] = [];

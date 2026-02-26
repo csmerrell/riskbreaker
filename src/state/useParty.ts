@@ -1,18 +1,23 @@
 import { docManager } from '@/db';
 import { makeState } from './Observable';
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
+import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equipment';
+
+export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
 export type PartyMember = {
     name: string;
     id: string;
     config: {
         leader?: boolean;
+        battlePosition: LaneKey;
     };
     appearance: CompositeActorConfig;
-    equipment: Record<string, unknown>;
+    equipment: Partial<Record<EquipmentSlotKey, StaticEquipmentKey>>;
     skills: Record<string, unknown>;
     passives: Record<string, unknown>;
 };
+
 export type PartyState = {
     party: PartyMember[];
 };

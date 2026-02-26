@@ -4,10 +4,17 @@ import type { AnimationKey } from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 
-export type CompositeSpriteLayers = 'armor' | 'hair' | 'weapon' | 'accessory' | 'mannequin';
+export type CompositeSpriteLayers =
+    | 'armor'
+    | 'hair'
+    | 'mainHand'
+    | 'offHand'
+    | 'accessory'
+    | 'mannequin';
 export type CompositeActorConfig = {
     armor?: ArmorType;
-    weapons?: WeaponType[];
+    mainHand?: WeaponType;
+    offHand?: WeaponType;
     hair?: HairType;
     accessory?: AccessoryType;
 };
@@ -20,7 +27,8 @@ export class CompositeActor extends Actor {
     public type = 'CompositeActor';
     public partyId?: string;
     private mannequin!: CompositeLayer;
-    private weapons: CompositeLayer[] = [];
+    private mainHand?: CompositeLayer;
+    private offHand?: CompositeLayer;
     private armor?: CompositeLayer;
     private hair?: CompositeLayer;
     private accessory?: CompositeLayer;
@@ -31,7 +39,8 @@ export class CompositeActor extends Actor {
     constructor(opts: ActorArgs & CompositeActorConfig) {
         const {
             armor: armorKey,
-            weapons: weaponKeys = [],
+            mainHand: mainHandKey,
+            offHand: offHandKey,
             hair: hairKey,
             accessory: accessoryKey,
             ...excalOpts
@@ -42,9 +51,14 @@ export class CompositeActor extends Actor {
         if (armorKey) {
             this.equipLayer({ key: armorKey, type: 'armor', ...excalOpts });
         }
-        weaponKeys.forEach((weaponKey) => {
-            this.equipLayer({ key: weaponKey, type: 'weapon', ...excalOpts });
-        });
+        if (mainHandKey) {
+            this.equipLayer({ key: mainHandKey, type: 'mainHand', ...excalOpts });
+            this.equipLayer({ key: mainHandKey, type: 'mainHand', ...excalOpts, isBack: true });
+        }
+        if (offHandKey) {
+            this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts });
+            this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts, isBack: true });
+        }
         if (hairKey) {
             this.equipLayer({ key: hairKey, type: 'hair', ...excalOpts });
         }
@@ -58,8 +72,9 @@ export class CompositeActor extends Actor {
             ...(this.hair ? [this.hair.isLoaded()] : []),
             ...(this.armor ? [this.armor.isLoaded()] : []),
             ...(this.accessory ? [this.accessory.isLoaded()] : []),
+            ...(this.mainHand ? [this.mainHand.isLoaded()] : []),
+            ...(this.offHand ? [this.offHand.isLoaded()] : []),
             ...(this.mannequin ? [this.mannequin.isLoaded()] : []),
-            ...this.weapons.map((w) => w.isLoaded()),
         ]);
     }
 
@@ -104,12 +119,32 @@ export class CompositeActor extends Actor {
         }
     }
 
-    public equipLayer(opts: ActorArgs & CompositeSpriteMapping) {
+    public equipLayer(opts: ActorArgs & CompositeSpriteMapping & { isBack?: boolean }) {
         const layer = new CompositeLayer(opts);
-        if (opts.type === 'weapon') {
-            this.weapons.push(layer);
-        } else {
-            this[opts.type] = layer;
+        this[opts.type] = layer;
+        switch (opts.type) {
+            case 'hair':
+                layer.z = 6;
+                break;
+            case 'mainHand':
+                layer.z = 5;
+                break;
+            case 'offHand':
+                layer.z = 4;
+                break;
+            case 'accessory':
+                layer.z = 3;
+                break;
+            case 'armor':
+                layer.z = 2;
+                break;
+            case 'mannequin':
+            default:
+                layer.z = 1;
+                break;
+        }
+        if (opts.isBack) {
+            layer.z = 0;
         }
         this.addChild(layer);
     }
@@ -132,35 +167,39 @@ export class CompositeActor extends Actor {
         }
         this.currentAnimationKey = key;
         const promises: Promise<void>[] = [];
+        promises.push(this.mannequin.useAnimation(key, opts) ?? Promise.resolve());
         promises.push(this.armor?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.concat(this.weapons.map((w) => w.useAnimation(key, opts)));
+        promises.push(this.mainHand?.useAnimation(key, opts) ?? Promise.resolve());
+        promises.push(this.offHand?.useAnimation(key, opts) ?? Promise.resolve());
         promises.push(this.hair?.useAnimation(key, opts) ?? Promise.resolve());
         promises.push(this.accessory?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(this.mannequin.useAnimation(key, opts) ?? Promise.resolve());
         return Promise.all(promises);
     }
 
     public stopAnimation() {
+        this.mannequin?.stopAnimation();
         this.armor?.stopAnimation();
         this.hair?.stopAnimation();
         this.accessory?.stopAnimation();
-        this.mannequin?.stopAnimation();
-        this.weapons.forEach((w) => w.stopAnimation());
+        this.mainHand?.stopAnimation();
+        this.offHand?.stopAnimation();
     }
 
     public hide() {
-        this.armor?.hide();
-        this.weapons.forEach((w) => w.hide());
-        this.hair?.hide();
         this.mannequin.hide();
+        this.armor?.hide();
+        this.mainHand?.hide();
+        this.offHand?.hide();
+        this.hair?.hide();
         this.accessory?.hide();
     }
 
     public show() {
-        this.armor?.show();
-        this.weapons.forEach((w) => w.show());
-        this.hair?.show();
         this.mannequin.show();
+        this.armor?.show();
+        this.mainHand?.show();
+        this.offHand?.show();
+        this.hair?.show();
         this.accessory?.show();
     }
 }

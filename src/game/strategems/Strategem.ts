@@ -1,35 +1,28 @@
-import { useClock } from '@/state/deprecated/useClock';
-import { StrategemAction } from '../actions/StrategemAction';
-import { CooldownComponent } from '../actions/components/CooldownComponent';
-import { TargetStrategyComponent } from '../actions/components/TargetStrategyComponent';
-import { StrategemState } from '@/state/saveState/playerUnit/UnitStrategems';
+import type { IBattleActor } from '@/game/actors/IBattleActor';
+import { StrategemAction } from '@/game/actions/StrategemAction';
+import { TargetStrategyComponent } from '@/game/actions/components/TargetStrategyComponent';
+import { ConditionList } from './Condition';
 import { StrategemCondition } from './StrategemCondition';
-import { buildAction } from '../actions/ActionFactory';
-import { StrategemActor } from '../actors/StrategemActor/StrategemActor';
 
-export type Condition = () => boolean;
-
+// Strategem takes a pre-built StrategemAction — it no longer calls buildAction internally.
+// StrategemAgent constructs the action via ActionFactory and passes it in.
 export class Strategem {
     private condition: StrategemCondition;
     public action: StrategemAction;
 
     constructor(
-        private owner: StrategemActor,
-        definition: StrategemState,
+        private owner: IBattleActor,
+        conditionList: ConditionList,
+        action: StrategemAction,
     ) {
-        this.action = buildAction(this.owner, definition.action, definition.targetCondition);
-        this.condition = new StrategemCondition(definition.conditionList);
+        this.action = action;
+        this.condition = new StrategemCondition(conditionList);
     }
 
-    checkActivation() {
-        const { tick } = useClock();
-        if (this.action.hasComponent(CooldownComponent)) {
-            const cd = this.action.getComponent(CooldownComponent);
-            const diff = tick.value - cd.lastUsed;
-            if (diff < cd.cooldown) {
-                return false;
-            }
-        }
+    public checkActivation(): boolean {
+        // CooldownComponent is excluded (was dead code — never instantiated anywhere).
+        // Build cooldowns fresh from a concrete use case when needed.
+
         if (this.action.hasComponent(TargetStrategyComponent)) {
             if (this.action.getComponent(TargetStrategyComponent).getTargets().length === 0) {
                 return false;

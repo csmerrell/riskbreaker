@@ -6,46 +6,37 @@ import {
     isResourceCondition,
     ResourceCondition,
 } from './Condition';
-import { HealthComponent } from '../actors/StrategemActor/components/HealthComponent';
-import { AssembledBattleUnit, useBattleParty } from '@/state/deprecated/useBattleParty';
-import { useEnemyWave } from '@/state/deprecated/useEnemyWave';
+import type { IBattleActor } from '@/game/actors/IBattleActor';
+import { useBattleState } from '@/state/useBattleState';
 import { sortArrayRandom } from '@/lib/helpers/number.helper';
 
-export function getUnitPool(unitPoolKey: ConditionTargetableUnitPool) {
-    switch (unitPoolKey) {
-        case 'party':
-            const { party } = useBattleParty();
-            return party.value.filter((p) => !p.actor.willBeDead()) as AssembledBattleUnit[];
-        case 'enemy':
-            const { currentWave } = useEnemyWave();
-            return currentWave.value.filter((e) => !e.actor.willBeDead()) as AssembledBattleUnit[];
-        default:
-            return [];
-    }
+function getUnitPool(unitPoolKey: ConditionTargetableUnitPool): IBattleActor[] {
+    const { getUnitsByAlignment } = useBattleState();
+    return getUnitsByAlignment(unitPoolKey).filter((a) => !a.willBeDead());
 }
 
 function computeHealthForThreshold(
     resource: 'MaxHealth' | 'CurrentHealth',
-    healthComp: HealthComponent,
+    actor: IBattleActor,
     isPercent: boolean,
-) {
+): number {
     return resource === 'MaxHealth'
-        ? healthComp.maxHealth()
+        ? actor.maxHealth()
         : isPercent
-          ? Math.floor(100 * (healthComp.forecastedHealth / healthComp.maxHealth()))
-          : healthComp.forecastedHealth;
+          ? Math.floor(100 * (actor.forecastedHealth() / actor.maxHealth()))
+          : actor.forecastedHealth();
 }
 
 export function getTargetsByHealth(
     condition: ConditionState & ResourceCondition,
-    unitPool: AssembledBattleUnit[],
-) {
+    unitPool: IBattleActor[],
+): IBattleActor[] {
     const { targetResource: resource, comparator, threshold, isPercent } = condition;
-    let units: AssembledBattleUnit[] = [];
+    let units: IBattleActor[] = [];
+
     if (isQuantitativeThreshold(threshold)) {
         units = unitPool.filter((unit) => {
-            const healthComp = unit.actor.getComponent(HealthComponent);
-            const health = computeHealthForThreshold(resource, healthComp, isPercent);
+            const health = computeHealthForThreshold(resource, unit, isPercent);
             return (
                 (comparator === '<' && health < threshold) ||
                 (comparator === '>' && health > threshold)
@@ -56,10 +47,8 @@ export function getTargetsByHealth(
     }
 
     return units.sort((a, b) => {
-        const healthComp_A = a.actor.getComponent(HealthComponent);
-        const health_A = computeHealthForThreshold(resource, healthComp_A, isPercent);
-        const healthComp_B = b.actor.getComponent(HealthComponent);
-        const health_B = computeHealthForThreshold(resource, healthComp_B, isPercent);
+        const health_A = computeHealthForThreshold(resource, a, isPercent);
+        const health_B = computeHealthForThreshold(resource, b, isPercent);
         if (comparator === '<' || threshold === 'lowest') {
             return health_A - health_B;
         } else {
@@ -68,7 +57,7 @@ export function getTargetsByHealth(
     });
 }
 
-export function getTargets(condition: ConditionState) {
+export function getTargets(condition: ConditionState): IBattleActor[] {
     if (isAnyCondition(condition)) {
         return sortArrayRandom(getUnitPool(condition.unitPool));
     } else if (isResourceCondition(condition)) {
@@ -79,4 +68,5 @@ export function getTargets(condition: ConditionState) {
             return getTargetsByHealth(condition, getUnitPool(condition.unitPool));
         }
     }
+    return [];
 }

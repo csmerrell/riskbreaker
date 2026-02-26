@@ -18,7 +18,7 @@ import {
 import PlayerOriginBox from '@/ui/components/menus/unique/PlayerOriginBox.vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { html } from 'lit-html';
-import { useParty } from '@/state/useParty';
+import { PartyMember, useParty } from '@/state/useParty';
 import { nanoid } from 'nanoid';
 import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
@@ -82,16 +82,20 @@ function moveCameraToActor(
     );
 }
 
-const RiskbreakerDefault = {
+const RiskbreakerDefault: Omit<PartyMember, 'id'> = {
     name: 'Riskbreaker',
-    config: {},
+    config: {
+        battlePosition: 'left-1',
+    },
     appearance: {
         armor: 'riskbreakerLeathers',
+        mainHand: 'sword',
+        offHand: 'shield',
         hair: 'shortMessy',
     } as CompositeActorConfig,
     equipment: {
-        mainHand: 'Scimitar',
-        offHand: 'Buckler',
+        mainHand: 'worn_scimitar',
+        offHand: 'worn_buckler',
     },
     skills: {
         shieldBash: {
@@ -105,15 +109,17 @@ const RiskbreakerDefault = {
     },
 };
 
-const AstrologianDefault = {
+const AstrologianDefault: Omit<PartyMember, 'id'> = {
     name: 'Astrologian',
-    config: {},
+    config: {
+        battlePosition: 'left-2',
+    },
     appearance: {
         armor: 'stonecallerRobe',
         hair: 'dragonBob',
     } as CompositeActorConfig,
     equipment: {
-        mainHand: 'Worn Tome',
+        mainHand: 'worn_tome',
     },
     skills: {
         starflash: {

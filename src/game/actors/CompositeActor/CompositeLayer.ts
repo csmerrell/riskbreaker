@@ -22,7 +22,11 @@ export type CompositeSpriteMapping = {
           key: ArmorType;
       }
     | {
-          type: 'weapon';
+          type: 'mainHand';
+          key: WeaponType;
+      }
+    | {
+          type: 'offHand';
           key: WeaponType;
       }
     | {
@@ -56,9 +60,13 @@ export class CompositeLayer extends Actor {
             case 'armor':
                 src = resources.image.units.armor[key];
                 break;
-            case 'weapon':
-                const weaponRoot = resources.image.units.weapon[key];
-                src = isBack ? weaponRoot.back : weaponRoot.front;
+            case 'mainHand':
+                const mainHandRoot = resources.image.units.weapon[key];
+                src = isBack ? mainHandRoot.back : mainHandRoot.front;
+                break;
+            case 'offHand':
+                const offHandRoot = resources.image.units.weapon[key];
+                src = isBack ? offHandRoot.back : offHandRoot.front;
                 break;
             case 'hair':
                 src = resources.image.units.hair[key];
@@ -67,6 +75,8 @@ export class CompositeLayer extends Actor {
                 src = resources.image.units.accessory[key];
                 break;
             case 'mannequin':
+            default:
+                console.log('hit default for ????', type);
                 src = resources.image.units.mannequin;
                 break;
         }
@@ -76,7 +86,7 @@ export class CompositeLayer extends Actor {
             new AnimationComponent(
                 this,
                 spriteMap,
-                src,
+                src!,
                 COMPOSITE_SPRITE_GRID,
                 this.get(ReadyComponent),
             ),

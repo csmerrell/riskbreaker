@@ -5,14 +5,11 @@ export class StrategemCondition {
     constructor(private conditions: ConditionList) {}
 
     public eval(): boolean {
-        let result = true;
         for (const condition of this.conditions) {
             if (getTargets(condition).length === 0) {
-                result = false;
-                break;
+                return false;
             }
         }
-
-        return result;
+        return true;
     }
 }

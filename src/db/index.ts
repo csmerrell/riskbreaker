@@ -1,5 +1,3 @@
-import units from './units/index';
-import actions from './actions/index';
 import Pouch from 'pouchdb';
 
 const db = new (PouchDB as typeof Pouch)('riskbreaker');
@@ -110,7 +108,7 @@ class DocumentManager {
 const docManager = new DocumentManager(db);
 
 export const dbRegistry: Record<string, unknown> = {};
-export const allDocuments: DocMetadata[] = [...units, ...actions];
+export const allDocuments: DocMetadata[] = [];
 async function seedDataState() {
     for (const docMeta of allDocuments) {
         const localId = `_local/${docMeta._id}`;

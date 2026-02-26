@@ -100,7 +100,6 @@ export function unCaptureControls() {
     }
     listenerStack.pop();
     const poppedOwner = stackOwners.pop();
-    console.log('uncaptured', poppedOwner);
     stackOwner.set(stackOwners[stackOwners.length - 1]);
     return poppedOwner;
 }
