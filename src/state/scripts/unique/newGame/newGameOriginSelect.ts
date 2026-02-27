@@ -223,12 +223,22 @@ export const newGameOriginSelect: GameScript = {
                         addPartyMember({
                             ...RiskbreakerDefault,
                             id: nanoid(16),
-                            ...(focusedPlayer === 'p0' && { config: { leader: true } }),
+                            ...(focusedPlayer === 'p0' && {
+                                config: {
+                                    ...RiskbreakerDefault.config,
+                                    leader: true,
+                                },
+                            }),
                         });
                         addPartyMember({
                             ...AstrologianDefault,
                             id: nanoid(16),
-                            ...(focusedPlayer === 'p1' && { config: { leader: true } }),
+                            ...(focusedPlayer === 'p1' && {
+                                config: {
+                                    ...AstrologianDefault.config,
+                                    leader: true,
+                                },
+                            }),
                         });
 
                         while (menus.length > 0) {

@@ -288,10 +288,7 @@ export class MapManager extends SceneManager {
     }
 
     public async placePlayerAtTile(coord: Vector) {
-        const leader = useParty().getLeader();
-        const player = leader
-            ? this.parent.actorManager.getPlayers().find((p) => p.partyId === leader.id)
-            : this.parent.actorManager.getPlayers()[0];
+        const player = this.parent.actorManager.getLeader();
 
         if (!player) {
             console.warn('Cannot place player: player does not exist');
@@ -363,7 +360,7 @@ export class MapManager extends SceneManager {
                 const { tilewidth } = buffered.tiledResource.map;
                 const normalizedRadius =
                     (player.get(LightSource).radius * tilewidth * getScale()) /
-                    visualViewport.width;
+                    visualViewport!.width;
 
                 lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
             }
@@ -381,7 +378,7 @@ export class MapManager extends SceneManager {
                     const normalizedY = coord.y / engine.drawHeight;
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
-                        (kp.radius * tilewidth * getScale()) / visualViewport.width;
+                        (kp.radius * tilewidth * getScale()) / visualViewport!.width;
 
                     lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
                 });
@@ -397,7 +394,7 @@ export class MapManager extends SceneManager {
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
                         (actor.get(LightSource).radius * tilewidth * getScale()) /
-                        visualViewport.width;
+                        visualViewport!.width;
 
                     lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
                 });
@@ -410,7 +407,7 @@ export class MapManager extends SceneManager {
                     const normalizedY = coord.y / engine.drawHeight;
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
-                        (intensity * tilewidth * getScale()) / visualViewport.width;
+                        (intensity * tilewidth * getScale()) / visualViewport!.width;
 
                     lightSources.push(normalizedX, 1.0 - normalizedY, normalizedRadius);
                 });

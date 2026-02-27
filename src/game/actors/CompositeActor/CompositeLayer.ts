@@ -76,7 +76,6 @@ export class CompositeLayer extends Actor {
                 break;
             case 'mannequin':
             default:
-                console.log('hit default for ????', type);
                 src = resources.image.units.mannequin;
                 break;
         }
@@ -86,7 +85,7 @@ export class CompositeLayer extends Actor {
             new AnimationComponent(
                 this,
                 spriteMap,
-                src!,
+                src,
                 COMPOSITE_SPRITE_GRID,
                 this.get(ReadyComponent),
             ),

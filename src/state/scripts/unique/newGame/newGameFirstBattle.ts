@@ -12,8 +12,6 @@ export const newGameFirstBattle: GameScript = {
             const explorationMgr = useExploration().getExplorationManager();
             const battleMgr = explorationMgr.battleManager;
             battleMgr.openBattle();
-            battleMgr.placeParty();
-            battleMgr.startBattle();
         },
     ],
 };

@@ -125,7 +125,7 @@ function minimizeGame() {
                             />
                             <BattleView
                                 class="absolute inset-0"
-                                :class="activeView === 'battle' && 'z-30'"
+                                :class="activeView === 'battle' ? 'z-30' : 'opacity-0'"
                             />
                         </div>
                         <MenuLayer />

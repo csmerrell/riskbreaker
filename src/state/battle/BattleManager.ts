@@ -1,4 +1,14 @@
-import { Actor, BoundingBox, Color, GraphicsGroup, Material, Rectangle, vec } from 'excalibur';
+import {
+    Actor,
+    AnimationStrategy,
+    BoundingBox,
+    Color,
+    EasingFunctions,
+    GraphicsGroup,
+    Material,
+    Rectangle,
+    vec,
+} from 'excalibur';
 import { SceneManager } from '../SceneManager';
 import { colors } from '@/lib/enum/colors.enum';
 import { battleground, toLayerArray } from '@/resource/image/battleground';
@@ -17,6 +27,17 @@ import { useGameContext } from '../useGameContext';
 import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
+import { getScale } from '@/lib/helpers/screen.helper';
+
+function getPositionInLane(
+    lane: LaneKey,
+    opts: {
+        numInLane: number;
+        idxInLane: number;
+    },
+) {
+    return LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane].scale(getScale());
+}
 
 export class BattleManager extends SceneManager {
     private mask!: Actor;
@@ -96,11 +117,12 @@ export class BattleManager extends SceneManager {
     private terrainMaterial!: Material;
     private terrainShaderProgress = 1;
     private previousView: string = '';
-    public async openBattle(): Promise<void> {
+    public async openBattle(opts: { empty?: boolean } = {}): Promise<void> {
         captureControls('Battle');
         const activeView = useGameContext().activeView;
         this.previousView = activeView.value;
         activeView.value = '';
+        this.parent.actorManager.getLeader().graphics.opacity = 0;
 
         return new Promise((resolve) => {
             useExploration()
@@ -131,6 +153,11 @@ export class BattleManager extends SceneManager {
 
                     this.terrain.graphics.material = null;
 
+                    if (!opts.empty) {
+                        await this.placeParty();
+                        this.startBattle();
+                    }
+
                     activeView.value = 'battle';
 
                     this.registerInput();
@@ -142,6 +169,7 @@ export class BattleManager extends SceneManager {
     public async closeBattle() {
         const activeView = useGameContext().activeView;
         activeView.value = '';
+        this.parent.actorManager.getLeader().graphics.opacity = 1;
 
         this.terrainShaderProgress = 0;
         this.terrain.graphics.material = this.terrainMaterial;
@@ -155,6 +183,12 @@ export class BattleManager extends SceneManager {
             () => this.stepOpacity(opacityStep),
             step,
         );
+        Object.values(this.laneUnitMap).forEach((lane) => {
+            lane.forEach((actor) => {
+                actor.kill();
+            });
+            lane = [];
+        });
         this.terrain.graphics.material = null;
         this.scene.remove(this.terrain);
         this.scene.remove(this.mask);
@@ -170,9 +204,11 @@ export class BattleManager extends SceneManager {
                 ? Math.max(0, this.terrain.graphics.opacity + opacityStep)
                 : Math.min(this.terrain.graphics.opacity + opacityStep, 1);
         this.terrain.graphics.opacity = nextOpacity;
-        this.parent.actorManager.getPlayers().forEach((actor) => {
-            actor.graphics.opacity = nextOpacity;
-        });
+        Object.values(this.laneUnitMap).forEach((lane) =>
+            lane.forEach((actor) => {
+                actor.graphics.opacity = nextOpacity;
+            }),
+        );
         this.terrainShaderProgress -= opacityStep;
 
         this.mask.graphics.opacity =
@@ -188,26 +224,42 @@ export class BattleManager extends SceneManager {
         'right-1': [],
         'right-2': [],
     } as const satisfies Record<string, Actor[]>;
-    public placePlayer(player: PartyMember, lane: LaneKey) {
+    public async placePlayer(player: PartyMember, lane: LaneKey) {
         const actor = new CompositeActor(player.appearance);
-        actor.pos = LANE_POSITIONS[lane][this.laneUnitMap[lane].length];
+        const boundingBox = this.parent.cameraManager.getBoundingBox()!;
+        const numInLane = useParty().partyState.value.party.filter(
+            (p) => p.config.battlePosition === lane,
+        ).length;
+        const pos = this.scene.camera.pos.add(
+            getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
+        );
+        actor.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
+        actor.z = this.terrain.z + 1;
+        actor.scale = vec(-1, 1);
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
-    }
 
-    public placeParty() {
-        useParty().partyState.value.party.forEach((p) => {
-            this.placePlayer(p, 'left-1');
-        });
-    }
-
-    public startBattle() {
-        Object.values(this.laneUnitMap).forEach((laneUnits) => {
-            laneUnits.forEach((a) => {
-                a.useAnimation('idle');
+        return actor.actions
+            .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
+            .toPromise()
+            .then(() => {
+                actor.useAnimation('idle', { strategy: AnimationStrategy.Loop });
             });
-        });
     }
+
+    public async placeParty() {
+        const party = useParty().partyState.value.party;
+        for (const p of party) {
+            await this.placePlayer(p, p.config.battlePosition ?? 'left-1');
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 250);
+            });
+        }
+    }
+
+    public startBattle() {}
 
     private listeners: string[] = [];
     private registerInput() {

@@ -5,10 +5,27 @@ import type { ExplorationManager } from './ExplorationManager';
 export class CameraManager extends SceneManager {
     private primaryTarget?: Actor;
     private currentTarget?: Actor;
-    private lockStrategy: LockCameraToActorStrategy;
+    private lockStrategy?: LockCameraToActorStrategy;
 
     constructor(private parent: ExplorationManager) {
         super({ scene: parent.scene });
+    }
+
+    public getPos() {
+        return this.scene.camera.pos;
+    }
+
+    public getBoundingBox() {
+        if (!visualViewport) return null;
+
+        return {
+            width: visualViewport.width,
+            height: visualViewport.height,
+            left: this.scene.camera.pos.x - visualViewport.width / 2,
+            right: this.scene.camera.pos.x + visualViewport.width / 2,
+            top: this.scene.camera.pos.y - visualViewport.width / 2,
+            bottom: this.scene.camera.pos.y + visualViewport.width / 2,
+        };
     }
 
     public setPrimaryTarget(actor: Actor): void {

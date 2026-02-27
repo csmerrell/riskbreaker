@@ -28,7 +28,7 @@ export const newGameTitle: GameScript = {
             explorationManager.cameraManager.setPrimaryTarget(player);
             await explorationManager.awaitCameraSettle();
             await explorationManager.mapManager.loadMap('westDarklands');
-            explorationManager.mapManager.placePlayerAtTile(
+            await explorationManager.mapManager.placePlayerAtTile(
                 explorationManager.mapManager.currentMap.value.startPos,
             );
             await explorationManager.awaitCameraSettle();

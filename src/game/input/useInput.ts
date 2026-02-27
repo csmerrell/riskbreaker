@@ -84,6 +84,10 @@ function notifyHoldListeners(result: InputMap) {
     });
 }
 
+export function getCurrentOwner() {
+    return stackOwner.value;
+}
+
 export function captureControls(key?: string) {
     const ownerKey = key ?? nanoid(16);
     listenerStack.push({});

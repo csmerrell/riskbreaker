@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    registerInputListener,
+    unCaptureControls,
+    unregisterInputListener,
+} from '@/game/input/useInput';
 import { useGameContext } from '@/state/useGameContext';
 import { useScript } from '@/state/useScript';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
@@ -17,6 +21,7 @@ const menuItems = ref<MenuItemMeta[]>([
         key: 'continue',
         label: 'Continue',
         onSelect: () => {
+            unCaptureControls();
             activeView.value = 'exploration';
         },
     },
@@ -24,6 +29,7 @@ const menuItems = ref<MenuItemMeta[]>([
         key: 'newGame',
         label: 'New Game',
         onSelect: () => {
+            unCaptureControls();
             useScript().runScript('unique.newGameOriginSelect');
         },
     },

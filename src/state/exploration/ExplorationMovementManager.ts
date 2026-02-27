@@ -143,31 +143,37 @@ export class ExplorationMovementManager extends SceneManager {
             delete this.bufferedInput;
         }
 
-        setTimeout(() => {
-            const coord = `${x}_${y}`;
-            if (keyPoint) {
-                if (isZoneChangePoint(keyPoint)) {
-                    this.scene.events.emit('keypoint:zoneChange', { coord, keypoint: keyPoint });
-                } else if (isBonfire(keyPoint)) {
-                    this.scene.events.emit('keypoint:bonfire', { coord, keypoint: keyPoint });
-                    saveExplorationState();
-                } else if (isScriptTriggerKeypoint(keyPoint)) {
-                    useScript().runScript(keyPoint.scriptName);
-                } else {
-                    saveExplorationState();
-                    if (keyPoint.type === 'interactable') {
-                        this.scene.events.emit('keypoint:interactable', {
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                const coord = `${x}_${y}`;
+                if (keyPoint) {
+                    if (isZoneChangePoint(keyPoint)) {
+                        this.scene.events.emit('keypoint:zoneChange', {
                             coord,
                             keypoint: keyPoint,
                         });
+                    } else if (isBonfire(keyPoint)) {
+                        this.scene.events.emit('keypoint:bonfire', { coord, keypoint: keyPoint });
+                        saveExplorationState();
+                    } else if (isScriptTriggerKeypoint(keyPoint)) {
+                        useScript().runScript(keyPoint.scriptName);
+                    } else {
+                        saveExplorationState();
+                        if (keyPoint.type === 'interactable') {
+                            this.scene.events.emit('keypoint:interactable', {
+                                coord,
+                                keypoint: keyPoint,
+                            });
+                        }
                     }
+                } else {
+                    saveExplorationState();
                 }
-            } else {
-                saveExplorationState();
-            }
-            this.scene.events.emit('moved', {
-                newPos: this.getPlayerTileCoord(),
-            });
-        }, 75);
+                this.scene.events.emit('moved', {
+                    newPos: this.getPlayerTileCoord(),
+                });
+                resolve();
+            }, 75);
+        });
     }
 }

@@ -2,7 +2,11 @@ import { Actor, Animation, AnimationStrategy, Scene, SpriteSheet, vec } from 'ex
 import { resources } from '@/resource';
 
 import type { KeyPointMeta, MapMeta } from '@/resource/maps/maps';
-import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    getCurrentOwner,
+    registerInputListener,
+    unregisterInputListener,
+} from '@/game/input/useInput';
 import { TileControlPrompt, useExploration } from '../useExploration';
 import { getTileCenter_Raw } from '@/resource/maps';
 import { ExplorationManager } from './ExplorationManager';
