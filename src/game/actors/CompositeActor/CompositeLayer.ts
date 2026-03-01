@@ -11,8 +11,9 @@ import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 import { ReadyComponent } from '../ReadyComponent';
-import { AnimationComponent } from '../AnimationComponent';
+import { Animator } from '../Animation/Animator';
 import { KeyedAnimationOptions } from '../useKeyedAnimation';
+import { loopUntil } from '@/lib/helpers/async.helper';
 
 export type CompositeSpriteMapping = {
     type: CompositeSpriteLayers;
@@ -49,12 +50,13 @@ type CompositeResourceOpts = CompositeSpriteMapping & {
 export class CompositeLayer extends Actor {
     private loaded!: Promise<void>;
     private footShadow?: Material;
-    private graphicSnapshot?: Graphic;
+    private type: CompositeSpriteLayers;
 
     constructor(opts: ActorArgs & CompositeResourceOpts) {
         const { type, key, isBack = false, ...excalOpts } = opts;
-
         super(excalOpts);
+        this.type = type;
+
         let src: ImageSource;
         switch (type) {
             case 'armor':
@@ -82,13 +84,7 @@ export class CompositeLayer extends Actor {
 
         this.addComponent(new ReadyComponent());
         this.addComponent(
-            new AnimationComponent(
-                this,
-                spriteMap,
-                src,
-                COMPOSITE_SPRITE_GRID,
-                this.get(ReadyComponent),
-            ),
+            new Animator(this, spriteMap, src, COMPOSITE_SPRITE_GRID, this.get(ReadyComponent)),
         );
 
         this.loaded = this.get(ReadyComponent).ready();
@@ -99,38 +95,76 @@ export class CompositeLayer extends Actor {
     }
 
     onInitialize(engine: Engine): void {
-        this.graphics.use('static');
-        this.footShadow = engine.graphicsContext.createMaterial({
-            name: 'footShadow',
-            fragmentSource: FOOT_SHADOW,
-        });
-        this.graphics.material = this.footShadow;
-        this.graphics.material.update((shader) => {
-            shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
-            shader.trySetUniformFloat('u_width', 0.25);
-            shader.trySetUniformFloat('u_height', 0.05);
-        });
+        if (!this.get(Animator).hasAnimation()) {
+            this.graphics.use('static');
+        }
+
+        if (this.type === 'mannequin') {
+            this.footShadow = engine.graphicsContext.createMaterial({
+                name: 'footShadow',
+                fragmentSource: FOOT_SHADOW,
+            });
+            this.graphics.material = this.footShadow;
+            this.graphics.material.update((shader) => {
+                shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
+                shader.trySetUniformFloat('u_width', 0.25);
+                shader.trySetUniformFloat('u_height', 0.05);
+            });
+        }
     }
 
-    public async useAnimation(
-        key: AnimationKey,
-        opts: KeyedAnimationOptions<typeof spriteMap> = {},
-    ) {
-        this.get(AnimationComponent).useKeyedAnimation(key, opts);
+    public useAnimation(key: AnimationKey, opts: KeyedAnimationOptions<typeof spriteMap> = {}) {
+        return this.get(Animator).useKeyedAnimation(key, opts);
     }
 
     public stopAnimation() {
-        this.get(AnimationComponent).stopAnimation();
+        this.get(Animator).stopAnimation();
     }
 
     public hide() {
-        this.graphicSnapshot = this.graphics.current;
-        this.graphics.hide();
+        this.graphics.material = null;
+        this.graphics.opacity = 0;
     }
 
     public show() {
-        if (!this.graphicSnapshot) return;
-        this.graphics.use(this.graphicSnapshot);
-        delete this.graphicSnapshot;
+        if (this.type === 'mannequin') {
+            this.graphics.material = this.footShadow!;
+        }
+        this.graphics.opacity = 1;
+    }
+
+    public fadeOut(duration: number = 250) {
+        this.graphics.material = null;
+        const step = 25;
+        const numSteps = duration / step;
+        const opacityStep = -1 / numSteps;
+        return loopUntil(
+            () => this.graphics.opacity === 0,
+            () => this.stepOpacity(opacityStep),
+            step,
+        );
+    }
+
+    public fadeIn(duration: number = 250) {
+        if (this.type === 'mannequin') {
+            this.graphics.material = this.footShadow!;
+        }
+        const step = 25;
+        const numSteps = duration / step;
+        const opacityStep = 1 / numSteps;
+        return loopUntil(
+            () => this.graphics.opacity === 1,
+            () => this.stepOpacity(opacityStep),
+            step,
+        );
+    }
+
+    private stepOpacity(opacityStep: number) {
+        const nextOpacity =
+            opacityStep < 0
+                ? Math.max(0, this.graphics.opacity + opacityStep)
+                : Math.min(this.graphics.opacity + opacityStep, 1);
+        console.log(`fading to ${nextOpacity}`);
+        this.graphics.opacity = nextOpacity;
     }
 }

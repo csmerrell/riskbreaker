@@ -14,6 +14,6 @@ export const LANE_POSITIONS = {
         [vec(-14, 4), vec(-14, 4), vec(-18, 8)],
     ],
     mid: [[], [], []],
-    'right-1': [[], [], []],
+    'right-1': [[], [vec(12, 4)], [vec(10, 3), vec(14, 8)], [vec(14, 4), vec(14, 4), vec(18, 8)]],
     'right-2': [[], [], []],
 };

@@ -17,9 +17,11 @@ import { resources } from '@/resource';
 import FIRELIGHT_SHADER from '@/shader/firelight.glsl?raw';
 import { colors } from '@/lib/enum/colors.enum';
 import { gameEnum } from '@/lib/enum/game.enum';
-import { captureControls, unCaptureControls } from '@/game/input/useInput';
+import { captureControls, registerInputListener, unCaptureControls } from '@/game/input/useInput';
 import { useExploration } from '../useExploration';
 import { loopUntil } from '@/lib/helpers/async.helper';
+import { useParty } from '../useParty';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 
 class FirelightPostProcessor implements PostProcessor {
     private _shader: ScreenShader;
@@ -130,8 +132,34 @@ export class CampManager extends SceneManager {
         this.fire.graphics.use('idle');
     }
 
-    private createShadows(): void {
-        const players = this.parent.actorManager.getPlayers();
+    private actors: CompositeActor[] = [];
+    public getActors() {
+        return this.actors;
+    }
+
+    private async addPlayers(): Promise<void> {
+        const party = useParty().partyState.value.party;
+
+        party.forEach(async (member, idx) => {
+            const actor = new CompositeActor(member.appearance);
+            actor.scale = vec(idx === 0 ? 1 : -1, 1);
+            actor.z = 1002;
+            actor.pos = this.scene.camera.pos.add(idx === 0 ? vec(22, 27) : vec(-30, 21));
+            this.actors.push(actor);
+            this.scene.add(actor);
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    actor.useAnimation(idx === 0 ? 'sitRest' : 'leanRest', {
+                        strategy: AnimationStrategy.Loop,
+                    });
+                    resolve();
+                }, 0);
+            });
+        });
+    }
+
+    private addShadows(): void {
+        const players = this.actors;
 
         if (players.length >= 1) {
             this.shadow1Actor = new Actor({
@@ -152,27 +180,6 @@ export class CampManager extends SceneManager {
             this.shadow2Actor.graphics.add(resources.image.misc.firesideShadow2.toSprite());
             this.scene.add(this.shadow2Actor);
             this.shadow2Actor.pos = this.scene.camera.pos.add(vec(0, -6));
-        }
-    }
-
-    private createPlayerActors(): void {
-        const players = this.parent.actorManager.getPlayers();
-
-        // First player sits on the right
-        if (players.length >= 1) {
-            players[0].scale = vec(1, 1);
-            players[0].z = 1002;
-            players[0].pos = this.scene.camera.pos.add(vec(22, 27));
-            players[0].useAnimation('sitRest', { strategy: AnimationStrategy.Loop });
-            this.scene.add(players[0]);
-        }
-
-        if (players.length >= 2) {
-            players[1].scale = vec(-1, 1);
-            players[1].z = 1002;
-            players[1].pos = this.scene.camera.pos.add(vec(-30, 21));
-            players[1].useAnimation('leanRest', { strategy: AnimationStrategy.Loop });
-            this.scene.add(players[1]);
         }
     }
 
@@ -204,51 +211,50 @@ export class CampManager extends SceneManager {
         captureControls('camp');
         this.parent.cameraManager.unlock();
 
-        return new Promise((resolve) => {
-            useExploration()
-                .getExplorationManager()
-                .ready()
-                .then(async () => {
-                    // Scale mask to cover entire map (like BattleManager)
-                    this.scaleMask();
+        return new Promise<void>(async (resolve) => {
+            await useExploration().getExplorationManager().ready();
+            // Scale mask to cover entire map (like BattleManager)
+            this.scaleMask();
 
-                    // Position mask and camp at camera position
-                    this.mask.pos = this.scene.camera.pos;
-                    this.bgActor.pos = this.scene.camera.pos.add(vec(0, -4));
-                    this.fire.pos = this.scene.camera.pos.add(vec(0, 32));
-                    this.mask.graphics.opacity = 0;
-                    this.bgActor.graphics.opacity = 0;
-                    this.fire.graphics.opacity = 0;
+            // Position mask and camp at camera position
+            this.mask.pos = this.scene.camera.pos;
+            this.bgActor.pos = this.scene.camera.pos.add(vec(0, -4));
+            this.fire.pos = this.scene.camera.pos.add(vec(0, 32));
+            this.mask.graphics.opacity = 0;
+            this.bgActor.graphics.opacity = 0;
+            this.fire.graphics.opacity = 0;
 
-                    // Add actors to scene
-                    this.scene.add(this.mask);
-                    this.scene.add(this.bgActor);
-                    this.scene.add(this.fire);
+            // Add actors to scene
+            this.scene.add(this.mask);
+            this.scene.add(this.bgActor);
+            this.scene.add(this.fire);
+            await this.addPlayers();
+            this.addShadows();
 
-                    // Add player actors
-                    this.createPlayerActors();
-                    this.createShadows();
+            // Setup and add firelight shader
+            this.setupFirelight();
+            this.engine.graphicsContext.addPostProcessor(this.firePostProcessor);
 
-                    // Setup and add firelight shader
-                    this.setupFirelight();
-                    // this.engine.graphicsContext.addPostProcessor(this.firePostProcessor);
+            // Fade & zoom in
+            const openDuration = 250;
+            const step = 25;
+            const numSteps = openDuration / step;
+            const opacityStep = 1 / numSteps;
+            await Promise.all([
+                this.scene.camera.zoomOverTime(1.5, 250, EasingFunctions.Linear),
+                loopUntil(
+                    () => this.bgActor.graphics.opacity === 1,
+                    () => this.stepOpacity(opacityStep),
+                    step,
+                ),
+                this.actors.map((a) => a.fadeIn),
+            ]);
 
-                    // Apply camera zoom
-                    const openDuration = 250;
-                    const step = 25;
-                    const numSteps = openDuration / step;
-                    const opacityStep = 1 / numSteps;
-                    await Promise.all([
-                        this.scene.camera.zoomOverTime(1.5, 250, EasingFunctions.Linear),
-                        loopUntil(
-                            () => this.bgActor.graphics.opacity === 1,
-                            () => this.stepOpacity(opacityStep),
-                            step,
-                        ),
-                    ]);
+            registerInputListener(() => {
+                this.closeCamp();
+            }, 'cancel');
 
-                    resolve();
-                });
+            resolve();
         });
     }
 
@@ -266,10 +272,14 @@ export class CampManager extends SceneManager {
                 () => this.stepOpacity(opacityStep),
                 step,
             ),
+            this.actors.map((a) => a.hide()),
         ]);
+        this.actors.forEach((a) => a.kill());
+        this.actors = [];
+        this.engine.graphicsContext.removePostProcessor(this.firePostProcessor);
 
+        this.parent.actorManager.getLeader().graphics.opacity = 1;
         this.parent.cameraManager.lockToActor(this.parent.actorManager.getLeader());
-        // this.engine.graphicsContext.removePostProcessor(this.firePostProcessor);
     }
 
     private stepOpacity(opacityStep: number) {
@@ -286,9 +296,9 @@ export class CampManager extends SceneManager {
             this.shadow2Actor.graphics.opacity = nextOpacity;
         }
 
-        this.parent.actorManager.getPlayers().forEach((actor) => {
-            actor.graphics.opacity = nextOpacity;
-        });
+        if (this.parent.mapManager.explorationTarget) {
+            this.parent.mapManager.explorationTarget.graphics.opacity = 1 - nextOpacity;
+        }
 
         //mask stops at .6 opacity
         this.mask.graphics.opacity =

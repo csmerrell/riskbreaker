@@ -1,37 +1,59 @@
-import { Scene, vec } from 'excalibur';
+import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { makeState } from './Observable';
-import { BattleManager } from './battle/BattleManager';
+import { LaneKey } from './useParty';
 
-const positions = makeState({
-    left: {
-        1: [vec(50, 92)],
-        2: [vec(58, 80), vec(44, 98)],
-        3: [vec(40, 80), vec(58, 90), vec(45, 100)],
-    },
-    leftMid: {
-        1: [vec(94, 82)],
-        2: [vec(104, 78), vec(84, 95)],
-        3: [vec(108, 76), vec(82, 82), vec(86, 98)],
-    },
-    mid: {
-        1: [vec(148, 88)],
-        2: [vec(140, 78), vec(158, 95)],
-        3: [vec(140, 78), vec(160, 90), vec(134, 97)],
-    },
-    rightMid: {
-        1: [vec(204, 82)],
-        2: [vec(204, 78), vec(214, 95)],
-        3: [vec(186, 85), vec(210, 76), vec(206, 98)],
-    },
-    right: {
-        1: [vec(254, 82)],
-        2: [vec(254, 78), vec(264, 95)],
-        3: [vec(238, 78), vec(262, 88), vec(248, 98)],
-    },
+export type EnemyDef = {
+    id: string;
+    name: string;
+    actor: KeyedAnimationActor;
+    config: {
+        battlePosition: LaneKey;
+    };
+};
+
+export type BattleState = {
+    enemies: EnemyDef[];
+};
+
+const battleState = makeState<BattleState>({
+    enemies: [],
 });
+
+function addEnemy(enemy: EnemyDef) {
+    battleState.set({
+        ...battleState.value,
+        enemies: battleState.value.enemies.concat([enemy]),
+    });
+}
+
+function removeEnemy(id: string) {
+    const idx = battleState.value.enemies.findIndex((e) => e.id === id);
+    if (idx < 0) return;
+
+    if (!battleState.value.enemies[idx].actor.isKilled()) {
+        battleState.value.enemies[idx].actor.kill();
+    }
+    battleState.set({
+        ...battleState.value,
+        enemies: battleState.value.enemies
+            .slice(0, idx)
+            .concat(battleState.value.enemies.slice(idx + 1)),
+    });
+}
+
+function clearEnemies() {
+    battleState.value.enemies.forEach((e) => !e.actor.isKilled() && e.actor.kill());
+    battleState.set({
+        ...battleState.value,
+        enemies: [],
+    });
+}
 
 export function useBattle() {
     return {
-        positions,
+        battleState,
+        addEnemy,
+        removeEnemy,
+        clearEnemies,
     };
 }

@@ -29,13 +29,18 @@ export class ActorManager extends SceneManager {
 
     public addPlayer(actor: CompositeActor): void {
         this.players.add(actor);
-        this.scene.add(actor);
         this.scene.events.emit('actor:added', { actor, category: 'player' });
+    }
+
+    public clearPlayers() {
+        this.players.forEach((p) => {
+            p.kill();
+        });
+        this.players = new Set();
     }
 
     public addHostile(actor: Actor): void {
         this.hostiles.add(actor);
-        this.scene.add(actor);
         this.scene.events.emit('actor:added', { actor, category: 'hostile' });
     }
 
@@ -126,33 +131,5 @@ export class ActorManager extends SceneManager {
 
     public getMovementStrategy(actor: Actor): MovementStrategy | undefined {
         return this.movementStrategies.get(actor);
-    }
-
-    public hideActors(filter?: ActorFilter): void {
-        const actors = filter
-            ? this.getActorsInRadius(this.scene.camera.pos, Infinity, filter)
-            : this.getAllActors();
-
-        actors.forEach((actor) => {
-            actor.graphics.opacity = 0;
-        });
-    }
-
-    public showActors(filter?: ActorFilter): void {
-        const actors = filter
-            ? this.getActorsInRadius(this.scene.camera.pos, Infinity, filter)
-            : this.getAllActors();
-
-        actors.forEach((actor) => {
-            actor.graphics.opacity = 1;
-        });
-    }
-
-    public hideAllActors(): void {
-        this.hideActors();
-    }
-
-    public showAllActors(): void {
-        this.showActors();
     }
 }

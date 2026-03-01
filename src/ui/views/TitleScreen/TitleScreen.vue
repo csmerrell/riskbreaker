@@ -49,7 +49,10 @@ const menuItems = ref<MenuItemMeta[]>([
     },
 ]);
 
-const selectedIdx = Math.max(menuItems.value.findIndex((i) => !i.disabled));
+const selectedIdx = Math.max(
+    menuItems.value.findIndex((i) => !i.disabled),
+    1,
+);
 menuItems.value[selectedIdx].selected = true;
 
 const titleMenu = ref<HTMLImageElement>();

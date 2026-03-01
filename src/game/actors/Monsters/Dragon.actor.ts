@@ -1,16 +1,21 @@
 import { resources } from '@/resource';
 import {
     Actor,
-    Animation,
     AnimationStrategy,
+    BoundingBox,
+    Color,
     Engine,
-    SpriteSheet,
+    FrameEvent,
+    Rectangle,
+    vec,
+    Vector,
     type ActorArgs,
 } from 'excalibur';
 import { ReadyComponent } from '../ReadyComponent';
-import { FrameMap } from '@/resource/image/units/spriteMap';
-import { gameEnum } from '@/lib/enum/game.enum';
-import { AnimationComponent } from '../AnimationComponent';
+import { FrameMap, type AnimationKey } from '@/resource/image/units/spriteMap';
+import { Animator } from '../Animation/Animator';
+import { KeyedAnimationActor } from '../KeyedAnimationActor';
+import { useExploration } from '@/state/useExploration';
 
 if (!resources.image.enemy.Dragon.isLoaded()) {
     resources.image.enemy.Dragon.load();
@@ -19,9 +24,9 @@ if (!resources.image.enemy.Dragon.isLoaded()) {
 const spriteMap = {
     idle: {
         frames: [
-            [0, 3, 5],
-            [1, 3, 3],
-            [2, 3, 3],
+            [0, 3, 40],
+            [1, 3, 30],
+            [2, 3, 5],
         ],
     },
     flyHorizontal: {
@@ -39,14 +44,14 @@ const spriteMap = {
     },
     hover: {
         frames: [
-            [0, 1, 3],
-            [1, 1, 2],
-            [2, 1, 2],
-            [3, 1, 1],
-            [4, 1, 2],
-            [5, 1, 2],
-            [6, 1, 2],
-            [7, 1, 1],
+            [0, 1, 4],
+            [1, 1, 3],
+            [2, 1, 3],
+            [3, 1, 2],
+            [4, 1, 3],
+            [5, 1, 3],
+            [6, 1, 3],
+            [7, 1, 2],
         ],
     },
     touchDown: {
@@ -97,31 +102,76 @@ const spriteMap = {
 } as const satisfies Record<string, FrameMap>;
 type DragonAnimationKey = keyof typeof spriteMap;
 
-export class Dragon extends Actor {
-    constructor(args: ActorArgs) {
+const DRAGON_SPRITESHEET_GRID = {
+    spriteHeight: 118,
+    spriteWidth: 145,
+    rows: 8,
+    columns: 8,
+};
+
+export class Dragon extends KeyedAnimationActor {
+    constructor(args: ActorArgs = {}) {
         super(args);
+        this.offset = vec(4, -24);
         this.addComponent(new ReadyComponent());
         this.addComponent(
-            new AnimationComponent(
+            new Animator(
                 this,
                 spriteMap,
                 resources.image.enemy.Dragon,
-                {
-                    spriteHeight: 118,
-                    spriteWidth: 145,
-                    rows: 8,
-                    columns: 8,
-                },
+                DRAGON_SPRITESHEET_GRID,
                 this.get(ReadyComponent),
             ),
         );
     }
 
-    onInitialize(_engine: Engine): void {
-        this.graphics.use('idle');
+    public battleFieldEntry(pos: Vector): Promise<void> {
+        this.pos = vec(pos.x, pos.y - 125);
+        this.useAnimation('hover', {
+            strategy: AnimationStrategy.Loop,
+        });
+        this.vel = vec(0, 16);
+        return new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+                if (this.pos.y >= pos.y) {
+                    this.vel = vec(0, 0);
+                    this.useAnimation('touchDown').then(() => {
+                        resolve();
+                    });
+                    clearInterval(interval);
+                    return;
+                }
+            }, 25);
+
+            this.get(Animator).registerAnimationEvent('frame', (e: FrameEvent) => {
+                switch (e.frameIndex) {
+                    case 2:
+                        this.vel = this.vel.add(vec(0, -5));
+                        break;
+                    case 3:
+                        this.vel = vec(0, 0);
+                        break;
+                    case 4:
+                        this.vel = vec(0, -10);
+                        break;
+                    default:
+                        this.vel = this.vel.add(vec(0, 16));
+                        break;
+                }
+            });
+        });
     }
 
-    useAnimation(key: DragonAnimationKey) {
-        this.get(AnimationComponent).useKeyedAnimation(key);
+    public useAnimation(
+        key: DragonAnimationKey,
+        opts?: {
+            strategy?: AnimationStrategy;
+            next?: AnimationKey;
+            scale?: number;
+            noReset?: boolean;
+            noSuppress?: boolean;
+        },
+    ): Promise<void> {
+        return this.get(Animator).useKeyedAnimation(key, opts);
     }
 }

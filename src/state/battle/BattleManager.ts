@@ -28,6 +28,8 @@ import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
 import { getScale } from '@/lib/helpers/screen.helper';
+import { useBattle } from '../useBattle';
+import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 
 function getPositionInLane(
     lane: LaneKey,
@@ -122,54 +124,49 @@ export class BattleManager extends SceneManager {
         const activeView = useGameContext().activeView;
         this.previousView = activeView.value;
         activeView.value = '';
-        this.parent.actorManager.getLeader().graphics.opacity = 0;
 
-        return new Promise((resolve) => {
-            useExploration()
-                .getExplorationManager()
-                .ready()
-                .then(async () => {
-                    //ensure mask covers whole screen
-                    this.scaleMask();
-                    this.mask.graphics.opacity = 0;
-                    this.terrain.graphics.material = this.terrainMaterial;
-                    this.terrain.graphics.opacity = 0;
-                    this.terrainShaderProgress = 1;
-                    this.mask.pos = this.scene.camera.pos;
-                    this.terrain.pos = this.scene.camera.pos;
-                    this.scene.add(this.mask);
-                    this.scene.add(this.terrain);
+        await useExploration().getExplorationManager().ready();
+        //ensure mask covers whole screen
+        this.scaleMask();
+        activeView.value = 'battle';
+        this.mask.graphics.opacity = 0;
+        this.terrain.graphics.material = this.terrainMaterial;
+        this.terrain.graphics.opacity = 0;
+        this.terrainShaderProgress = 1;
+        this.mask.pos = this.scene.camera.pos;
+        this.terrain.pos = this.scene.camera.pos;
+        this.scene.add(this.mask);
+        this.scene.add(this.terrain);
 
-                    //Fade in
-                    const duration = 250;
-                    const step = 25;
-                    const numSteps = duration / step;
-                    const opacityStep = 1 / numSteps;
-                    await loopUntil(
-                        () => this.terrain.graphics.opacity === 1,
-                        () => this.stepOpacity(opacityStep),
-                        step,
-                    );
+        //Fade in
+        const duration = 250;
+        const step = 25;
+        const numSteps = duration / step;
+        const opacityStep = 1 / numSteps;
+        await Promise.all([
+            this.parent.mapManager.explorationTarget?.fadeOut() ?? Promise.resolve(),
+            loopUntil(
+                () => this.terrain.graphics.opacity === 1,
+                () => this.stepOpacity(opacityStep),
+                step,
+            ),
+        ]);
 
-                    this.terrain.graphics.material = null;
+        this.terrain.graphics.material = null;
 
-                    if (!opts.empty) {
-                        await this.placeParty();
-                        this.startBattle();
-                    }
+        if (!opts.empty) {
+            await this.placeParty();
+            await this.placeEnemies();
+            this.startBattle();
+        }
 
-                    activeView.value = 'battle';
-
-                    this.registerInput();
-                    resolve();
-                });
-        });
+        this.registerInput();
     }
 
     public async closeBattle() {
         const activeView = useGameContext().activeView;
         activeView.value = '';
-        this.parent.actorManager.getLeader().graphics.opacity = 1;
+        this.parent.actorManager.getLeader().fadeIn();
 
         this.terrainShaderProgress = 0;
         this.terrain.graphics.material = this.terrainMaterial;
@@ -178,16 +175,21 @@ export class BattleManager extends SceneManager {
         const step = 25;
         const numSteps = duration / step;
         const opacityStep = -1 / numSteps;
-        await loopUntil(
-            () => this.terrain.graphics.opacity === 0,
-            () => this.stepOpacity(opacityStep),
-            step,
-        );
-        Object.values(this.laneUnitMap).forEach((lane) => {
-            lane.forEach((actor) => {
+        await Promise.all([
+            Object.values(this.laneUnitMap).flatMap(
+                (a) => (a as unknown as CompositeActor).fadeOut?.(duration) ?? Promise.resolve(),
+            ),
+            loopUntil(
+                () => this.terrain.graphics.opacity === 0,
+                () => this.stepOpacity(opacityStep),
+                step,
+            ),
+        ]);
+        (Object.keys(this.laneUnitMap) as LaneKey[]).forEach((key) => {
+            this.laneUnitMap[key].forEach((actor) => {
                 actor.kill();
             });
-            lane = [];
+            this.laneUnitMap[key] = [];
         });
         this.terrain.graphics.material = null;
         this.scene.remove(this.terrain);
@@ -206,7 +208,9 @@ export class BattleManager extends SceneManager {
         this.terrain.graphics.opacity = nextOpacity;
         Object.values(this.laneUnitMap).forEach((lane) =>
             lane.forEach((actor) => {
-                actor.graphics.opacity = nextOpacity;
+                if (!(actor as CompositeActor).fadeOut) {
+                    actor.graphics.opacity = nextOpacity;
+                }
             }),
         );
         this.terrainShaderProgress -= opacityStep;
@@ -214,10 +218,10 @@ export class BattleManager extends SceneManager {
         this.mask.graphics.opacity =
             opacityStep < 0
                 ? Math.max(0, this.mask.graphics.opacity + opacityStep)
-                : Math.min(this.mask.graphics.opacity + opacityStep, 0.6);
+                : Math.min(this.mask.graphics.opacity + opacityStep, 0.8);
     }
 
-    private laneUnitMap: Record<LaneKey, CompositeActor[]> = {
+    private laneUnitMap: Record<LaneKey, KeyedAnimationActor[]> = {
         'left-2': [],
         'left-1': [],
         mid: [],
@@ -256,6 +260,39 @@ export class BattleManager extends SceneManager {
                     resolve();
                 }, 250);
             });
+        }
+    }
+
+    public async placeEnemy(e: KeyedAnimationActor, lane: LaneKey) {
+        const boundingBox = this.parent.cameraManager.getBoundingBox()!;
+        const numInLane = useBattle().battleState.value.enemies.filter(
+            (p) => p.config.battlePosition === lane,
+        ).length;
+        const pos = this.scene.camera.pos.add(
+            getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
+        );
+        e.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
+        e.z = this.terrain.z + 1;
+        e.scale = vec(-1, 1);
+        this.laneUnitMap[lane].push(e);
+        this.parent.scene.add(e);
+
+        return e.battleFieldEntry
+            ? e.battleFieldEntry(pos).then(() => {
+                  e.useAnimation('idle', { strategy: AnimationStrategy.Loop });
+              })
+            : e.actions
+                  .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
+                  .toPromise()
+                  .then(() => {
+                      e.useAnimation('idle', { strategy: AnimationStrategy.Loop });
+                  });
+    }
+
+    public async placeEnemies() {
+        const enemies = useBattle().battleState.value.enemies;
+        for (const e of enemies) {
+            await this.placeEnemy(e.actor, e.config.battlePosition ?? 'right-1');
         }
     }
 

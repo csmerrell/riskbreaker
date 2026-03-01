@@ -24,6 +24,8 @@ import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeAct
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { useGameContext } from '@/state/useGameContext';
 import { maps } from '@/resource/maps';
+import { useBattle } from '@/state/useBattle';
+import { Dragon } from '@/game/actors/Monsters/Dragon.actor';
 
 type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
 function displayPlayerOrigin(
@@ -82,66 +84,12 @@ function moveCameraToActor(
     );
 }
 
-const RiskbreakerDefault: Omit<PartyMember, 'id'> = {
-    name: 'Riskbreaker',
-    config: {
-        battlePosition: 'left-1',
-    },
-    appearance: {
-        armor: 'riskbreakerLeathers',
-        mainHand: 'sword',
-        offHand: 'shield',
-        hair: 'shortMessy',
-    } as CompositeActorConfig,
-    equipment: {
-        mainHand: 'worn_scimitar',
-        offHand: 'worn_buckler',
-    },
-    skills: {
-        shieldBash: {
-            name: 'Shield Bash',
-        },
-    },
-    passives: {
-        challengeTheOdds: {
-            name: 'Challenge the Odds',
-        },
-    },
-};
-
-const AstrologianDefault: Omit<PartyMember, 'id'> = {
-    name: 'Astrologian',
-    config: {
-        battlePosition: 'left-2',
-    },
-    appearance: {
-        armor: 'stonecallerRobe',
-        hair: 'dragonBob',
-    } as CompositeActorConfig,
-    equipment: {
-        mainHand: 'worn_tome',
-    },
-    skills: {
-        starflash: {
-            name: 'Starflash',
-        },
-    },
-    passives: {
-        distillLight: {
-            name: 'Distill Light',
-        },
-    },
-};
-
 export const newGameOriginSelect: GameScript = {
     events: [
         async () => {
-            //zoom in on p0
             const explorationManager = useExploration().getExplorationManager();
             await explorationManager.ready();
             const camera = explorationManager.scene.camera;
-            const actorMgr = explorationManager.actorManager;
-            const p0 = actorMgr.getPlayers()[0];
             await Promise.all([
                 new Promise<void>((resolve) => {
                     const menuEl = document.getElementById('title-menu')!;
@@ -153,7 +101,9 @@ export const newGameOriginSelect: GameScript = {
                     };
                     menuEl.addEventListener('transitionend', hideListener);
                 }),
-                moveCameraToActor(p0, { movementDuration: 750 }),
+                moveCameraToActor(explorationManager.campManager.getActors()[0], {
+                    movementDuration: 750,
+                }),
                 camera.zoomOverTime(1.5, 750, EasingFunctions.Linear),
             ]);
         },
@@ -161,8 +111,8 @@ export const newGameOriginSelect: GameScript = {
             //Await player origin select
             await new Promise<void>((resolve) => {
                 const explorationManager = useExploration().getExplorationManager();
-                const actorMgr = explorationManager.actorManager;
-                const [p0, p1] = actorMgr.getPlayers();
+                const campMgr = explorationManager.campManager;
+                const [p0, p1] = campMgr.getActors();
                 let menus: AnchoredMenu[] = [];
                 function clearMenus() {
                     while (menus.length > 0) {
@@ -219,36 +169,12 @@ export const newGameOriginSelect: GameScript = {
 
                 listeners.push(
                     registerInputListener(() => {
-                        const { addPartyMember } = useParty();
-                        addPartyMember({
-                            ...RiskbreakerDefault,
-                            id: nanoid(16),
-                            ...(focusedPlayer === 'p0' && {
-                                config: {
-                                    ...RiskbreakerDefault.config,
-                                    leader: true,
-                                },
-                            }),
-                        });
-                        addPartyMember({
-                            ...AstrologianDefault,
-                            id: nanoid(16),
-                            ...(focusedPlayer === 'p1' && {
-                                config: {
-                                    ...AstrologianDefault.config,
-                                    leader: true,
-                                },
-                            }),
-                        });
-
                         while (menus.length > 0) {
                             const menu = menus.pop()!;
                             removeMenu(menu.id);
                             menu.anchor.cleanup();
                         }
                         document.getElementById('main-container')!.removeChild(header);
-                        actorMgr.removeActor(p0);
-                        actorMgr.removeActor(p1);
                         listeners.forEach((l) => unregisterInputListener(l));
                         unCaptureControls();
                         resolve();
@@ -269,6 +195,7 @@ export const newGameOriginSelect: GameScript = {
             actor.addComponent(new LightSource({ radius: 1 }));
 
             const actorMgr = explorationMgr.actorManager;
+            actorMgr.clearPlayers();
             actorMgr.addPlayer(actor);
 
             const mapMgr = explorationMgr.mapManager;
@@ -284,6 +211,20 @@ export const newGameOriginSelect: GameScript = {
             explorationMgr.movementManager.enableMovement();
 
             registerInputListener(() => {
+                const { addEnemy, clearEnemies } = useBattle();
+                clearEnemies();
+                const dragon = new Dragon({
+                    name: 'Dragon',
+                });
+                dragon.scale = vec(-1, 1);
+                addEnemy({
+                    id: nanoid(16),
+                    name: 'Dragon',
+                    actor: dragon,
+                    config: {
+                        battlePosition: 'right-1',
+                    },
+                });
                 explorationMgr.battleManager.openBattle();
             }, 'context_menu_2');
         },

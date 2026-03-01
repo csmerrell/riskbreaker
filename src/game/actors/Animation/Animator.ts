@@ -3,18 +3,21 @@ import {
     Animation,
     AnimationStrategy,
     Component,
+    FrameEvent,
     ImageSource,
     SpriteSheet,
 } from 'excalibur';
-import { ReadyComponent } from './ReadyComponent';
+import { ReadyComponent } from '../ReadyComponent';
 import { FrameMap } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
 
-export class AnimationComponent<T extends Record<string, FrameMap>> extends Component {
+export class Animator<T extends Record<string, FrameMap>> extends Component {
     private spriteSheet!: SpriteSheet;
     private animations: Record<keyof T, Animation> = {} as Record<keyof T, Animation>;
-    private strategyRestore: Partial<Record<keyof T, AnimationStrategy>> = {};
-    private activeAnimation?: Animation;
+    private activeAnimation?: {
+        key: string;
+        animation: Animation;
+    };
 
     constructor(
         public owner: Actor,
@@ -63,6 +66,10 @@ export class AnimationComponent<T extends Record<string, FrameMap>> extends Comp
         });
     }
 
+    public hasAnimation() {
+        return this.activeAnimation !== undefined;
+    }
+
     public useKeyedAnimation(
         key: keyof T,
         opts: {
@@ -73,25 +80,26 @@ export class AnimationComponent<T extends Record<string, FrameMap>> extends Comp
         } = {},
     ) {
         const { strategy, next } = opts;
+        if (!this.animations[key]) {
+            return Promise.reject();
+        }
+        if (!opts.noReset) {
+            this.animations[key].reset();
+        }
+        if (this.activeAnimation?.key !== key) {
+            this.activeAnimation = {
+                key: String(key),
+                animation: this.animations[key].clone(),
+            };
+            this.activeAnimation.animation.strategy = strategy ?? AnimationStrategy.Freeze;
+        }
+
         return new Promise<void>((resolve) => {
-            if (!this.animations[key]) {
-                return;
-            }
-            if (strategy) {
-                this.strategyRestore[key] = this.animations[key].strategy;
-                this.animations[key].strategy = strategy;
-            } else if (this.strategyRestore[key]) {
-                this.animations[key].strategy = this.strategyRestore[key];
-            }
-            if (!opts.noReset) {
-                this.animations[key].reset();
-            }
-            this.activeAnimation = this.animations[key];
-            this.activeAnimation.frames.forEach(
+            this.activeAnimation!.animation.frames.forEach(
                 (f) => f.duration && (f.duration /= opts.scale ?? 1),
             );
-            this.owner.graphics.use(this.activeAnimation);
-            this.activeAnimation.events.on('end', () => {
+            this.owner.graphics.use(this.activeAnimation!.animation);
+            this.activeAnimation!.animation.events.on('end', () => {
                 resolve();
                 if (next) {
                     this.useKeyedAnimation(next);
@@ -107,5 +115,11 @@ export class AnimationComponent<T extends Record<string, FrameMap>> extends Comp
             delete this.activeAnimation;
             this.owner.graphics.use('static');
         }
+    }
+
+    public registerAnimationEvent(key: 'end' | 'frame' | 'loop', handler: (e: FrameEvent) => void) {
+        this.activeAnimation?.animation.events.on(key, (e) => {
+            handler(e as FrameEvent);
+        });
     }
 }

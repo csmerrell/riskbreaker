@@ -1,4 +1,4 @@
-import type { Actor, Animation, AnimationStrategy, EasingFunction, Vector } from 'excalibur';
+import type { AnimationStrategy, EasingFunction, Vector } from 'excalibur';
 import type { AnimationKey } from '@/resource/image/units/spriteMap';
 import type { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import type { ScriptedEventBase } from './GameScript';
@@ -36,11 +36,4 @@ export type CompositeAnimationEvent = ScriptedEventBase & {
     movement?: MovementArgs;
 };
 
-export type UniqueAnimationEvent = ScriptedEventBase & {
-    type: 'uniqueAnimation';
-    actor: Actor;
-    animation: Animation;
-    movement?: MovementArgs;
-};
-
-export type CharacterAnimationEvent = CompositeAnimationEvent | UniqueAnimationEvent;
+export type CharacterAnimationEvent = CompositeAnimationEvent;

@@ -1,8 +1,9 @@
-import { Actor, ActorArgs, AnimationStrategy, Engine, Material } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine, Material, Animation } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import type { AnimationKey } from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
+import { KeyedAnimationActor } from '../KeyedAnimationActor';
 
 export type CompositeSpriteLayers =
     | 'armor'
@@ -23,16 +24,15 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
     return (a as CompositeActor).type === 'CompositeActor';
 }
 
-export class CompositeActor extends Actor {
+export class CompositeActor extends KeyedAnimationActor {
     public type = 'CompositeActor';
     public partyId?: string;
     private mannequin!: CompositeLayer;
-    private mainHand?: CompositeLayer;
-    private offHand?: CompositeLayer;
+    private mainHand: CompositeLayer[] = [];
+    private offHand: CompositeLayer[] = [];
     private armor?: CompositeLayer;
     private hair?: CompositeLayer;
     private accessory?: CompositeLayer;
-    private footShadow?: Material;
     private currentAnimationKey: AnimationKey = 'static';
     private velCheckCt: number = 0;
 
@@ -72,24 +72,13 @@ export class CompositeActor extends Actor {
             ...(this.hair ? [this.hair.isLoaded()] : []),
             ...(this.armor ? [this.armor.isLoaded()] : []),
             ...(this.accessory ? [this.accessory.isLoaded()] : []),
-            ...(this.mainHand ? [this.mainHand.isLoaded()] : []),
-            ...(this.offHand ? [this.offHand.isLoaded()] : []),
+            ...this.mainHand.map((mh) => mh.isLoaded()),
+            ...this.offHand.map((oh) => oh.isLoaded()),
             ...(this.mannequin ? [this.mannequin.isLoaded()] : []),
         ]);
     }
 
-    onInitialize(engine: Engine): void {
-        this.footShadow = engine.graphicsContext.createMaterial({
-            name: 'footShadow',
-            fragmentSource: FOOT_SHADOW,
-        });
-        this.graphics.material = this.footShadow;
-        this.graphics.material.update((shader) => {
-            shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
-            shader.trySetUniformFloat('u_width', 0.25);
-            shader.trySetUniformFloat('u_height', 0.05);
-        });
-    }
+    onInitialize(_engine: Engine): void {}
 
     onPreUpdate(_engine: Engine, _elapsed: number): void {
         if (
@@ -121,7 +110,6 @@ export class CompositeActor extends Actor {
 
     public equipLayer(opts: ActorArgs & CompositeSpriteMapping & { isBack?: boolean }) {
         const layer = new CompositeLayer(opts);
-        this[opts.type] = layer;
         switch (opts.type) {
             case 'hair':
                 layer.z = 6;
@@ -146,11 +134,18 @@ export class CompositeActor extends Actor {
         if (opts.isBack) {
             layer.z = 0;
         }
+
+        if (opts.type === 'mainHand' || opts.type === 'offHand') {
+            this[opts.type].push(layer);
+        } else {
+            this[opts.type] = layer;
+        }
+
         this.addChild(layer);
     }
 
     private suppressMovementAnimation: boolean = false;
-    public async useAnimation(
+    public useAnimation(
         key: AnimationKey,
         opts?: {
             strategy?: AnimationStrategy;
@@ -169,37 +164,51 @@ export class CompositeActor extends Actor {
         const promises: Promise<void>[] = [];
         promises.push(this.mannequin.useAnimation(key, opts) ?? Promise.resolve());
         promises.push(this.armor?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(this.mainHand?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(this.offHand?.useAnimation(key, opts) ?? Promise.resolve());
+        promises.push(...this.mainHand.map((mh) => mh.useAnimation(key, opts)));
+        promises.push(...this.offHand.map((oh) => oh.useAnimation(key, opts)));
         promises.push(this.hair?.useAnimation(key, opts) ?? Promise.resolve());
         promises.push(this.accessory?.useAnimation(key, opts) ?? Promise.resolve());
         return Promise.all(promises);
     }
 
+    private flatKeys = ['mannequin', 'armor', 'hair', 'accessory'] as const;
+    private arrayKeys = ['mainHand', 'offHand'] as const;
     public stopAnimation() {
-        this.mannequin?.stopAnimation();
-        this.armor?.stopAnimation();
-        this.hair?.stopAnimation();
-        this.accessory?.stopAnimation();
-        this.mainHand?.stopAnimation();
-        this.offHand?.stopAnimation();
+        this.flatKeys.forEach((key) => this[key]?.stopAnimation());
+        this.arrayKeys.forEach((key) => this[key].forEach((layer) => layer.stopAnimation()));
     }
 
     public hide() {
-        this.mannequin.hide();
-        this.armor?.hide();
-        this.mainHand?.hide();
-        this.offHand?.hide();
-        this.hair?.hide();
-        this.accessory?.hide();
+        this.flatKeys.forEach((key) => this[key]?.hide());
+        this.arrayKeys.forEach((key) => this[key].forEach((layer) => layer.hide()));
     }
 
     public show() {
-        this.mannequin.show();
-        this.armor?.show();
-        this.mainHand?.show();
-        this.offHand?.show();
-        this.hair?.show();
-        this.accessory?.show();
+        this.flatKeys.forEach((key) => this[key]?.show());
+        this.arrayKeys.forEach((key) => this[key].forEach((layer) => layer.show()));
+    }
+
+    public fadeOut(duration: number = 250) {
+        return new Promise<void>(async (resolve) => {
+            await Promise.all([
+                ...this.flatKeys.map(async (key) => this[key]?.fadeOut(duration)),
+                ...this.arrayKeys.flatMap((key) =>
+                    this[key].map((layer) => layer.fadeOut(duration)),
+                ),
+            ]);
+            resolve();
+        });
+    }
+
+    public fadeIn(duration: number = 250) {
+        return new Promise<void>(async (resolve) => {
+            await Promise.all([
+                ...this.flatKeys.map(async (key) => this[key]?.fadeIn(duration)),
+                ...this.arrayKeys.flatMap((key) =>
+                    this[key].map((layer) => layer.fadeIn(duration)),
+                ),
+            ]);
+            resolve();
+        });
     }
 }

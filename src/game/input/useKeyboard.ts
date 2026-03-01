@@ -6,7 +6,7 @@ import { TypedKeys } from '@/lib/types/ClassHelper';
 export const defaultKeyboardMap: Partial<Record<Keys, MappedCommand[]>> = {
     [Keys.Enter]: ['confirm'],
     [Keys.Esc]: ['cancel'],
-    [Keys.P]: ['context_menu_1'],
+    [Keys.B]: ['context_menu_1'],
     [Keys.F]: ['inspect_details'],
     [Keys.ArrowDown]: ['menu_down'],
     [Keys.S]: ['movement_down'],

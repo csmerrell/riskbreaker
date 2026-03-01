@@ -1,11 +1,8 @@
 import { resources } from '@/resource';
 import {
     Actor,
-    Color,
     EasingFunctions,
     Engine,
-    Entity,
-    Material,
     SpriteSheet,
     vec,
     Vector,

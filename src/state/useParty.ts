@@ -2,6 +2,7 @@ import { docManager } from '@/db';
 import { makeState } from './Observable';
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equipment';
+import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
@@ -66,7 +67,7 @@ async function loadParty() {
     try {
         const { party } = (await docManager.tryGet<PartyState>('_local/settings')) as PartyState;
         partyState.value = {
-            party: party ?? [],
+            party: party ?? [RiskbreakerDefault, AstrologianDefault],
         };
     } catch (_e) {
         await saveParty();

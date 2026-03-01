@@ -24,7 +24,7 @@ import type { ExplorationManager } from './ExplorationManager';
 import { SceneManager } from '../SceneManager';
 import { makeState } from '@/state/Observable';
 import PIXELATE_TRANSITION_SHADER from '@/shader/pixelateTransition.glsl?raw';
-import { useParty } from '../useParty';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 
 interface BufferedMap {
     tiledResource: TiledResource;
@@ -287,18 +287,22 @@ export class MapManager extends SceneManager {
         this.scene.camera.addStrategy(new LimitCameraBoundsStrategy(buffered.boundingBox));
     }
 
+    public explorationTarget?: CompositeActor;
     public async placePlayerAtTile(coord: Vector) {
-        const player = this.parent.actorManager.getLeader();
+        if (this.explorationTarget?.isAdded) {
+            this.scene.remove(this.explorationTarget);
+        }
 
-        if (!player) {
-            console.warn('Cannot place player: player does not exist');
-            return;
+        this.explorationTarget = this.parent.actorManager.getLeader();
+        if (!this.explorationTarget) {
+            throw new Error('Map invoked character placement without a valid actor.');
         }
 
         if (!this.currentMapKey) {
             console.warn('Cannot place player: no map loaded');
             return;
         }
+        this.scene.add(this.explorationTarget);
 
         const buffered = this.bufferedMaps[this.currentMapKey];
         const tilePos = buffered.groundLayer.getTileByCoordinate(coord.x, coord.y)!.exTile.pos;
@@ -312,11 +316,11 @@ export class MapManager extends SceneManager {
         if (keyPoint && isBonfire(keyPoint)) {
             const { offset, playerScale } = this.parent.bonfireManager.getTileOffsets();
             tileOffset = tileOffset.add(offset);
-            player.scale = playerScale;
+            this.explorationTarget.scale = playerScale;
         }
 
-        player.pos = tilePos.add(spriteTileCenterOffset).add(tileOffset);
-        player.z = 1;
+        this.explorationTarget.pos = tilePos.add(spriteTileCenterOffset).add(tileOffset);
+        this.explorationTarget.z = 1;
 
         // Update player tile coord
         this.parent.playerTileCoord.set(coord);
