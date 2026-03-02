@@ -1,23 +1,28 @@
-import { AnimationKey } from '@/resource/image/units/spriteMap';
-import { Actor, ActorArgs, AnimationStrategy, Vector } from 'excalibur';
+import { AnimationKey, SpriteGridOptions } from '@/resource/image/units/spriteMap';
+import { Actor, ActorArgs, AnimationStrategy, vec, Vector } from 'excalibur';
 
 export class KeyedAnimationActor extends Actor {
-    constructor(private opts: ActorArgs) {
+    protected spriteDimensions!: SpriteGridOptions;
+
+    constructor(private opts: ActorArgs = {}) {
         super(opts);
     }
 
-    public cloneStatic(args: ActorArgs = {}): KeyedAnimationActor {
-        const staticClone = new KeyedAnimationActor(Object.assign(this.opts, args));
-        staticClone.useAnimation('static');
-        return staticClone;
-    }
-
-    public battleFieldEntry?(_pos: Vector): Promise<void> {
-        return Promise.resolve();
+    public getDimensions() {
+        if (!this.spriteDimensions) {
+            throw new Error(
+                '[spriteDimensions] must be defined as a private property of every KeyedAnimationActor',
+            );
+        }
+        return this.spriteDimensions;
     }
 
     public getHeadshotTransforms(): { offset?: Vector; scale?: Vector } {
         throw new Error('[getHeadshotTransforms] Must be implemented by inheritors');
+    }
+
+    public battleFieldEntry?(_pos: Vector): Promise<void> {
+        return Promise.resolve();
     }
 
     public useAnimation(

@@ -1,6 +1,10 @@
-import { Actor, ActorArgs, AnimationStrategy, Engine } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine, vec } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
-import type { AnimationKey } from '@/resource/image/units/spriteMap';
+import {
+    COMPOSITE_SPRITE_GRID,
+    SpriteGridOptions,
+    type AnimationKey,
+} from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 
 export type CompositeSpriteLayers =
@@ -25,6 +29,7 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
 export class CompositeActor extends Actor {
     public type = 'CompositeActor';
     public partyId?: string;
+    private spriteDimensions: SpriteGridOptions = COMPOSITE_SPRITE_GRID;
     private mannequin!: CompositeLayer;
     private mainHand: CompositeLayer[] = [];
     private offHand: CompositeLayer[] = [];
@@ -33,12 +38,6 @@ export class CompositeActor extends Actor {
     private accessory?: CompositeLayer;
     private currentAnimationKey: AnimationKey = 'static';
     private velCheckCt: number = 0;
-
-    public cloneStatic(args: ActorArgs = {}): CompositeActor {
-        const staticClone = new CompositeActor(Object.assign(this.opts, args));
-        staticClone.useAnimation('static');
-        return staticClone;
-    }
 
     constructor(private opts: ActorArgs & CompositeActorConfig) {
         const {
@@ -50,6 +49,7 @@ export class CompositeActor extends Actor {
             ...excalOpts
         } = opts;
         super(excalOpts);
+        console.log(this.height);
 
         this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
         if (armorKey) {
@@ -69,6 +69,16 @@ export class CompositeActor extends Actor {
         if (accessoryKey) {
             this.equipLayer({ key: accessoryKey, type: 'accessory', ...excalOpts });
         }
+    }
+
+    public getDimensions() {
+        return this.spriteDimensions;
+    }
+
+    public getHeadshotTransforms() {
+        return {
+            offset: vec(0, 3),
+        };
     }
 
     isLoaded() {

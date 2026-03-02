@@ -1,19 +1,21 @@
 import { gameEnum } from '@/lib/enum/game.enum';
 import { LiteLoader } from '@/resource/loader';
 import { Color, DisplayMode, Engine } from 'excalibur';
-import { TitleScene } from '@/game/scenes/title.scene';
 import { makeState } from './Observable';
 import { initControls, provideInput } from '@/game/input/useInput';
 import { ref } from 'vue';
 import { useSFX } from './useSFX';
 import { ExplorationScene } from '@/game/scenes/exploration.scene';
+import { HeadshotScene } from '@/game/scenes/headshot.scene';
 import { colors } from '@/lib/enum/colors.enum';
 
 const loader = new LiteLoader();
 
 type AvailableScenes = 'exploration';
+type HeadshotScenes = 'headshot';
 const paused = ref(false);
 const game = makeState<Engine<AvailableScenes>>();
+const headshotEngine = makeState<Engine<HeadshotScenes>>();
 const ready = ref(false);
 const activeView = ref('');
 const activeScript = ref<null | string>();
@@ -40,6 +42,26 @@ export function initGame() {
             },
         }),
     );
+
+    headshotEngine.set(
+        new Engine<HeadshotScenes>({
+            canvasElementId: 'headshot-canvas',
+            width: gameEnum.nativeWidth,
+            height: gameEnum.nativeHeight,
+            pixelArt: true,
+            pixelRatio: 2,
+            backgroundColor: Color.Transparent,
+            displayMode: DisplayMode.Fixed,
+            suppressPlayButton: true,
+            antialiasing: false,
+            scenes: {
+                headshot: {
+                    scene: HeadshotScene,
+                },
+            },
+        }),
+    );
+    headshotEngine.value.goToScene('headshot');
 
     initControls(game.value);
 
@@ -68,6 +90,7 @@ export const gameContext = {
     activeView,
     activeScript,
     game,
+    headshotEngine,
     ready,
     hasFrame,
     paused,

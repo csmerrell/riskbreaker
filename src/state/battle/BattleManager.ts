@@ -27,11 +27,10 @@ import { useGameContext } from '../useGameContext';
 import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
-import { getScale, getScreenCoords } from '@/lib/helpers/screen.helper';
+import { getScale } from '@/lib/helpers/screen.helper';
 import { useBattle } from '../useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
-import { computed, ref, Ref } from 'vue';
-import { makeState } from '../Observable';
+import { HeadshotManager } from './HeadshotManager';
 
 function getPositionInLane(
     lane: LaneKey,
@@ -46,9 +45,11 @@ function getPositionInLane(
 export class BattleManager extends SceneManager {
     private mask!: Actor;
     private terrain!: Actor;
+    public headshotManager: HeadshotManager;
 
     constructor(private parent: ExplorationManager) {
         super({ scene: parent.scene });
+        this.headshotManager = new HeadshotManager(this);
         this.createMask();
         this.setTerrain('grass');
         this.setReady();
@@ -254,13 +255,11 @@ export class BattleManager extends SceneManager {
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
 
+        this.headshotManager.captureHeadshot(new CompositeActor(player.appearance), true);
         return actor.actions
             .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
             .toPromise()
-            .then(async () => {
-                actor.useAnimation('static');
-                await requestAnimationFrame(() => {});
-                this.storeHeadshot(actor, true);
+            .then(() => {
                 actor.useAnimation('idle', { strategy: AnimationStrategy.Loop });
             });
     }
@@ -277,7 +276,7 @@ export class BattleManager extends SceneManager {
         }
     }
 
-    public async placeEnemy(e: KeyedAnimationActor, lane: LaneKey) {
+    public async placeEnemy(enemyConstructor: typeof KeyedAnimationActor, lane: LaneKey) {
         const boundingBox = this.parent.cameraManager.getBoundingBox()!;
         const numInLane = useBattle().battleState.value.enemies.filter(
             (p) => p.config.battlePosition === lane,
@@ -285,78 +284,32 @@ export class BattleManager extends SceneManager {
         const pos = this.scene.camera.pos.add(
             getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
         );
-        e.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
-        e.z = this.terrain.z + 1;
-        e.scale = vec(-1, 1);
-        this.laneUnitMap[lane].push(e);
-        this.parent.scene.add(e);
+        const enemy = new enemyConstructor();
+        enemy.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
+        enemy.z = this.terrain.z + 1;
+        enemy.scale = vec(-1, 1);
+        this.laneUnitMap[lane].push(enemy);
+        this.parent.scene.add(enemy);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-        return e.battleFieldEntry
-            ? e.battleFieldEntry(pos).then(async () => {
-                  e.useAnimation('static');
-                  await requestAnimationFrame(() => {});
-                  this.storeHeadshot(e);
-                  e.useAnimation('idle', { strategy: AnimationStrategy.Loop });
+        this.headshotManager.captureHeadshot(new enemyConstructor(), false);
+        return enemy.battleFieldEntry
+            ? enemy.battleFieldEntry(pos).then(() => {
+                  enemy.useAnimation('idle', { strategy: AnimationStrategy.Loop });
               })
-            : e.actions
+            : enemy.actions
                   .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
                   .toPromise()
-                  .then(async () => {
-                      e.useAnimation('static');
-                      await requestAnimationFrame(() => {});
-                      this.storeHeadshot(e);
-                      e.useAnimation('idle', { strategy: AnimationStrategy.Loop });
+                  .then(() => {
+                      enemy.useAnimation('idle', { strategy: AnimationStrategy.Loop });
                   });
     }
 
     public async placeEnemies() {
         const enemies = useBattle().battleState.value.enemies;
         for (const e of enemies) {
-            await this.placeEnemy(e.actor, e.config.battlePosition ?? 'right-1');
+            await this.placeEnemy(e.constructor, e.config.battlePosition ?? 'right-1');
         }
-    }
-
-    public headshots = makeState<{ path: string; id: number }[]>([]);
-    private async storeHeadshot(actor: Actor, isComposite: boolean = false) {
-        const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement;
-        const pixelRatio = 2;
-
-        const portraitCanvas = document.createElement('canvas');
-        portraitCanvas.width = 24 * getScale();
-        portraitCanvas.height = 12 * getScale();
-        const portraitCtx = portraitCanvas.getContext('2d')!;
-        portraitCtx.imageSmoothingEnabled = false;
-
-        let portraitAnchor = useGameContext().game.value.worldToScreenCoordinates(actor.pos);
-        if (isComposite) {
-            portraitAnchor = portraitAnchor.add(vec(-12, -9)).scale(pixelRatio);
-        }
-
-        console.log(
-            'Main canvas dimensions -- Width: ',
-            mainCanvas.width,
-            ' Height: ',
-            mainCanvas.height,
-        );
-        // Capture bottom-right quadrant of the canvas (for testing)
-        portraitCtx.drawImage(
-            mainCanvas,
-            portraitAnchor.x,
-            portraitAnchor.y,
-            24 * pixelRatio,
-            12 * pixelRatio,
-            0,
-            0,
-            portraitCanvas.width, // dest width - match canvas size (no scaling)
-            portraitCanvas.height, // dest height - match canvas size (no scaling)
-        );
-
-        this.headshots.set(
-            this.headshots.value.concat({
-                path: portraitCanvas.toDataURL(),
-                id: actor.id,
-            }),
-        );
     }
 
     public startBattle() {}

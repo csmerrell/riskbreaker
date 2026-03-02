@@ -1,4 +1,3 @@
-import { useBattle } from '@/state/useBattle';
 import { useExploration } from '@/state/useExploration';
 import { Engine, Scene } from 'excalibur';
 export class ExplorationScene extends Scene {

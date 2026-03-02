@@ -10,6 +10,8 @@ export const COMPOSITE_SPRITE_GRID = {
     columns: 12,
 };
 
+export type SpriteGridOptions = typeof COMPOSITE_SPRITE_GRID;
+
 const map = {
     static: {
         frames: [[0, 0, 0]],

@@ -35,8 +35,10 @@ const ready = computed(() => !Object.keys(dependencies.value).some((k) => !depen
 
 onMounted(() => {
     const game = initGame();
+    const headshotEngine = useGameContext().headshotEngine.value;
     const promises: Promise<void | void[]>[] = [];
     promises.push(game.start(new LiteLoader()));
+    promises.push(headshotEngine.start());
     promises.push(loadSave());
     useSprites().loadAllSprites();
 
@@ -109,6 +111,12 @@ function minimizeGame() {
                                 id="main-canvas"
                                 class="hide absolute inset-0 p-1"
                                 :class="activeView !== undefined && 'z-20'"
+                            />
+                            <canvas
+                                id="headshot-canvas"
+                                width="320"
+                                height="180"
+                                class="invisible"
                             />
                             <TitleScreen
                                 class="absolute inset-0"

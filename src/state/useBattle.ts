@@ -5,7 +5,7 @@ import { LaneKey } from './useParty';
 export type EnemyDef = {
     id: string;
     name: string;
-    actor: KeyedAnimationActor;
+    constructor: typeof KeyedAnimationActor;
     config: {
         battlePosition: LaneKey;
     };
@@ -30,9 +30,6 @@ function removeEnemy(id: string) {
     const idx = battleState.value.enemies.findIndex((e) => e.id === id);
     if (idx < 0) return;
 
-    if (!battleState.value.enemies[idx].actor.isKilled()) {
-        battleState.value.enemies[idx].actor.kill();
-    }
     battleState.set({
         ...battleState.value,
         enemies: battleState.value.enemies
@@ -42,7 +39,6 @@ function removeEnemy(id: string) {
 }
 
 function clearEnemies() {
-    battleState.value.enemies.forEach((e) => !e.actor.isKilled() && e.actor.kill());
     battleState.set({
         ...battleState.value,
         enemies: [],

@@ -212,14 +212,10 @@ export const newGameOriginSelect: GameScript = {
             registerInputListener(() => {
                 const { addEnemy, clearEnemies } = useBattle();
                 clearEnemies();
-                const dragon = new Dragon({
-                    name: 'Dragon',
-                });
-                dragon.scale = vec(-1, 1);
                 addEnemy({
                     id: nanoid(16),
                     name: 'Dragon',
-                    actor: dragon,
+                    constructor: Dragon,
                     config: {
                         battlePosition: 'right-1',
                     },

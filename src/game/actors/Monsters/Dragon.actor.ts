@@ -1,7 +1,7 @@
 import { resources } from '@/resource';
 import { AnimationStrategy, FrameEvent, vec, Vector, type ActorArgs } from 'excalibur';
 import { ReadyComponent } from '../ReadyComponent';
-import { FrameMap, type AnimationKey } from '@/resource/image/units/spriteMap';
+import { FrameMap, SpriteGridOptions, type AnimationKey } from '@/resource/image/units/spriteMap';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationActor } from '../KeyedAnimationActor';
 
@@ -101,9 +101,13 @@ const DRAGON_SPRITESHEET_GRID = {
 };
 
 export class Dragon extends KeyedAnimationActor {
+    protected spriteDimensions: SpriteGridOptions = DRAGON_SPRITESHEET_GRID;
+
     constructor(args: ActorArgs = {}) {
         super(args);
+        this.name = 'Dragon';
         this.offset = vec(4, -24);
+        this.scale = vec(-1, 1);
         this.addComponent(new ReadyComponent());
         this.addComponent(
             new Animator(
@@ -114,6 +118,12 @@ export class Dragon extends KeyedAnimationActor {
                 this.get(ReadyComponent),
             ),
         );
+    }
+
+    public getHeadshotTransforms() {
+        return {
+            offset: vec(33, 81),
+        };
     }
 
     public battleFieldEntry(pos: Vector): Promise<void> {
@@ -164,11 +174,5 @@ export class Dragon extends KeyedAnimationActor {
         },
     ): Promise<void> {
         return this.get(Animator).useKeyedAnimation(key, opts);
-    }
-
-    public getHeadshotTransforms() {
-        return {
-            scale: vec(-1, 1),
-        };
     }
 }

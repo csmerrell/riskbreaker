@@ -1,36 +1,33 @@
 <script setup lang="ts">
-import { getScale } from '@/lib/helpers/screen.helper';
-import ForecastedUnit from './ForecastedUnit.vue';
 import { useExploration } from '@/state/useExploration';
 import { computed, ref } from 'vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
+import { getScale } from '@/lib/helpers/screen.helper';
+import ForecastedUnit from './ForecastedUnit.vue';
 
-const battleManager = useExploration().getExplorationManager().battleManager;
-const headshots = ref<typeof battleManager.headshots.value>([]);
+const headshotManager = useExploration().getExplorationManager().battleManager.headshotManager;
+const headshots = ref<typeof headshotManager.headshots.value>([]);
 
-battleManager.headshots.subscribe((val) => {
+headshotManager.headshots.subscribe((val) => {
     headshots.value = val ?? [];
+    console.log('Doot');
 });
 
 const forecasts = computed(() =>
-    [...headshots.value, ...headshots.value, ...headshots.value, ...headshots.value].slice(0, 8),
+    [...headshots.value, ...headshots.value, ...headshots.value].slice(0, 8),
 );
 </script>
 
 <template>
-    <div class="relative">
-        <MenuBox v-if="headshots.length > 0" class="right-0 z-[9999] h-[390px] w-[700px] bg-bg">
-            ????
-            <img :src="headshots[0].path" />
-        </MenuBox>
-        <!-- <ForecastedUnit
+    <div class="relative left-2 top-2">
+        <ForecastedUnit
             v-for="(forecast, idx) in forecasts"
             :key="`${forecast.id}-${idx}`"
             :forecast
             :style="{
                 zIndex: headshots.length - idx,
-                marginTop: `${24 * getScale() * idx}px`,
+                marginLeft: `${26 * getScale() * idx}px`,
             }"
-        /> -->
+        />
     </div>
 </template>
