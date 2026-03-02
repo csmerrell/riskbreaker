@@ -42,5 +42,5 @@ function scriptDialogueMarker(event: ScriptedEvent & DialogueMarkerEvent) {
         movement,
     });
 
-    return Promise.reject('[Dialogue Marker] Not implemented yet');
+    return Promise.resolve('[Dialogue Marker] Not implemented yet');
 }

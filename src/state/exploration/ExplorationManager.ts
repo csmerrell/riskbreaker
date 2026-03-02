@@ -41,17 +41,6 @@ export class ExplorationManager extends SceneManager {
         // Load the test map and create actor
         captureControls('Exploration');
         this.setReady();
-
-        let toggle = false;
-        registerInputListener(() => {
-            if (toggle) {
-                this.mapManager.explorationTarget?.fadeOut();
-            } else {
-                this.mapManager.explorationTarget?.fadeIn();
-            }
-            console.log('Should toggle');
-            toggle = !toggle;
-        }, 'context_menu_1');
     }
 
     public async loadFromSave() {

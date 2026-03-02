@@ -1,27 +1,18 @@
 import { resources } from '@/resource';
-import {
-    Actor,
-    AnimationStrategy,
-    BoundingBox,
-    Color,
-    Engine,
-    FrameEvent,
-    Rectangle,
-    vec,
-    Vector,
-    type ActorArgs,
-} from 'excalibur';
+import { AnimationStrategy, FrameEvent, vec, Vector, type ActorArgs } from 'excalibur';
 import { ReadyComponent } from '../ReadyComponent';
 import { FrameMap, type AnimationKey } from '@/resource/image/units/spriteMap';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationActor } from '../KeyedAnimationActor';
-import { useExploration } from '@/state/useExploration';
 
 if (!resources.image.enemy.Dragon.isLoaded()) {
     resources.image.enemy.Dragon.load();
 }
 
 const spriteMap = {
+    static: {
+        frames: [[0, 3, 0]],
+    },
     idle: {
         frames: [
             [0, 3, 40],
@@ -173,5 +164,11 @@ export class Dragon extends KeyedAnimationActor {
         },
     ): Promise<void> {
         return this.get(Animator).useKeyedAnimation(key, opts);
+    }
+
+    public getHeadshotTransforms() {
+        return {
+            scale: vec(-1, 1),
+        };
     }
 }

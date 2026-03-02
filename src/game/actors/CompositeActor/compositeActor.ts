@@ -1,9 +1,7 @@
-import { Actor, ActorArgs, AnimationStrategy, Engine, Material, Animation } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import type { AnimationKey } from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
-import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
-import { KeyedAnimationActor } from '../KeyedAnimationActor';
 
 export type CompositeSpriteLayers =
     | 'armor'
@@ -24,7 +22,7 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
     return (a as CompositeActor).type === 'CompositeActor';
 }
 
-export class CompositeActor extends KeyedAnimationActor {
+export class CompositeActor extends Actor {
     public type = 'CompositeActor';
     public partyId?: string;
     private mannequin!: CompositeLayer;
@@ -36,7 +34,13 @@ export class CompositeActor extends KeyedAnimationActor {
     private currentAnimationKey: AnimationKey = 'static';
     private velCheckCt: number = 0;
 
-    constructor(opts: ActorArgs & CompositeActorConfig) {
+    public cloneStatic(args: ActorArgs = {}): CompositeActor {
+        const staticClone = new CompositeActor(Object.assign(this.opts, args));
+        staticClone.useAnimation('static');
+        return staticClone;
+    }
+
+    constructor(private opts: ActorArgs & CompositeActorConfig) {
         const {
             armor: armorKey,
             mainHand: mainHandKey,

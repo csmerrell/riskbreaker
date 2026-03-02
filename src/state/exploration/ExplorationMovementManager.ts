@@ -45,7 +45,7 @@ export class ExplorationMovementManager extends SceneManager {
         this.movementSpeed = speed;
     }
 
-    private listener: string;
+    private listener?: string;
     public enableMovement() {
         this.listener = registerHoldListener((commands: InputMap) => {
             if (this.bufferedInput || Date.now() - this.debounceTime < this.movementSpeed - 20) {
@@ -75,13 +75,20 @@ export class ExplorationMovementManager extends SceneManager {
                 this.bufferedInput = direction;
             }
         });
+        this.movementDisabled = false;
     }
 
+    private movementDisabled: boolean = false;
     public disableMovement() {
-        unregisterInputListener(this.listener);
+        this.movementDisabled = true;
+        if (this.listener) {
+            unregisterInputListener(this.listener);
+        }
     }
 
     private move(direction: Vector) {
+        if (this.movementDisabled) return;
+
         const mapGround = this.parent.mapManager.getMapGround();
         if (!mapGround) return;
 
@@ -138,10 +145,12 @@ export class ExplorationMovementManager extends SceneManager {
         const { x, y } = this.getPlayerTileCoord();
         const keyPoint = this.parent.mapManager.currentMap.value.keyPoints[`${x}_${y}`];
 
-        if (this.bufferedInput && !isHaltingKeypoint(keyPoint)) {
+        if (this.bufferedInput && !(keyPoint && isHaltingKeypoint(keyPoint))) {
             this.move(this.bufferedInput);
-            delete this.bufferedInput;
+        } else if (keyPoint && isHaltingKeypoint(keyPoint)) {
+            this.disableMovement();
         }
+        delete this.bufferedInput;
 
         return new Promise<void>((resolve) => {
             setTimeout(() => {
@@ -172,6 +181,9 @@ export class ExplorationMovementManager extends SceneManager {
                 this.scene.events.emit('moved', {
                     newPos: this.getPlayerTileCoord(),
                 });
+                if (this.movementDisabled) {
+                    this.enableMovement();
+                }
                 resolve();
             }, 75);
         });

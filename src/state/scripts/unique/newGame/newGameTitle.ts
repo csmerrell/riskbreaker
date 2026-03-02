@@ -22,7 +22,8 @@ export const newGameTitle: GameScript = {
             await loadParty();
 
             //add default leader to exploration screen, so camera can position
-            const leader = new CompositeActor(getLeader().appearance);
+            const { mainHand, offHand, ...leaderAppearance } = getLeader().appearance;
+            const leader = new CompositeActor(leaderAppearance);
             leader.addComponent(new LightSource({ radius: 1 }));
             await explorationManager.actorManager.addPlayer(leader);
 

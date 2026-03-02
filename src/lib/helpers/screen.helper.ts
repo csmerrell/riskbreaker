@@ -1,5 +1,6 @@
+import { useGameContext } from '@/state/useGameContext';
 import { gameEnum } from '../enum/game.enum';
-import { vec } from 'excalibur';
+import { Vector } from 'excalibur';
 
 export function getScale() {
     return Math.max(
@@ -8,20 +9,6 @@ export function getScale() {
     );
 }
 
-export function getGameCoords(coordinates: { x: number; y: number }) {
-    const scale = getScale();
-
-    // Translate DOM coordinates to game coordinates relative to (0,0)
-    return vec(
-        ~~((coordinates.x - window.innerWidth / 2) / scale),
-        ~~((coordinates.y - window.innerHeight / 2) / scale),
-    );
-}
-
-export function getScreenCoords(coordinates: { x: number; y: number }) {
-    const scale = getScale();
-    return vec(
-        ~~(coordinates.x * scale + window.innerWidth / 2),
-        ~~(coordinates.y * scale + window.innerHeight / 2),
-    );
+export function getScreenCoords(coordinates: Vector) {
+    return useGameContext().game.value.worldToScreenCoordinates(coordinates).scale(getScale());
 }

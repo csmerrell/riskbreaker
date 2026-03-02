@@ -164,7 +164,6 @@ export class CompositeLayer extends Actor {
             opacityStep < 0
                 ? Math.max(0, this.graphics.opacity + opacityStep)
                 : Math.min(this.graphics.opacity + opacityStep, 1);
-        console.log(`fading to ${nextOpacity}`);
         this.graphics.opacity = nextOpacity;
     }
 }

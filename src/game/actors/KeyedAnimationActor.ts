@@ -2,12 +2,22 @@ import { AnimationKey } from '@/resource/image/units/spriteMap';
 import { Actor, ActorArgs, AnimationStrategy, Vector } from 'excalibur';
 
 export class KeyedAnimationActor extends Actor {
-    constructor(opts: ActorArgs) {
+    constructor(private opts: ActorArgs) {
         super(opts);
+    }
+
+    public cloneStatic(args: ActorArgs = {}): KeyedAnimationActor {
+        const staticClone = new KeyedAnimationActor(Object.assign(this.opts, args));
+        staticClone.useAnimation('static');
+        return staticClone;
     }
 
     public battleFieldEntry?(_pos: Vector): Promise<void> {
         return Promise.resolve();
+    }
+
+    public getHeadshotTransforms(): { offset?: Vector; scale?: Vector } {
+        throw new Error('[getHeadshotTransforms] Must be implemented by inheritors');
     }
 
     public useAnimation(
@@ -20,6 +30,6 @@ export class KeyedAnimationActor extends Actor {
             noSuppress?: boolean;
         },
     ): Promise<void | void[]> {
-        return Promise.reject('Animator: [useAnimation] Must be implemented by sub-class');
+        return Promise.resolve();
     }
 }

@@ -81,7 +81,7 @@ export class Animator<T extends Record<string, FrameMap>> extends Component {
     ) {
         const { strategy, next } = opts;
         if (!this.animations[key]) {
-            return Promise.reject();
+            return Promise.resolve();
         }
         if (!opts.noReset) {
             this.animations[key].reset();

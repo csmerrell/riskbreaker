@@ -8,7 +8,7 @@ export class SceneManager {
     protected engine: Engine;
     public scene: Scene;
     protected setReady: (value: void) => void;
-    private isReady: Promise<Scene>;
+    private isReady: Promise<unknown>;
 
     constructor(opts: SceneManagerOpts) {
         this.engine = useGameContext().game.value;
