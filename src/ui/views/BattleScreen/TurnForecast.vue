@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useExploration } from '@/state/useExploration';
 import { computed, ref } from 'vue';
-import MenuBox from '@/ui/components/MenuBox.vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import ForecastedUnit from './ForecastedUnit.vue';
 
@@ -10,7 +9,6 @@ const headshots = ref<typeof headshotManager.headshots.value>([]);
 
 headshotManager.headshots.subscribe((val) => {
     headshots.value = val ?? [];
-    console.log('Doot');
 });
 
 const forecasts = computed(() =>

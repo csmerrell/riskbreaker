@@ -2,12 +2,41 @@ import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { makeState } from './Observable';
 import { LaneKey } from './useParty';
 
+export type UnitStats = {
+    hp: number;
+    speed: number;
+
+    //phys
+    strength: number;
+    dexterity: number;
+    balance: number;
+
+    //mental
+    intelligence: number;
+    wisdom: number;
+    lucidity: number;
+
+    //def
+    fortitude: number;
+};
+
+export type StatusEffects = {
+    poison: number;
+    sleep: number;
+    poised: number;
+};
+
 export type EnemyDef = {
     id: string;
     name: string;
     constructor: typeof KeyedAnimationActor;
     config: {
         battlePosition: LaneKey;
+    };
+    stats: UnitStats & {
+        current: Partial<UnitStats>;
+        mods: Partial<UnitStats>;
+        effects: Partial<StatusEffects>;
     };
 };
 

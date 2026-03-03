@@ -1,8 +1,10 @@
-import { AnimationKey, SpriteGridOptions } from '@/resource/image/units/spriteMap';
-import { Actor, ActorArgs, AnimationStrategy, vec, Vector } from 'excalibur';
+import { SpriteGridOptions } from '@/resource/image/units/spriteMap';
+import { Actor, ActorArgs, Vector } from 'excalibur';
+import { Animator, UseKeyedAnimationOpts } from './Animation/Animator';
 
-export class KeyedAnimationActor extends Actor {
+export class KeyedAnimationActor<T extends string> extends Actor {
     protected spriteDimensions!: SpriteGridOptions;
+    public battleEntryKey?: T;
 
     constructor(private opts: ActorArgs = {}) {
         super(opts);
@@ -21,20 +23,14 @@ export class KeyedAnimationActor extends Actor {
         throw new Error('[getHeadshotTransforms] Must be implemented by inheritors');
     }
 
-    public battleFieldEntry?(_pos: Vector): Promise<void> {
-        return Promise.resolve();
-    }
+    public battleFieldEntry?: (_pos: Vector) => Promise<void>;
 
-    public useAnimation(
-        _key: string,
-        _opts?: {
-            strategy?: AnimationStrategy;
-            next?: AnimationKey;
-            scale?: number;
-            noReset?: boolean;
-            noSuppress?: boolean;
-        },
-    ): Promise<void | void[]> {
-        return Promise.resolve();
+    public useAnimation(key: T, opts?: UseKeyedAnimationOpts<string>): Promise<void | void[]> {
+        if (!this.get(Animator)) {
+            throw new Error(
+                `[KeyedAnimationActor] must have an Animator component added in its constructor.\n\nAnimator not found for [${this.name}]`,
+            );
+        }
+        return this.get(Animator).useKeyedAnimation(key, opts);
     }
 }

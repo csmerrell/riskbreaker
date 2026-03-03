@@ -31,6 +31,7 @@ import { getScale } from '@/lib/helpers/screen.helper';
 import { useBattle } from '../useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
+import { TurnManager } from './TurnManager';
 
 function getPositionInLane(
     lane: LaneKey,
@@ -46,10 +47,12 @@ export class BattleManager extends SceneManager {
     private mask!: Actor;
     private terrain!: Actor;
     public headshotManager: HeadshotManager;
+    public turnManager: TurnManager;
 
     constructor(private parent: ExplorationManager) {
         super({ scene: parent.scene });
         this.headshotManager = new HeadshotManager(this);
+        this.turnManager = new TurnManager(this);
         this.createMask();
         this.setTerrain('grass');
         this.setReady();
@@ -125,6 +128,7 @@ export class BattleManager extends SceneManager {
     public battleStartReady: Promise<void> = Promise.resolve();
     public async openBattle(opts: { empty?: boolean } = {}): Promise<void> {
         captureControls('Battle');
+        this.headshotManager.clearHeadshots();
         this.battleStartReady = new Promise<void>(async (setBattleReady) => {
             const activeView = useGameContext().activeView;
             this.previousView = activeView.value;
@@ -233,7 +237,7 @@ export class BattleManager extends SceneManager {
                 : Math.min(this.mask.graphics.opacity + opacityStep, 0.8);
     }
 
-    public laneUnitMap: Record<LaneKey, (KeyedAnimationActor | CompositeActor)[]> = {
+    public laneUnitMap: Record<LaneKey, (KeyedAnimationActor<string> | CompositeActor)[]> = {
         'left-2': [],
         'left-1': [],
         mid: [],
@@ -255,7 +259,7 @@ export class BattleManager extends SceneManager {
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
 
-        this.headshotManager.captureHeadshot(new CompositeActor(player.appearance), true);
+        this.headshotManager.captureHeadshot(new CompositeActor(player.appearance));
         return actor.actions
             .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
             .toPromise()
@@ -285,14 +289,17 @@ export class BattleManager extends SceneManager {
             getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
         );
         const enemy = new enemyConstructor();
-        enemy.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
+        enemy.pos = vec(
+            boundingBox.right + enemy.getDimensions().spriteWidth,
+            boundingBox.top + boundingBox.height / 2,
+        );
         enemy.z = this.terrain.z + 1;
-        enemy.scale = vec(-1, 1);
         this.laneUnitMap[lane].push(enemy);
         this.parent.scene.add(enemy);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        enemy.useAnimation(enemy.battleEntryKey ?? 'static');
 
-        this.headshotManager.captureHeadshot(new enemyConstructor(), false);
+        this.headshotManager.captureHeadshot(new enemyConstructor());
         return enemy.battleFieldEntry
             ? enemy.battleFieldEntry(pos).then(() => {
                   enemy.useAnimation('idle', { strategy: AnimationStrategy.Loop });
@@ -312,7 +319,9 @@ export class BattleManager extends SceneManager {
         }
     }
 
-    public startBattle() {}
+    public startBattle() {
+        this.turnManager.start();
+    }
 
     private listeners: string[] = [];
     private registerInput() {

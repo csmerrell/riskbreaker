@@ -6,8 +6,6 @@ type Props = {
 };
 
 const { forecast } = defineProps<Props>();
-console.log(forecast);
-debugger;
 </script>
 
 <template>

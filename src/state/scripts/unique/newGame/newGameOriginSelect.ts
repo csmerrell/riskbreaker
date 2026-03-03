@@ -26,6 +26,7 @@ import { useGameContext } from '@/state/useGameContext';
 import { maps } from '@/resource/maps';
 import { useBattle } from '@/state/useBattle';
 import { Dragon } from '@/game/actors/Monsters/Dragon.actor';
+import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 
 type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
 function displayPlayerOrigin(
@@ -215,7 +216,7 @@ export const newGameOriginSelect: GameScript = {
                 addEnemy({
                     id: nanoid(16),
                     name: 'Dragon',
-                    constructor: Dragon,
+                    constructor: Dragon as typeof KeyedAnimationActor,
                     config: {
                         battlePosition: 'right-1',
                     },

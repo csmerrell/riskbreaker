@@ -95,7 +95,6 @@ export class CompositeLayer extends Actor {
     }
 
     onInitialize(engine: Engine): void {
-        this.useAnimation('static');
         if (this.type === 'mannequin') {
             this.footShadow = engine.graphicsContext.createMaterial({
                 name: 'footShadow',

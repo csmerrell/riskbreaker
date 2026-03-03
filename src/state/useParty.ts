@@ -3,6 +3,7 @@ import { makeState } from './Observable';
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equipment';
 import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
+import { StatusEffects, UnitStats } from './useBattle';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
@@ -15,8 +16,13 @@ export type PartyMember = {
     };
     appearance: CompositeActorConfig;
     equipment: Partial<Record<EquipmentSlotKey, StaticEquipmentKey>>;
-    skills: Record<string, unknown>;
+    abilities: Record<string, unknown>;
     passives: Record<string, unknown>;
+    stats: UnitStats & {
+        current: Partial<UnitStats>;
+        mods: Partial<UnitStats>;
+        effects: Partial<StatusEffects>;
+    };
 };
 
 export type PartyState = {

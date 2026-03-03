@@ -12,7 +12,13 @@ export class HeadshotManager {
 
     constructor(private parent: BattleManager) {}
 
-    public async captureHeadshot(actor: CompositeActor | KeyedAnimationActor): Promise<string> {
+    public clearHeadshots() {
+        this.headshots.set([]);
+    }
+
+    public async captureHeadshot(
+        actor: CompositeActor | KeyedAnimationActor<string>,
+    ): Promise<string> {
         const scene = useGameContext().headshotEngine.value.currentScene;
         scene.actors.forEach((a) => {
             a.kill();

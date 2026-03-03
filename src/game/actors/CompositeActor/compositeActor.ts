@@ -49,7 +49,6 @@ export class CompositeActor extends Actor {
             ...excalOpts
         } = opts;
         super(excalOpts);
-        console.log(this.height);
 
         this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
         if (armorKey) {

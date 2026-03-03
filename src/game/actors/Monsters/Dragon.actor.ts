@@ -2,7 +2,7 @@ import { resources } from '@/resource';
 import { AnimationStrategy, FrameEvent, vec, Vector, type ActorArgs } from 'excalibur';
 import { ReadyComponent } from '../ReadyComponent';
 import { FrameMap, SpriteGridOptions, type AnimationKey } from '@/resource/image/units/spriteMap';
-import { Animator } from '../Animation/Animator';
+import { Animator, UseKeyedAnimationOpts } from '../Animation/Animator';
 import { KeyedAnimationActor } from '../KeyedAnimationActor';
 
 if (!resources.image.enemy.Dragon.isLoaded()) {
@@ -91,7 +91,7 @@ const spriteMap = {
         ],
     },
 } as const satisfies Record<string, FrameMap>;
-type DragonAnimationKey = keyof typeof spriteMap;
+export type DragonAnimationKey = keyof typeof spriteMap;
 
 const DRAGON_SPRITESHEET_GRID = {
     spriteHeight: 118,
@@ -100,7 +100,7 @@ const DRAGON_SPRITESHEET_GRID = {
     columns: 8,
 };
 
-export class Dragon extends KeyedAnimationActor {
+export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
     protected spriteDimensions: SpriteGridOptions = DRAGON_SPRITESHEET_GRID;
 
     constructor(args: ActorArgs = {}) {
@@ -126,8 +126,9 @@ export class Dragon extends KeyedAnimationActor {
         };
     }
 
-    public battleFieldEntry(pos: Vector): Promise<void> {
+    public battleFieldEntry = async (pos: Vector): Promise<void> => {
         this.pos = vec(pos.x, pos.y - 125);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         this.useAnimation('hover', {
             strategy: AnimationStrategy.Loop,
         });
@@ -161,18 +162,5 @@ export class Dragon extends KeyedAnimationActor {
                 }
             });
         });
-    }
-
-    public useAnimation(
-        key: DragonAnimationKey,
-        opts?: {
-            strategy?: AnimationStrategy;
-            next?: AnimationKey;
-            scale?: number;
-            noReset?: boolean;
-            noSuppress?: boolean;
-        },
-    ): Promise<void> {
-        return this.get(Animator).useKeyedAnimation(key, opts);
-    }
+    };
 }

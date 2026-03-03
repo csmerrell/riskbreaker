@@ -11,6 +11,13 @@ import { ReadyComponent } from '../ReadyComponent';
 import { FrameMap } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
 
+export type UseKeyedAnimationOpts<T extends string> = {
+    strategy?: AnimationStrategy;
+    next?: T;
+    scale?: number;
+    noReset?: boolean;
+};
+
 export class Animator<T extends Record<string, FrameMap>> extends Component {
     private spriteSheet!: SpriteSheet;
     private animations: Record<keyof T, Animation> = {} as Record<keyof T, Animation>;
@@ -91,7 +98,12 @@ export class Animator<T extends Record<string, FrameMap>> extends Component {
                 key: String(key),
                 animation: this.animations[key].clone(),
             };
-            this.activeAnimation.animation.strategy = strategy ?? AnimationStrategy.Freeze;
+            const frames = this.animations[key].frames;
+            this.activeAnimation.animation.strategy =
+                strategy ??
+                (frames[frames.length - 1].duration === 1
+                    ? AnimationStrategy.Freeze
+                    : AnimationStrategy.Loop);
         }
 
         return new Promise<void>((resolve) => {
@@ -110,8 +122,8 @@ export class Animator<T extends Record<string, FrameMap>> extends Component {
 
     public stopAnimation() {
         if (this.activeAnimation) {
-            this.activeAnimation.pause();
-            this.activeAnimation.reset();
+            this.activeAnimation.animation.pause();
+            this.activeAnimation.animation.reset();
             delete this.activeAnimation;
             this.owner.graphics.use('static');
         }

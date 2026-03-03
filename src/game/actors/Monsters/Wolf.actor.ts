@@ -1,0 +1,105 @@
+import { ActorArgs, vec, Vector } from 'excalibur';
+import { KeyedAnimationActor } from '../KeyedAnimationActor';
+import { FrameMap } from '@/resource/image/units/spriteMap';
+import { resources } from '@/resource';
+import { ReadyComponent } from '../ReadyComponent';
+import { Animator } from '../Animation/Animator';
+
+const wolfSpriteMap = {
+    static: {
+        frames: [[0, 0, 0]],
+    },
+    idle: {
+        frames: [
+            [0, 0, 8],
+            [1, 0, 6],
+            [2, 0, 4],
+            [3, 0, 6],
+        ],
+    },
+    forwardJump: {
+        frames: [[4, 0, 0]],
+    },
+    attack: {
+        frames: [
+            [5, 0, 2],
+            [0, 1, 1],
+            [1, 1, 1],
+            [2, 1, 2],
+            [3, 1, 1],
+            [4, 1, 1],
+            [5, 1, 0],
+        ],
+    },
+    backJump: {
+        frames: [[0, 3, 0]],
+    },
+    charge: {
+        frames: [
+            [5, 2, 2],
+            [0, 3, 0],
+        ],
+    },
+    preHurt: {
+        frames: [[3, 4, 0]],
+    },
+    hurt: {
+        frames: [
+            [3, 3, 1],
+            [4, 3, 1],
+            [5, 3, 0],
+        ],
+    },
+    weak: {
+        frames: [[0, 4, 0]],
+    },
+    death: {
+        frames: [
+            [0, 4, 2],
+            [1, 4, 1],
+            [2, 4, 1],
+            [3, 4, 1],
+            [4, 4, 0],
+        ],
+    },
+} as const satisfies Record<string, FrameMap>;
+
+export type WolfAnimationKey = keyof typeof wolfSpriteMap;
+
+const WOLF_SPRITESHEET_GRID = {
+    spriteHeight: 32,
+    spriteWidth: 48,
+    rows: 5,
+    columns: 6,
+};
+export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
+    protected spriteDimensions = WOLF_SPRITESHEET_GRID;
+    public battleEntryKey: WolfAnimationKey = 'forwardJump';
+
+    constructor(opts: { palette: 'white' | 'black' } & ActorArgs) {
+        super(opts);
+        this.offset = vec(0, -4);
+
+        const { palette } = opts;
+        this.addComponent(new ReadyComponent());
+        this.addComponent(
+            new Animator(
+                this,
+                wolfSpriteMap,
+                resources.image.enemy.Wolf[palette],
+                WOLF_SPRITESHEET_GRID,
+                this.get(ReadyComponent),
+            ),
+        );
+    }
+
+    public getDimensions() {
+        return WOLF_SPRITESHEET_GRID;
+    }
+
+    public getHeadshotTransforms(): { offset?: Vector; scale?: Vector } {
+        return {
+            offset: vec(-2, 10),
+        };
+    }
+}

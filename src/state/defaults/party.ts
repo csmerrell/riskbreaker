@@ -19,7 +19,7 @@ export const RiskbreakerDefault: PartyMember = {
         mainHand: 'worn_scimitar',
         offHand: 'worn_buckler',
     },
-    skills: {
+    abilities: {
         shieldBash: {
             name: 'Shield Bash',
         },
@@ -28,6 +28,20 @@ export const RiskbreakerDefault: PartyMember = {
         challengeTheOdds: {
             name: 'Challenge the Odds',
         },
+    },
+    stats: {
+        hp: 125,
+        speed: 10,
+        strength: 6,
+        dexterity: 5,
+        balance: 10,
+        intelligence: 2,
+        wisdom: 7,
+        lucidity: 1,
+        fortitude: 8,
+        current: {},
+        mods: {},
+        effects: {},
     },
 };
 
@@ -44,7 +58,7 @@ export const AstrologianDefault: PartyMember = {
     equipment: {
         mainHand: 'worn_tome',
     },
-    skills: {
+    abilities: {
         starflash: {
             name: 'Starflash',
         },
@@ -53,5 +67,19 @@ export const AstrologianDefault: PartyMember = {
         distillLight: {
             name: 'Distill Light',
         },
+    },
+    stats: {
+        hp: 80,
+        speed: 9,
+        strength: 2,
+        dexterity: 2,
+        balance: 6,
+        intelligence: 10,
+        wisdom: 10,
+        lucidity: 10,
+        fortitude: 4,
+        current: {},
+        mods: {},
+        effects: {},
     },
 };
