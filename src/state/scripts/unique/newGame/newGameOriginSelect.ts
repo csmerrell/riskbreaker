@@ -24,7 +24,7 @@ import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeAct
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { useGameContext } from '@/state/useGameContext';
 import { maps } from '@/resource/maps';
-import { useBattle } from '@/state/useBattle';
+import { useBattle } from '@/state/battle/useBattle';
 import { Dragon } from '@/game/actors/Monsters/Dragon.actor';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 
@@ -191,7 +191,7 @@ export const newGameOriginSelect: GameScript = {
             const leader = useParty().getLeader();
             const { mainHand, offHand, ...leaderAppearance } = leader.appearance;
             const actor = new CompositeActor(leaderAppearance);
-            actor.partyId = leader.id;
+            actor.unitId = leader.id;
             actor.addComponent(new LightSource({ radius: 1 }));
 
             const actorMgr = explorationMgr.actorManager;
@@ -220,6 +220,7 @@ export const newGameOriginSelect: GameScript = {
                     config: {
                         battlePosition: 'right-1',
                     },
+                    stats: Dragon.stats,
                 });
                 explorationMgr.battleManager.openBattle();
             }, 'context_menu_2');

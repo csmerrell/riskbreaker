@@ -28,7 +28,7 @@ import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
 import { getScale } from '@/lib/helpers/screen.helper';
-import { useBattle } from '../useBattle';
+import { EnemyDef, useBattle } from './useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
 import { TurnManager } from './TurnManager';
@@ -214,6 +214,7 @@ export class BattleManager extends SceneManager {
         activeView.value = this.previousView;
         this.previousView = '';
         unCaptureControls();
+        this.endBattle();
     }
 
     private stepOpacity(opacityStep: number) {
@@ -259,7 +260,9 @@ export class BattleManager extends SceneManager {
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
 
-        this.headshotManager.captureHeadshot(new CompositeActor(player.appearance));
+        const portraitActor = new CompositeActor(player.appearance);
+        portraitActor.unitId = player.id;
+        this.headshotManager.captureHeadshot(portraitActor);
         return actor.actions
             .moveTo({ pos, duration: 500, easing: EasingFunctions.EaseOutCubic })
             .toPromise()
@@ -280,7 +283,7 @@ export class BattleManager extends SceneManager {
         }
     }
 
-    public async placeEnemy(enemyConstructor: typeof KeyedAnimationActor, lane: LaneKey) {
+    public async placeEnemy(e: EnemyDef, lane: LaneKey) {
         const boundingBox = this.parent.cameraManager.getBoundingBox()!;
         const numInLane = useBattle().battleState.value.enemies.filter(
             (p) => p.config.battlePosition === lane,
@@ -288,7 +291,7 @@ export class BattleManager extends SceneManager {
         const pos = this.scene.camera.pos.add(
             getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
         );
-        const enemy = new enemyConstructor();
+        const enemy = new e.constructor();
         enemy.pos = vec(
             boundingBox.right + enemy.getDimensions().spriteWidth,
             boundingBox.top + boundingBox.height / 2,
@@ -298,8 +301,11 @@ export class BattleManager extends SceneManager {
         this.parent.scene.add(enemy);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         enemy.useAnimation(enemy.battleEntryKey ?? 'static');
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-        this.headshotManager.captureHeadshot(new enemyConstructor());
+        const portraitActor = new e.constructor();
+        portraitActor.unitId = e.id;
+        this.headshotManager.captureHeadshot(portraitActor);
         return enemy.battleFieldEntry
             ? enemy.battleFieldEntry(pos).then(() => {
                   enemy.useAnimation('idle', { strategy: AnimationStrategy.Loop });
@@ -315,12 +321,16 @@ export class BattleManager extends SceneManager {
     public async placeEnemies() {
         const enemies = useBattle().battleState.value.enemies;
         for (const e of enemies) {
-            await this.placeEnemy(e.constructor, e.config.battlePosition ?? 'right-1');
+            await this.placeEnemy(e, e.config.battlePosition ?? 'right-1');
         }
     }
 
     public startBattle() {
         this.turnManager.start();
+    }
+
+    public endBattle() {
+        this.turnManager.reset();
     }
 
     private listeners: string[] = [];

@@ -5,7 +5,7 @@ import { resources } from '@/resource';
 import { COMPOSITE_SPRITE_GRID } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
 import { useGameContext } from '@/state/useGameContext';
-import { useBattle } from '@/state/useBattle';
+import { useBattle } from '@/state/battle/useBattle';
 import { useExploration } from '@/state/useExploration';
 
 const stonecaller = new CompositeActor({

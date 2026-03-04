@@ -190,7 +190,7 @@ const classes = ref(
                         {{ procMessage.slice(5) }}
                     </span>
                     <span v-else>{{ procMessage }}</span>
-                    <Transition name="fade">
+                    <Transition name="fade" :duration="500">
                         <span
                             v-if="showPrompt"
                             class="picon-arrow-bar-right fade-pulse absolute bottom-[-6px] right-1 scale-y-75 text-lg opacity-80"

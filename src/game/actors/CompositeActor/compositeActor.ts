@@ -28,7 +28,7 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
 
 export class CompositeActor extends Actor {
     public type = 'CompositeActor';
-    public partyId?: string;
+    public unitId?: string;
     private spriteDimensions: SpriteGridOptions = COMPOSITE_SPRITE_GRID;
     private mannequin!: CompositeLayer;
     private mainHand: CompositeLayer[] = [];

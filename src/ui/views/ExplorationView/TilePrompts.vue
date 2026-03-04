@@ -77,7 +77,7 @@ const appliedPosition = computed(() => {
 </script>
 
 <template>
-    <Transition name="fade">
+    <Transition name="fade" :duration="500">
         <div
             v-if="tileControls"
             ref="el"

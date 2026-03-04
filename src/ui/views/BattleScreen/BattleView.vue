@@ -22,28 +22,14 @@ const mockUnits = ref({
         },
     ],
 });
-
-watch(activeView, (next) => {
-    if (next === 'battle') {
-        onFocus();
-    }
-});
-
-const forecastReady = ref(false);
-async function onFocus() {
-    const battleMgr = useExploration().getExplorationManager().battleManager;
-    battleMgr.ready().then(() => (forecastReady.value = true));
-}
 </script>
 
 <template>
-    <Transition :duration="250">
+    <Transition name="fade" :duration="500">
         <div v-if="activeView === 'battle'">
-            <Transition :duration="250">
-                <div v-if="forecastReady">
-                    <TurnForecast />
-                </div>
-            </Transition>
+            <div class="relative size-full">
+                <TurnForecast />
+            </div>
             <div class="absolute bottom-4 right-4">
                 <div class="bg-bg opacity-70">
                     <PlayerReadout :players="mockUnits.players" class="invisible p-2" />

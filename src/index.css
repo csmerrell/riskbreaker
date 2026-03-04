@@ -34,6 +34,17 @@ img {
     --yellow-700: #7D6C0C;
 }
 
+.fade-enter-active,
+.fade-leave-active {
+  transition-property: opacity;
+  transition-timing-function: ease-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 @media (min-height: 720px) {
     :root {
         --sprite-scale: var(--sprite-scale-lg);

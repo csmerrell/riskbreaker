@@ -1,6 +1,7 @@
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import { PartyMember } from '../useParty';
 import { nanoid } from 'nanoid';
+import { emptyStatMods } from '../battle/UnitStats';
 
 export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
@@ -31,7 +32,7 @@ export const RiskbreakerDefault: PartyMember = {
     },
     stats: {
         hp: 125,
-        speed: 10,
+        speed: 14,
         strength: 6,
         dexterity: 5,
         balance: 10,
@@ -39,8 +40,7 @@ export const RiskbreakerDefault: PartyMember = {
         wisdom: 7,
         lucidity: 1,
         fortitude: 8,
-        current: {},
-        mods: {},
+        mods: emptyStatMods(),
         effects: {},
     },
 };
@@ -70,7 +70,7 @@ export const AstrologianDefault: PartyMember = {
     },
     stats: {
         hp: 80,
-        speed: 9,
+        speed: 14,
         strength: 2,
         dexterity: 2,
         balance: 6,
@@ -78,8 +78,7 @@ export const AstrologianDefault: PartyMember = {
         wisdom: 10,
         lucidity: 10,
         fortitude: 4,
-        current: {},
-        mods: {},
+        mods: emptyStatMods(),
         effects: {},
     },
 };

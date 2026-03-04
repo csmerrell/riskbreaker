@@ -67,7 +67,7 @@ export class ActorManager extends SceneManager {
     public getLeader(): CompositeActor {
         const leader = useParty().getLeader();
         return (
-            (leader && Array.from(this.players).find((p) => p.partyId === leader.id)) ??
+            (leader && Array.from(this.players).find((p) => p.unitId === leader.id)) ??
             Array.from(this.players)[0]
         );
     }

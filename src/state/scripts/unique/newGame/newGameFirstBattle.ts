@@ -1,6 +1,6 @@
 import { useExploration } from '@/state/useExploration';
 import { GameScript } from '../../types/GameScript';
-import { EnemyDef, useBattle } from '@/state/useBattle';
+import { EnemyDef, useBattle } from '@/state/battle/useBattle';
 import { Wolf } from '@/game/actors/Monsters/Wolf.actor';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { nanoid } from 'nanoid';
@@ -18,6 +18,7 @@ function getWolfDef(position: LaneKey, palette: 'white' | 'black'): EnemyDef {
                 super({ palette });
             }
         } as unknown as typeof KeyedAnimationActor,
+        stats: Wolf.stats[palette],
     };
 }
 export const newGameFirstBattle: GameScript = {
@@ -29,13 +30,12 @@ export const newGameFirstBattle: GameScript = {
         },
         async () => {
             const explorationMgr = useExploration().getExplorationManager();
+            await explorationMgr.awaitCameraSettle();
             const battleMgr = explorationMgr.battleManager;
             const { addEnemy, clearEnemies } = useBattle();
             clearEnemies();
             addEnemy(getWolfDef('mid', 'black'));
             addEnemy(getWolfDef('right-1', 'black'));
-            addEnemy(getWolfDef('right-1', 'black'));
-            addEnemy(getWolfDef('right-2', 'white'));
             battleMgr.openBattle();
         },
     ],

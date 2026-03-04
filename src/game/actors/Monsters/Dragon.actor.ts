@@ -1,9 +1,10 @@
 import { resources } from '@/resource';
 import { AnimationStrategy, FrameEvent, vec, Vector, type ActorArgs } from 'excalibur';
 import { ReadyComponent } from '../ReadyComponent';
-import { FrameMap, SpriteGridOptions, type AnimationKey } from '@/resource/image/units/spriteMap';
-import { Animator, UseKeyedAnimationOpts } from '../Animation/Animator';
+import { FrameMap, SpriteGridOptions } from '@/resource/image/units/spriteMap';
+import { Animator } from '../Animation/Animator';
 import { KeyedAnimationActor } from '../KeyedAnimationActor';
+import { emptyStatMods, UnitStats } from '@/state/battle/UnitStats';
 
 if (!resources.image.enemy.Dragon.isLoaded()) {
     resources.image.enemy.Dragon.load();
@@ -102,6 +103,23 @@ const DRAGON_SPRITESHEET_GRID = {
 
 export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
     protected spriteDimensions: SpriteGridOptions = DRAGON_SPRITESHEET_GRID;
+
+    public static stats: UnitStats = {
+        hp: 400,
+        speed: 12,
+
+        strength: 24,
+        dexterity: 10,
+        balance: 35,
+
+        intelligence: 35,
+        wisdom: 30,
+        lucidity: 30,
+        fortitude: 30,
+
+        mods: emptyStatMods(),
+        effects: {},
+    };
 
     constructor(args: ActorArgs = {}) {
         super(args);

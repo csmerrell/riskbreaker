@@ -1,18 +1,46 @@
 <script setup lang="ts">
 import { getScale } from '@/lib/helpers/screen.helper';
+import { EnemyDef } from '@/state/battle/useBattle';
+import { PartyMember } from '@/state/useParty';
 import MenuBox from '@/ui/components/MenuBox.vue';
 type Props = {
-    forecast: { path: string; id: number };
+    active: boolean;
+    forecast: { unit: EnemyDef | PartyMember; path: string };
 };
 
-const { forecast } = defineProps<Props>();
+const { forecast, active = false } = defineProps<Props>();
 </script>
 
 <template>
     <MenuBox
-        class="text-standard-md inset-[unset] overflow-hidden bg-bg text-white"
-        :style="{ height: `${12 * getScale()}px`, width: `${24 * getScale()}px` }"
+        class="text-standard-md relative inset-[unset] grow-0 -skew-x-12 bg-bg text-white shadow-bg"
+        :poles="false ? {} : { NW: true, SE: true }"
+        :class="active && 'bg-rose-900'"
+        :style="{
+            width: active ? `${36 * getScale()}px` : `${24 * getScale()}px`,
+            height: active ? `${18 * getScale()}px` : `${12 * getScale()}px`,
+            boxShadow: '-2px 0 10px 5px var(--bg)',
+        }"
     >
-        <img :src="forecast.path" />
+        <div
+            v-if="active"
+            class="text-standard-sm absolute -bottom-1 skew-x-12 whitespace-nowrap text-amber-300"
+            :style="{ right: 'calc(100% + 1rem)' }"
+        >
+            Unit Initiative
+        </div>
+        <img
+            :src="forecast.path"
+            :style="{
+                height: '100%',
+            }"
+            class="skew-x-12"
+        />
     </MenuBox>
 </template>
+
+<style scoped>
+img {
+    image-rendering: pixelated; /* Universal support since 2021   */
+}
+</style>

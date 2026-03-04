@@ -4,6 +4,7 @@ import { FrameMap } from '@/resource/image/units/spriteMap';
 import { resources } from '@/resource';
 import { ReadyComponent } from '../ReadyComponent';
 import { Animator } from '../Animation/Animator';
+import { emptyStatMods, UnitStats } from '@/state/battle/UnitStats';
 
 const wolfSpriteMap = {
     static: {
@@ -73,6 +74,34 @@ const WOLF_SPRITESHEET_GRID = {
     columns: 6,
 };
 export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
+    public static stats: Record<'white' | 'black', UnitStats> = {
+        white: {
+            hp: 160,
+            speed: 14,
+            strength: 12,
+            dexterity: 12,
+            balance: 10,
+            intelligence: 8,
+            wisdom: 8,
+            lucidity: 6,
+            fortitude: 8,
+            mods: emptyStatMods(),
+            effects: {},
+        },
+        black: {
+            hp: 80,
+            speed: 14,
+            strength: 6,
+            dexterity: 8,
+            balance: 6,
+            intelligence: 3,
+            wisdom: 3,
+            lucidity: 3,
+            fortitude: 3,
+            mods: emptyStatMods(),
+            effects: {},
+        },
+    };
     protected spriteDimensions = WOLF_SPRITESHEET_GRID;
     public battleEntryKey: WolfAnimationKey = 'forwardJump';
 

@@ -8,7 +8,7 @@ import { makeState } from '../Observable';
 import { ReadyComponent } from '@/game/actors/ReadyComponent';
 
 export class HeadshotManager {
-    public headshots = makeState<{ path: string; id: number }[]>([]);
+    public headshots = makeState<{ path: string; id: string }[]>([]);
 
     constructor(private parent: BattleManager) {}
 
@@ -84,7 +84,7 @@ export class HeadshotManager {
         this.headshots.set(
             this.headshots.value.concat({
                 path: dataURL,
-                id: actor.id,
+                id: actor.unitId!,
             }),
         );
 

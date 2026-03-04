@@ -5,6 +5,7 @@ import { Animator, UseKeyedAnimationOpts } from './Animation/Animator';
 export class KeyedAnimationActor<T extends string> extends Actor {
     protected spriteDimensions!: SpriteGridOptions;
     public battleEntryKey?: T;
+    public unitId?: string;
 
     constructor(private opts: ActorArgs = {}) {
         super(opts);

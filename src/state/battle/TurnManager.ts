@@ -1,10 +1,11 @@
 import { makeState } from '../Observable';
-import { useBattle } from '../useBattle';
-import { useParty } from '../useParty';
+import { EnemyDef, useBattle } from './useBattle';
+import { PartyMember, useParty } from '../useParty';
 import { BattleManager } from './BattleManager';
+import { getEffectiveStat } from './UnitStats';
 
 export class TurnManager {
-    private time = 0;
+    public forecastReady = makeState<boolean>(false);
     constructor(private parent: BattleManager) {}
 
     private getUnits() {
@@ -14,37 +15,54 @@ export class TurnManager {
     }
 
     private unitCTs: {
-        unit: UnitStats;
+        unit: EnemyDef | PartyMember;
         ctVal: number;
     }[] = [];
     public start() {
-        while (!Object.values(this.unitCTMap).some((unit) => unit.ctVal >= 100)) {
+        while (!Object.values(this.unitCTs).some((unit) => unit.ctVal >= 100)) {
             this.unitCTs = this.getUnits().map((unit) => {
-                const speed = unit.stats.current?.speed ?? unit.stats.speed;
+                const speed = getEffectiveStat('speed', unit.stats);
                 return {
                     unit,
                     ctVal:
-                        this.unitCTs.find((u) => u.id === unit.id)!.ctVal +
+                        (this.unitCTs.find((u) => u.unit.id === unit.id)?.ctVal ?? 0) +
                         (speed / 2 + Math.random() * speed),
                 };
             }, {});
         }
+        this.updateForecast();
+        this.forecastReady.set(true);
     }
 
-    public forecast = makeState<string[]>([]);
-    private updateForecast() {
-        const forecastCtMap = { ...this.unitCTMap };
+    public reset() {
+        this.unitCTs = [];
+        this.forecastReady.set(false);
+    }
+
+    public forecast = makeState<(EnemyDef | PartyMember)[]>([]);
+    public updateForecast() {
+        let forecastCtMap = [...this.unitCTs];
         const forecasts = [];
         while (forecasts.length < 25) {
-            const ready = Object.entries(this.unitCTMap)
-                .filter(([_id, ctVal]) => ctVal >= 100)
-                .map(([id, ctVal]) => ({ id, ctVal }))
-                .sort((u1, u2) => u1.ctVal - u2.ctVal);
-            while (ready.length > 0) {
-                const unit = ready.shift()!;
-                forecasts.push(unit.id);
-                forecastCtMap[unit.id] = 0;
+            forecastCtMap = forecastCtMap.sort((u1, u2) => u2.ctVal - u1.ctVal);
+
+            while (forecastCtMap[0].ctVal >= 100) {
+                const unitMapping = forecastCtMap.shift()!;
+                forecasts.push(unitMapping.unit);
+                forecastCtMap.push({
+                    ...unitMapping,
+                    ctVal: 10,
+                });
             }
+            forecastCtMap = this.tickCT(forecastCtMap);
         }
+        this.forecast.set(forecasts);
+    }
+
+    private tickCT(ctMap: typeof this.unitCTs) {
+        return ctMap.map((unitMapping) => ({
+            ...unitMapping,
+            ctVal: unitMapping.ctVal + getEffectiveStat('speed', unitMapping.unit.stats),
+        }));
     }
 }
