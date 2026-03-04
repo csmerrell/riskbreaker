@@ -14,7 +14,7 @@ const { forecast, active = false } = defineProps<Props>();
 <template>
     <MenuBox
         class="text-standard-md relative inset-[unset] grow-0 -skew-x-12 bg-bg text-white shadow-bg"
-        :poles="false ? {} : { NW: true, SE: true }"
+        :poles="!active ? { NW: true } : { NW: true, SE: true }"
         :class="active && 'bg-rose-900'"
         :style="{
             width: active ? `${36 * getScale()}px` : `${24 * getScale()}px`,
@@ -29,13 +29,15 @@ const { forecast, active = false } = defineProps<Props>();
         >
             Unit Initiative
         </div>
-        <img
-            :src="forecast.path"
-            :style="{
-                height: '100%',
-            }"
-            class="skew-x-12"
-        />
+        <div class="absolute inset-0 overflow-hidden">
+            <img
+                :src="forecast.path"
+                :style="{
+                    height: '100%',
+                }"
+                class="skew-x-12"
+            />
+        </div>
     </MenuBox>
 </template>
 
