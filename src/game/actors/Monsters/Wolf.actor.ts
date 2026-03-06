@@ -74,9 +74,10 @@ const WOLF_SPRITESHEET_GRID = {
     columns: 6,
 };
 export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
-    public static stats: Record<'white' | 'black', UnitStats> = {
-        white: {
+    public static stats: Record<'gray' | 'black', UnitStats> = {
+        black: {
             hp: 160,
+            currentHp: 160,
             speed: 14,
             strength: 12,
             dexterity: 12,
@@ -88,8 +89,9 @@ export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
             mods: emptyStatMods(),
             effects: {},
         },
-        black: {
+        gray: {
             hp: 80,
+            currentHp: 160,
             speed: 14,
             strength: 6,
             dexterity: 8,
@@ -105,7 +107,7 @@ export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
     protected spriteDimensions = WOLF_SPRITESHEET_GRID;
     public battleEntryKey: WolfAnimationKey = 'forwardJump';
 
-    constructor(opts: { palette: 'white' | 'black' } & ActorArgs) {
+    constructor(opts: { palette: 'gray' | 'black' } & ActorArgs) {
         super(opts);
         this.offset = vec(0, -4);
 

@@ -19,9 +19,10 @@ img {
     --keysprite-scale-md: 3;
 
     --font-540p: 12pt;
-    --font-720plus: 16pt;
+    --font-720p: 14pt;
+    --font-1080plus: 16pt;
     --font-480p: 10pt;
-    --font-base: var(--font-720plus);
+    --font-base: var(--font-720p);
 
     --keysprite-scale: var(--keysprite-scale-md);
     font-size: var(--font-base);

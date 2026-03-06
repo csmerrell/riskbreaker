@@ -6,6 +6,7 @@ import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { EasingFunctions, vec } from 'excalibur';
 import { useParty } from '@/state/useParty';
 import { captureControls } from '@/game/input/useInput';
+import { getScale } from '@/lib/helpers/screen.helper';
 
 export const newGameTitle: GameScript = {
     events: [
@@ -58,7 +59,7 @@ export const newGameTitle: GameScript = {
             const camera = explorationManager.scene.camera;
             await Promise.all([
                 camera.move(camera.pos.add(vec(16, -8)), 1500, EasingFunctions.EaseInQuad),
-                camera.zoomOverTime(1.25, 1500, EasingFunctions.EaseInQuad),
+                camera.zoomOverTime(1 + 1 / getScale(), 1500, EasingFunctions.EaseInQuad),
             ]);
         },
     ],

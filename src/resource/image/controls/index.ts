@@ -9,4 +9,5 @@ export const controls = {
         'image/import/KeyboardUI/Keyboard_UI_White_Animated.png',
     ),
     gamepad: new ImageSource('image/import/ControllerUI/UI_Gamepad_01_Buttons.png'),
+    gamepad_white: new ImageSource('image/import/ControllerUI/UI_Gamepad_04_Buttons.png'),
 };

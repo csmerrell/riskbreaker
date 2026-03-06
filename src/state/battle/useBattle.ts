@@ -5,6 +5,7 @@ import { UnitStats } from './UnitStats';
 
 export type EnemyDef = {
     id: string;
+    alignment: 'enemy';
     name: string;
     constructor: typeof KeyedAnimationActor;
     config: {
@@ -21,10 +22,11 @@ const battleState = makeState<BattleState>({
     enemies: [],
 });
 
-function addEnemy(enemy: EnemyDef) {
+function addEnemy(enemy: Omit<EnemyDef, 'alignment'> & { alignment?: 'enemy' }) {
+    enemy.alignment = 'enemy';
     battleState.set({
         ...battleState.value,
-        enemies: battleState.value.enemies.concat([enemy]),
+        enemies: battleState.value.enemies.concat([enemy as EnemyDef]),
     });
 }
 

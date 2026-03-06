@@ -1,5 +1,6 @@
 export type UnitStatFields = {
     hp: number;
+    currentHp: number;
     speed: number;
 
     //phys
@@ -17,7 +18,7 @@ export type UnitStatFields = {
 };
 
 export type UnitStats = UnitStatFields & {
-    mods: Record<keyof UnitStatFields, { modValue: number; duration: number }[]>;
+    mods: Record<keyof Omit<UnitStatFields, 'currentHp'>, { modValue: number; duration: number }[]>;
     effects: Partial<StatusEffects>;
 };
 

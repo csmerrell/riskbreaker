@@ -3,12 +3,13 @@ import { makeState } from './Observable';
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
 import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equipment';
 import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
-import { UnitStats } from './battle/useBattle';
+import { UnitStats } from './battle/UnitStats';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
 export type PartyMember = {
     name: string;
+    alignment: 'party';
     id: string;
     config: {
         leader?: boolean;
@@ -33,13 +34,14 @@ function getLeader() {
     return partyState.value.party.find((m) => m.config.leader)!;
 }
 
-function addPartyMember(member: PartyMember) {
+function addPartyMember(member: Omit<PartyMember, 'alignment'> & { alignment?: 'party' }) {
+    member.alignment = 'party';
     if (partyState.value.party.length === 2) {
         throw new Error('Cannot safely support more than 2 party members');
     }
     partyState.set({
         ...partyState.value,
-        party: [...partyState.value.party, member],
+        party: [...partyState.value.party, member as PartyMember],
     });
 }
 

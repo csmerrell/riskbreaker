@@ -18,9 +18,9 @@ import {
 import PlayerOriginBox from '@/ui/components/menus/unique/PlayerOriginBox.vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { html } from 'lit-html';
-import { PartyMember, useParty } from '@/state/useParty';
+import { useParty } from '@/state/useParty';
 import { nanoid } from 'nanoid';
-import { CompositeActor, CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { useGameContext } from '@/state/useGameContext';
 import { maps } from '@/resource/maps';
@@ -85,6 +85,19 @@ function moveCameraToActor(
     );
 }
 
+function addHeader() {
+    const header = document.createElement('span');
+    header.classList.add('fixed', 'z-[9999]', 'w-full', 'py-24');
+    header.innerHTML = html`<div
+        class="flex flex-col justify-center items-center gap-2 text-amber-200 stroke-black stroke-1"
+    >
+        <div class="text-standard-lg stroke-2 stroke-black">Select your party lead.</div>
+        <div class="text-standard-sm">(This can be changed freely)</div>
+    </div>`.strings[0];
+    document.getElementById('main-container')!.appendChild(header);
+    return header;
+}
+
 export const newGameOriginSelect: GameScript = {
     events: [
         async () => {
@@ -105,7 +118,7 @@ export const newGameOriginSelect: GameScript = {
                 moveCameraToActor(explorationManager.campManager.getActors()[0], {
                     movementDuration: 750,
                 }),
-                camera.zoomOverTime(1.5, 750, EasingFunctions.Linear),
+                camera.zoomOverTime(1 + 2 / getScale(), 750, EasingFunctions.Linear),
             ]);
         },
         async () => {
@@ -125,17 +138,7 @@ export const newGameOriginSelect: GameScript = {
 
                 let focusedPlayer: 'p0' | 'p1' = 'p0';
                 menus = displayPlayerOrigin('riskbreaker', p0, 'left');
-                const header = document.createElement('span');
-                header.classList.add('fixed', 'z-[9999]', 'w-full', 'py-24');
-                header.innerHTML = html`<div
-                    class="flex flex-col justify-center items-center gap-2 text-amber-200 stroke-black stroke-1"
-                >
-                    <div class="text-standard-lg stroke-2 stroke-black">
-                        Select your party lead.
-                    </div>
-                    <div class="text-standard-sm">(This can be changed freely)</div>
-                </div>`.strings[0];
-                document.getElementById('main-container')!.appendChild(header);
+                const header = addHeader();
 
                 captureControls('OriginSelect');
                 let moving = false;

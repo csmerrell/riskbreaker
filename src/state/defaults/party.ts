@@ -5,6 +5,7 @@ import { emptyStatMods } from '../battle/UnitStats';
 
 export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
+    alignment: 'party',
     name: 'Riskbreaker',
     config: {
         battlePosition: 'left-1',
@@ -32,7 +33,8 @@ export const RiskbreakerDefault: PartyMember = {
     },
     stats: {
         hp: 125,
-        speed: 14,
+        currentHp: 125,
+        speed: 24,
         strength: 6,
         dexterity: 5,
         balance: 10,
@@ -48,6 +50,7 @@ export const RiskbreakerDefault: PartyMember = {
 export const AstrologianDefault: PartyMember = {
     id: nanoid(16),
     name: 'Astrologian',
+    alignment: 'party',
     config: {
         battlePosition: 'left-2',
     },
@@ -70,7 +73,8 @@ export const AstrologianDefault: PartyMember = {
     },
     stats: {
         hp: 80,
-        speed: 14,
+        currentHp: 80,
+        speed: 9,
         strength: 2,
         dexterity: 2,
         balance: 6,

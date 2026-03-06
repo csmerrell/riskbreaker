@@ -42,6 +42,9 @@ export const animatedKeyboardSpriteSheet = SpriteSheet.fromImageSource({
 export const gamepadSpriteMap: ControlSpriteMap = {
     [Buttons.Face1]: [15, 2, { width: 1 }],
     [Buttons.Face2]: [15, 3, { width: 1 }],
+    [Buttons.Face3]: [15, 4, { width: 1 }],
+    [Buttons.Face4]: [15, 5, { width: 1 }],
+    [Buttons.RightTrigger]: [8, 7, { width: 1 }],
 };
 
 export const animatedGamepadSpriteMap: ControlSpriteMap = {

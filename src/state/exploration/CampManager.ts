@@ -22,6 +22,7 @@ import { useExploration } from '../useExploration';
 import { loopUntil } from '@/lib/helpers/async.helper';
 import { useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { getScale } from '@/lib/helpers/screen.helper';
 
 class FirelightPostProcessor implements PostProcessor {
     private _shader: ScreenShader;
@@ -241,7 +242,7 @@ export class CampManager extends SceneManager {
             const numSteps = openDuration / step;
             const opacityStep = 1 / numSteps;
             await Promise.all([
-                this.scene.camera.zoomOverTime(1.5, 250, EasingFunctions.Linear),
+                this.scene.camera.zoomOverTime(1 + 2 / getScale(), 250, EasingFunctions.Linear),
                 loopUntil(
                     () => this.bgActor.graphics.opacity === 1,
                     () => this.stepOpacity(opacityStep),

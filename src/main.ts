@@ -6,6 +6,12 @@ import { initIPC } from './platform/ipc/index';
 
 import contextMenu from 'electron-context-menu';
 contextMenu();
+
+// Set command line switches BEFORE app is ready
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('high-dpi-support', '1');
+app.commandLine.appendSwitch('force-device-scale-factor', '1');
+
 if (started) {
     app.quit();
 }
@@ -21,6 +27,7 @@ const createWindow = () => {
         frame: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            zoomFactor: 1.0,
         },
     });
 
@@ -52,11 +59,27 @@ const createWindow = () => {
 
     // Set the new size for the entire window (including the frame)
     mainWindow.setSize(targetWidth + frameWidth, targetHeight + frameHeight);
-};
 
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-app.commandLine.appendSwitch('high-dpi-support', '1');
-app.commandLine.appendSwitch('force-device-scale-factor', '1');
+    // Prevent zoom via keyboard shortcuts and mouse wheel
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.control || input.meta) {
+            // Block Ctrl/Cmd + Plus, Minus, 0 (zoom shortcuts)
+            if (input.key === '+' || input.key === '-' || input.key === '0' || input.key === '=') {
+                event.preventDefault();
+            }
+        }
+    });
+
+    // Prevent zoom level changes
+    mainWindow.webContents.setZoomFactor(1.0);
+    mainWindow.webContents.on('zoom-changed', (event) => {
+        event.preventDefault();
+        mainWindow.webContents.setZoomFactor(1.0);
+    });
+
+    // Disable pinch-to-zoom
+    mainWindow.webContents.setVisualZoomLevelLimits(1, 1);
+};
 
 app.on('ready', () => {
     initIPC();

@@ -6,7 +6,7 @@ import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { nanoid } from 'nanoid';
 import { LaneKey } from '@/state/useParty';
 
-function getWolfDef(position: LaneKey, palette: 'white' | 'black'): EnemyDef {
+function getWolfDef(position: LaneKey, palette: 'gray' | 'black'): EnemyDef {
     return {
         id: nanoid(16),
         name: 'Wolf',
@@ -34,10 +34,10 @@ export const newGameFirstBattle: GameScript = {
             const battleMgr = explorationMgr.battleManager;
             const { addEnemy, clearEnemies } = useBattle();
             clearEnemies();
-            addEnemy(getWolfDef('mid', 'black'));
-            addEnemy(getWolfDef('right-1', 'black'));
-            addEnemy(getWolfDef('right-1', 'black'));
-            addEnemy(getWolfDef('right-2', 'white'));
+            addEnemy(getWolfDef('mid', 'gray'));
+            addEnemy(getWolfDef('right-1', 'gray'));
+            addEnemy(getWolfDef('right-1', 'gray'));
+            addEnemy(getWolfDef('right-2', 'black'));
             battleMgr.openBattle();
         },
     ],

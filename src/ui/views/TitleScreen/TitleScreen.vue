@@ -127,7 +127,7 @@ onUnmounted(() => {
         class="hide flex h-full flex-col items-end pr-16 text-white transition-opacity duration-[2000ms] ease-in"
     >
         <div>
-            <div class="relative h-[400px] w-[675px]">
+            <div class="relative h-[350px] w-[625px]">
                 <div
                     class="absolute inset-0 z-10"
                     style="
@@ -139,7 +139,7 @@ onUnmounted(() => {
                         );
                     "
                 />
-                <img src="/image/Logo.svg" class="absolute -right-8 z-20 h-[400px]" />
+                <img src="/image/Logo.svg" class="absolute -right-8 z-20 h-[350px]" />
             </div>
             <div class="text-standard-lg ml-auto mr-0 mt-24 flex w-72 flex-col gap-2">
                 <div

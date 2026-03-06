@@ -32,6 +32,7 @@ import { EnemyDef, useBattle } from './useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
 import { TurnManager } from './TurnManager';
+import { BattleCameraManager } from './BattleCameraManager';
 
 function getPositionInLane(
     lane: LaneKey,
@@ -48,6 +49,7 @@ export class BattleManager extends SceneManager {
     private terrain!: Actor;
     public headshotManager: HeadshotManager;
     public turnManager: TurnManager;
+    public cameraManager?: BattleCameraManager;
 
     constructor(private parent: ExplorationManager) {
         super({ scene: parent.scene });
@@ -170,6 +172,7 @@ export class BattleManager extends SceneManager {
             if (!opts.empty) {
                 await this.placeParty();
                 await this.placeEnemies();
+                this.cameraManager = new BattleCameraManager(this);
                 this.startBattle();
             }
 
@@ -247,6 +250,7 @@ export class BattleManager extends SceneManager {
     } as const satisfies Record<string, Actor[]>;
     public async placePlayer(player: PartyMember, lane: LaneKey) {
         const actor = new CompositeActor(player.appearance);
+        actor.unitId = player.id;
         const boundingBox = this.parent.cameraManager.getBoundingBox()!;
         const numInLane = useParty().partyState.value.party.filter(
             (p) => p.config.battlePosition === lane,
@@ -292,6 +296,7 @@ export class BattleManager extends SceneManager {
             getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
         );
         const enemy = new e.constructor();
+        enemy.unitId = e.id;
         enemy.pos = vec(
             boundingBox.right + enemy.getDimensions().spriteWidth,
             boundingBox.top + boundingBox.height / 2,

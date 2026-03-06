@@ -16,8 +16,8 @@ const body = computed(() => {
                 message:
                     'The stars flicker and fade. Your conviction to unearth the cause does not.',
                 startingWeapon: 'Tome',
-                startingSkill: 'Starflash',
-                uniquePassive: 'Distill Light',
+                startingSkills: ['Starflash', 'Compress'],
+                uniquePassive: 'Divination',
             };
         case 'riskbreaker':
         default:
@@ -26,7 +26,7 @@ const body = computed(() => {
                 dialogueFlavor: 'Decisive',
                 message: 'Darkness creeps tighter by the night. You will stop its advance.',
                 startingWeapon: 'Sword & Shield',
-                startingSkill: 'Shield Bash',
+                startingSkills: ['Shield Bash', 'Push'],
                 uniquePassive: 'Challenge the Odds',
             };
     }
@@ -48,7 +48,7 @@ const messageSplit = computed(() =>
             <div
                 class="text-standard-sm absolute right-4 top-4 flex flex-row gap-2 text-amber-300 opacity-70"
             >
-                <KeySprite command="confirm" size="sm" :scale="0.5" /> Select
+                <KeySprite command="confirm" size="md" :scale="0.5" /> Select
             </div>
             <div class="flex flex-col border-b border-yellow-700 pb-4">
                 <strong class="text-standard-lg text-rose-700">{{ body.origin }}</strong>
@@ -59,39 +59,49 @@ const messageSplit = computed(() =>
                 </div>
             </div>
             <div class="pt-4">
-                <table class="gap-1">
-                    <tr>
-                        <td
-                            class="relative bottom-[2px] py-2 pr-4 font-bold leading-[.5rem] text-rose-700"
-                        >
-                            Dialogue Flavor:
-                        </td>
-                        <td class="text-standard-md">{{ body.dialogueFlavor }}</td>
-                    </tr>
-                    <tr>
-                        <td
-                            class="relative bottom-[2px] py-2 pr-4 font-bold leading-[.5rem] text-rose-700"
-                        >
-                            Starting Weapon:
-                        </td>
-                        <td class="text-standard-md">{{ body.startingWeapon }}</td>
-                    </tr>
-                    <tr>
-                        <td
-                            class="relative bottom-[2px] py-2 pr-4 font-bold leading-[.5rem] text-rose-700"
-                        >
-                            Starting Skill:
-                        </td>
-                        <td class="text-standard-md">{{ body.startingSkill }}</td>
-                    </tr>
-                    <tr>
-                        <td
-                            class="relative bottom-[2px] py-2 pr-4 font-bold leading-[.5rem] text-rose-700"
-                        >
-                            Unique Passive
-                        </td>
-                        <td class="text-standard-md">{{ body.uniquePassive }}</td>
-                    </tr>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td
+                                class="relative bottom-[2px] py-1 pr-4 font-bold leading-[.5rem] text-rose-700"
+                            >
+                                Dialogue Flavor:
+                            </td>
+                            <td class="text-standard-md py-1">{{ body.dialogueFlavor }}</td>
+                        </tr>
+                        <tr>
+                            <td
+                                class="relative bottom-[2px] py-1 pr-4 font-bold leading-[.5rem] text-rose-700"
+                            >
+                                Starting Weapon:
+                            </td>
+                            <td class="text-standard-md py-1">{{ body.startingWeapon }}</td>
+                        </tr>
+                        <tr>
+                            <td
+                                class="relative bottom-[2px] py-1 pr-4 font-bold leading-[.5rem] text-rose-700"
+                            >
+                                Unique Passive
+                            </td>
+                            <td class="text-standard-md py-1">{{ body.uniquePassive }}</td>
+                        </tr>
+                        <tr>
+                            <td
+                                class="relative bottom-[2px] pb-1 pr-4 pt-2 align-top font-bold leading-[.5rem] text-rose-700"
+                            >
+                                Starting Skills:
+                            </td>
+                            <td class="text-standard-md py-1">
+                                <div class="flex flex-col gap-1">
+                                    <span v-for="(skill, idx) in body.startingSkills" :key="skill">
+                                        {{
+                                            `${skill}${idx < body.startingSkills.length - 1 ? ',' : ''}`
+                                        }}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>

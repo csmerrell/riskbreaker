@@ -71,8 +71,10 @@ async function setResolution(value: string) {
                 fontSizeVar = 'var(--font-480p)';
             } else if (height < 720) {
                 fontSizeVar = 'var(--font-540p)';
+            } else if (height > 1080) {
+                fontSizeVar = 'var(--font-720p)';
             } else {
-                fontSizeVar = 'var(--font-720plus)';
+                fontSizeVar = 'var(--font-1080plus)';
             }
             (document.querySelector(':root') as HTMLElement).style.setProperty(
                 'font-size',

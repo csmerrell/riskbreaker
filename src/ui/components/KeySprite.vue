@@ -15,6 +15,7 @@ export type SpriteMap = [number, number, { width?: number; height?: number }];
 const props = withDefaults(
     defineProps<{
         command: MappedCommand;
+        forceGamepad?: boolean;
         animated?: boolean;
         animationSpeed?: number;
         scale?: number;
@@ -22,6 +23,7 @@ const props = withDefaults(
     }>(),
     {
         scale: 1,
+        forceGamepad: false,
         animated: false,
         animationSpeed: 2000,
         size: 'md',
@@ -50,7 +52,7 @@ const keyboardText = computed(() => {
 const spriteMap = computed(() => {
     if (inputType.value === 'controller') {
         const { getUnmappedButton } = useGamepad();
-        const unmappedKey = getUnmappedButton(props.command);
+        const unmappedKey = getUnmappedButton(props.command)!;
         // Use animated sprite map for animated sprites, static for static sprites
         const map = props.animated ? animatedGamepadSpriteMap : gamepadSpriteMap;
         return map[unmappedKey];
@@ -100,7 +102,7 @@ const spriteStyles = computed(() => {
 </script>
 
 <template>
-    <span v-if="inputType === 'keyboard'" :class="`text-standard-${size}`">{{ keyboardText }}</span>
+    <span v-if="!forceGamepad && inputType === 'keyboard'">{{ keyboardText }}</span>
     <div v-else class="key-sprite" :class="{ animated: animated }" :style="spriteStyles" />
 </template>
 
