@@ -10,10 +10,18 @@ export const GAMEPAD_GRID_CONFIG = {
     spriteWidth: 16,
     spriteHeight: 16,
 };
-export const gamepadSpriteSheet = SpriteSheet.fromImageSource({
-    image: resources.image.controls.gamepad,
-    grid: GAMEPAD_GRID_CONFIG,
-});
+
+// Lazy initialization to avoid race condition with resource loading
+let _gamepadSpriteSheet: SpriteSheet | null = null;
+export const gamepadSpriteSheet = () => {
+    if (!_gamepadSpriteSheet) {
+        _gamepadSpriteSheet = SpriteSheet.fromImageSource({
+            image: resources.image.controls.gamepad,
+            grid: GAMEPAD_GRID_CONFIG,
+        });
+    }
+    return _gamepadSpriteSheet;
+};
 
 // Static keyboard spritesheet configuration
 export const KEYBOARD_STATIC_GRID_CONFIG = {
@@ -22,10 +30,17 @@ export const KEYBOARD_STATIC_GRID_CONFIG = {
     spriteWidth: 16,
     spriteHeight: 16,
 };
-export const keyboardSpriteSheet = SpriteSheet.fromImageSource({
-    image: resources.image.controls.keyboard,
-    grid: KEYBOARD_STATIC_GRID_CONFIG,
-});
+
+let _keyboardSpriteSheet: SpriteSheet | null = null;
+export const keyboardSpriteSheet = () => {
+    if (!_keyboardSpriteSheet) {
+        _keyboardSpriteSheet = SpriteSheet.fromImageSource({
+            image: resources.image.controls.keyboard,
+            grid: KEYBOARD_STATIC_GRID_CONFIG,
+        });
+    }
+    return _keyboardSpriteSheet;
+};
 
 // Animated keyboard spritesheet configuration
 export const KEYBOARD_ANIMATED_GRID_CONFIG = {
@@ -34,17 +49,27 @@ export const KEYBOARD_ANIMATED_GRID_CONFIG = {
     spriteWidth: 16,
     spriteHeight: 16,
 };
-export const animatedKeyboardSpriteSheet = SpriteSheet.fromImageSource({
-    image: resources.image.controls.keyboard_black_animated,
-    grid: KEYBOARD_ANIMATED_GRID_CONFIG,
-});
+
+let _animatedKeyboardSpriteSheet: SpriteSheet | null = null;
+export const animatedKeyboardSpriteSheet = () => {
+    if (!_animatedKeyboardSpriteSheet) {
+        _animatedKeyboardSpriteSheet = SpriteSheet.fromImageSource({
+            image: resources.image.controls.keyboard_black_animated,
+            grid: KEYBOARD_ANIMATED_GRID_CONFIG,
+        });
+    }
+    return _animatedKeyboardSpriteSheet;
+};
 
 export const gamepadSpriteMap: ControlSpriteMap = {
     [Buttons.Face1]: [15, 2, { width: 1 }],
     [Buttons.Face2]: [15, 3, { width: 1 }],
     [Buttons.Face3]: [15, 4, { width: 1 }],
     [Buttons.Face4]: [15, 5, { width: 1 }],
-    [Buttons.RightTrigger]: [8, 7, { width: 1 }],
+    [Buttons.LeftBumper]: [1, 7, { width: 1 }],
+    [Buttons.LeftTrigger]: [1, 8, { width: 1 }],
+    [Buttons.RightBumper]: [8, 7, { width: 1 }],
+    [Buttons.RightTrigger]: [8, 8, { width: 1 }],
 };
 
 export const animatedGamepadSpriteMap: ControlSpriteMap = {

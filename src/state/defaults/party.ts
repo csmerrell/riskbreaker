@@ -24,6 +24,18 @@ export const RiskbreakerDefault: PartyMember = {
     abilities: {
         shieldBash: {
             name: 'Shield Bash',
+            key: 'shieldBash',
+            hotkey: 'right.hotbarFLeft',
+        },
+        push: {
+            name: 'Push',
+            key: 'push',
+            hotkey: 'right.hotbarFDown',
+        },
+        attack: {
+            name: 'Attack',
+            key: 'attack',
+            hotkey: 'right.hotbarFRight',
         },
     },
     passives: {
@@ -64,6 +76,18 @@ export const AstrologianDefault: PartyMember = {
     abilities: {
         starflash: {
             name: 'Starflash',
+            key: 'starflash',
+            hotkey: 'right.hotbarDLeft',
+        },
+        compress: {
+            name: 'Compress',
+            key: 'compress',
+            hotkey: 'right.hotbarFDown',
+        },
+        pulse: {
+            name: 'Pulse',
+            key: 'pulse',
+            hotkey: 'right.hotbarFRight',
         },
     },
     passives: {

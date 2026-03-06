@@ -8,6 +8,7 @@ import { addMenu } from '../ui/useMenuRegistry';
 import { vec } from 'excalibur';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import ActiveUnitMenu from '@/ui/components/menus/activeUnitMenu/ActiveUnitMenu.vue';
+import CrossHotbar from '@/ui/components/menus/crossHotbar/CrossHotbar.vue';
 
 type BattleUnit = EnemyDef | PartyMember;
 type CTMapping = {
@@ -135,9 +136,18 @@ export class TurnManager {
             },
         });
 
-        const menuAnchor = getActorAnchor(actor);
+        const menuAnchor = getActorAnchor(actor, { offset: vec(0, -78) });
         const _menu = addMenu(ActiveUnitMenu, {
             position: menuAnchor.anchor.pos,
+            props: {
+                unit,
+                actor,
+            },
+        });
+
+        const hotbarAnchor = getActorAnchor(actor, { offset: vec(4, -84) });
+        const _crossHotbar = addMenu(CrossHotbar, {
+            position: hotbarAnchor.anchor.pos,
             props: {
                 unit,
                 actor,

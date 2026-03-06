@@ -49,16 +49,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="relative">
-        <ActionItem
-            label="Act"
-            command="shoulder_right"
-            class="text-standard-md absolute bottom-6 left-10"
-        />
-        <ActionItem
-            label="Stock"
-            command="context_menu_1"
-            class="text-standard-md absolute bottom-0 left-12"
-        />
+    <div class="relative flex flex-col items-start gap-2">
+        <ActionItem label="Act" command="shoulder_right" class="text-standard-md relative left-8" />
+        <ActionItem label="Stock" command="hotbarFUp" class="text-standard-md relative left-12" />
+        <ActionItem label="Rest" command="hotbarFLeft" class="text-standard-md relative left-16" />
     </div>
 </template>

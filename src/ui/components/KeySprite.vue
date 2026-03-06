@@ -50,7 +50,7 @@ const keyboardText = computed(() => {
 });
 
 const spriteMap = computed(() => {
-    if (inputType.value === 'controller') {
+    if (inputType.value === 'controller' || props.forceGamepad) {
         const { getUnmappedButton } = useGamepad();
         const unmappedKey = getUnmappedButton(props.command)!;
         // Use animated sprite map for animated sprites, static for static sprites
@@ -63,7 +63,8 @@ const spriteMap = computed(() => {
 // Function to get the current sprite scale from CSS variable
 const updateSpriteScale = () => {
     const computedStyle = getComputedStyle(document.documentElement);
-    const scale = parseFloat(computedStyle.getPropertyValue('--keysprite-scale').trim()) || 3;
+    const cssValue = computedStyle.getPropertyValue('--keysprite-scale').trim();
+    const scale = parseFloat(cssValue) || 3;
     spriteScale.value = scale * props.scale;
 };
 
@@ -81,14 +82,16 @@ onUnmounted(() => {
 });
 
 const spriteStyles = computed(() => {
-    if (!spriteMap.value || inputType.value !== 'controller') return {};
+    if (!spriteMap.value || (inputType.value !== 'controller' && !props.forceGamepad)) {
+        return {};
+    }
 
     const [x, y, options = {}] = spriteMap.value;
 
     const width = (options?.width || 1) * GAMEPAD_GRID_CONFIG.spriteWidth;
     const height = (options?.height || 1) * GAMEPAD_GRID_CONFIG.spriteHeight;
 
-    return {
+    const styles = {
         width: `${width * spriteScale.value}px`,
         height: `${height * spriteScale.value}px`,
         backgroundImage: `url(${gamepadImageUrl})`,
@@ -98,6 +101,7 @@ const spriteStyles = computed(() => {
         '--base-x': `${x * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px`,
         '--frame-width': `${(options?.width || 1) * GAMEPAD_GRID_CONFIG.spriteWidth * spriteScale.value}px`, // Move by sprite width scaled
     };
+    return styles;
 });
 </script>
 

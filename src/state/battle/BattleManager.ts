@@ -49,6 +49,9 @@ export class BattleManager extends SceneManager {
     private terrain!: Actor;
     public headshotManager: HeadshotManager;
     public turnManager: TurnManager;
+
+    private setCameraReady!: () => void;
+    public battleCameraReady!: Promise<void>;
     public cameraManager?: BattleCameraManager;
 
     constructor(private parent: ExplorationManager) {
@@ -57,7 +60,14 @@ export class BattleManager extends SceneManager {
         this.turnManager = new TurnManager(this);
         this.createMask();
         this.setTerrain('grass');
+        this.resetCameraReadiness();
         this.setReady();
+    }
+
+    private resetCameraReadiness() {
+        this.battleCameraReady = new Promise<void>((resolve) => {
+            this.setCameraReady = resolve;
+        });
     }
 
     private createMask() {
@@ -173,6 +183,7 @@ export class BattleManager extends SceneManager {
                 await this.placeParty();
                 await this.placeEnemies();
                 this.cameraManager = new BattleCameraManager(this);
+                this.setCameraReady();
                 this.startBattle();
             }
 
@@ -185,7 +196,7 @@ export class BattleManager extends SceneManager {
         this.battleStartReady = Promise.resolve();
         const activeView = useGameContext().activeView;
         activeView.value = '';
-        this.parent.actorManager.getLeader().fadeIn();
+        const leader = this.parent.actorManager.getLeader();
 
         this.terrainShaderProgress = 0;
         this.terrain.graphics.material = this.terrainMaterial;
@@ -195,6 +206,7 @@ export class BattleManager extends SceneManager {
         const numSteps = duration / step;
         const opacityStep = -1 / numSteps;
         await Promise.all([
+            leader.fadeIn(),
             Object.values(this.laneUnitMap).flatMap(
                 (a) => (a as unknown as CompositeActor).fadeOut?.(duration) ?? Promise.resolve(),
             ),
@@ -203,7 +215,12 @@ export class BattleManager extends SceneManager {
                 () => this.stepOpacity(opacityStep),
                 step,
             ),
+            this.parent.scene.camera.move(leader.pos, 250, EasingFunctions.Linear),
+            this.parent.scene.camera.zoomOverTime(1.0, 250, EasingFunctions.Linear),
         ]);
+        this.resetCameraReadiness();
+        this.parent.cameraManager.lockToActor(leader);
+
         (Object.keys(this.laneUnitMap) as LaneKey[]).forEach((key) => {
             this.laneUnitMap[key].forEach((actor) => {
                 actor.kill();

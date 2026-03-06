@@ -6,6 +6,7 @@ import PartyStatus from './PartyStatus.vue';
 import { useGameContext } from '@/state/useGameContext';
 import { ref, watch } from 'vue';
 import { useExploration } from '@/state/useExploration';
+import CrossHotbar from './crossHotbar/CrossHotbar.vue';
 
 const { activeView } = useGameContext();
 
@@ -18,6 +19,7 @@ watch(activeView, (val) => {
 });
 
 const forecastReady = ref(false);
+const crossHotbarVisible = ref(false);
 function mount() {
     const { turnManager } = useExploration().getExplorationManager().battleManager;
     forecastReady.value = turnManager.forecastReady.value;

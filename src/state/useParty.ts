@@ -4,9 +4,17 @@ import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActo
 import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equipment';
 import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
 import { UnitStats } from './battle/UnitStats';
+import { HotbarKey } from '@/ui/components/menus/crossHotbar/HotbarSet.vue';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
+export type HotkeyString = `${'right' | 'left'}.${HotbarKey}`;
+
+export type SkillMetadata = {
+    name: string;
+    key: string;
+    hotkey?: HotkeyString;
+};
 export type PartyMember = {
     name: string;
     alignment: 'party';
@@ -17,7 +25,7 @@ export type PartyMember = {
     };
     appearance: CompositeActorConfig;
     equipment: Partial<Record<EquipmentSlotKey, StaticEquipmentKey>>;
-    abilities: Record<string, unknown>;
+    abilities: Record<string, SkillMetadata>;
     passives: Record<string, unknown>;
     stats: UnitStats;
 };

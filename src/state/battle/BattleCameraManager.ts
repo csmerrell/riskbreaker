@@ -1,13 +1,16 @@
-import { Actor, EasingFunctions, vec, Vector } from 'excalibur';
+import { Actor, EasingFunctions, Vector } from 'excalibur';
 import { BattleManager } from './BattleManager';
 import { useExploration } from '../useExploration';
 import { CameraManager } from '../exploration/CameraManager';
 import { getScale } from '@/lib/helpers/screen.helper';
+import { makeState } from '../Observable';
 
 export class BattleCameraManager {
     private battleCenter: Vector;
-    private zoomFactor: number = 1;
     private rootCameraManager: CameraManager;
+    public zoomFactor = makeState(1 / getScale());
+    public movementDuration = makeState(500);
+
     constructor(private parent: BattleManager) {
         this.battleCenter = parent.scene.camera.pos;
         this.rootCameraManager = useExploration().getExplorationManager().cameraManager;
@@ -15,20 +18,35 @@ export class BattleCameraManager {
     }
 
     public restoreCenter() {
-        const duration = 250;
-        this.parent.scene.camera.move(this.battleCenter, duration, EasingFunctions.EaseOutCubic);
-        this.parent.scene.camera.zoomOverTime(1.0, duration, EasingFunctions.EaseOutCubic);
+        this.movementDuration.set(500);
+        this.zoomFactor.set(1.0);
+        this.parent.scene.camera.move(
+            this.battleCenter,
+            this.movementDuration.value,
+            EasingFunctions.EaseOutCubic,
+        );
+        this.parent.scene.camera.zoomOverTime(
+            1.0,
+            this.movementDuration.value,
+            EasingFunctions.EaseOutCubic,
+        );
     }
 
     public async focusUnit(unit: Actor) {
+        this.zoomFactor.set(1 / getScale());
+        this.movementDuration.set(500);
+
         const diff = unit.pos.sub(this.battleCenter);
-        const newPos = this.battleCenter.add(diff.scale(1 / getScale()));
-        const duration = 500;
+        const newPos = this.battleCenter.add(diff.scale(this.zoomFactor.value));
         await Promise.all([
-            this.parent.scene.camera.move(newPos, duration, EasingFunctions.EaseOutCubic),
+            this.parent.scene.camera.move(
+                newPos,
+                this.movementDuration.value,
+                EasingFunctions.EaseOutCubic,
+            ),
             this.parent.scene.camera.zoomOverTime(
-                1 + 1 / getScale(),
-                duration,
+                1 + this.zoomFactor.value,
+                this.movementDuration.value,
                 EasingFunctions.EaseOutCubic,
             ),
         ]);
