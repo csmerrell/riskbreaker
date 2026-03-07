@@ -27,7 +27,6 @@ import { useGameContext } from '../useGameContext';
 import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
-import { getScale } from '@/lib/helpers/screen.helper';
 import { EnemyDef, useBattle } from './useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
@@ -41,7 +40,7 @@ function getPositionInLane(
         idxInLane: number;
     },
 ) {
-    return LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane].scale(getScale());
+    return LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane];
 }
 
 export class BattleManager extends SceneManager {
@@ -196,6 +195,7 @@ export class BattleManager extends SceneManager {
         this.battleStartReady = Promise.resolve();
         const activeView = useGameContext().activeView;
         activeView.value = '';
+        this.turnManager.reset();
         const leader = this.parent.actorManager.getLeader();
 
         this.terrainShaderProgress = 0;

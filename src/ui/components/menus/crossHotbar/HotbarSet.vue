@@ -26,10 +26,10 @@ type SkillOpts = { row: number; col: number; scale?: Vector };
 const skillMap: Record<string, SkillOpts> = {
     starflash: { row: 4, col: 4 },
     compress: { row: 1, col: 6 },
-    sheildBash: { row: 1, col: 4 },
+    shieldBash: { row: 1, col: 4 },
     push: { row: 4, col: 6, scale: vec(-1, 1) },
     attack: { row: 3, col: 9 },
-    pulse: { row: 0, col: 5 },
+    pulse: { row: 1, col: 5 },
 };
 
 const { focused, side } = defineProps<Props>();

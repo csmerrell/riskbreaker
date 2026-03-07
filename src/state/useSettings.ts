@@ -32,21 +32,17 @@ function setSettingDisabled(key: SettingsKey, val: boolean) {
 
 async function loadSettings() {
     try {
-        const {
-            resolution: defRes,
-            displayMode: defDisp,
-            textSpeed: defTextSpd,
-        } = settingsState.value;
-        const {
-            resolution = defRes,
-            displayMode = defDisp,
-            textSpeed = defTextSpd,
-        } = (await docManager.tryGet<SettingsState>('_local/settings')) as SettingsState;
-        settingsState.set({
-            resolution,
-            displayMode,
-            textSpeed,
-        });
+        const { resolution, displayMode, textSpeed: defTextSpd } = settingsState.value;
+        // const {
+        //     resolution = defRes,
+        //     displayMode = defDisp,
+        //     textSpeed = defTextSpd,
+        // } = (await docManager.tryGet<SettingsState>('_local/settings')) as SettingsState;
+        // settingsState.set({
+        //     resolution,
+        //     displayMode,
+        //     textSpeed,
+        // });
 
         if (displayMode !== 'windowed') {
             disabledSettings.set({

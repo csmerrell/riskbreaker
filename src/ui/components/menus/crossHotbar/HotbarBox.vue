@@ -12,35 +12,36 @@ type Props = {
 
 const { row, col, scale = vec(1, 1) } = defineProps<Props>();
 
-const imgSrc = ref<string>();
-
-onMounted(() => {
+const imgContainer = ref<HTMLDivElement>();
+const size = ref((~~getScale() / 2) * 24);
+onMounted(async () => {
     if (row && col) {
-        console.log('Row: ', row, ' | Col: ', col);
-        const imageElement = SpriteSheet.fromImageSource({
+        const imageEl = await SpriteSheet.fromImageSource({
             image: resources.image.icons.skills,
             grid: {
                 spriteHeight: 24,
                 spriteWidth: 24,
-                rows: 10,
-                columns: 6,
+                rows: 6,
+                columns: 10,
             },
-        }).getSprite(row, col, { scale });
-        imgSrc.value = imageElement.src;
+        }).getSpriteAsImage(col, row);
+        imageEl.style.setProperty('width', `${size.value}px`);
+        imageEl.style.setProperty('height', `${size.value}px`);
+        imgContainer.value?.appendChild(imageEl);
     }
 });
 </script>
 
 <template>
     <div
-        class="hotbar-box flex flex-col items-center justify-center rounded-md bg-bg-alt p-1"
+        ref="imgContainer"
+        class="hotbar-box flex flex-col items-center justify-center overflow-hidden rounded-sm p-1"
         :style="{
-            height: `${~~(getScale() / 2) * 24}px`,
-            width: `${~~(getScale() / 2) * 24}px`,
+            height: `${size}px`,
+            width: `${size}px`,
+            backgroundColor: 'rgb(from var(--yellow-700) r g b / 0.1)',
         }"
-    >
-        <img v-if="imgSrc" :src="imgSrc" alt="" />
-    </div>
+    />
 </template>
 
 <style>

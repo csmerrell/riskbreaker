@@ -70,7 +70,8 @@ void main() {
       // Calculate position within dither range (0.0 at r, 1.0 at r+ditherRange)
       float ditherProgress = (dist - r) / ditherRange;
       
-      if (bayer4(gl_FragCoord.xy) > ditherProgress) {
+      // Scale coordinates to account for pixel ratio (divide by 2 for ratio 4 vs original ratio 2)
+      if (bayer4(gl_FragCoord.xy / 2.0) > ditherProgress) {
         inLightSource = true;
         break;
       }

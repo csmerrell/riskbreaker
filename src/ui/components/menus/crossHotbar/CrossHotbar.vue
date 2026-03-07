@@ -26,7 +26,7 @@ if (resources.image.icons.skills.isLoaded()) {
         class="cross-hotbar flex -translate-x-1/2 -translate-y-full flex-row items-center justify-end gap-4 self-center rounded-lg p-4"
     >
         <HotbarSet side="left" :focused="focusLeft" :class="focusRight ? 'text-[.75em]' : ''" />
-        <div class="h-16 border-l border-yellow-500" />
+        <div class="h-16 border-l border-bg-alt" />
         <HotbarSet side="right" :focused="focusRight" :class="focusLeft ? 'text-[.75em]' : ''" />
     </div>
 </template>
@@ -34,8 +34,8 @@ if (resources.image.icons.skills.isLoaded()) {
 <style scoped>
 .cross-hotbar {
     background: radial-gradient(
-        ellipse 55% 50% at center,
-        rgba(21, 29, 40, 0.5) 0%,
+        ellipse 50% 50% at center,
+        rgba(21, 29, 40, 0.3) 0%,
         rgba(21, 29, 40, 0.5) 80%,
         rgba(21, 29, 40, 0) 100%
     );

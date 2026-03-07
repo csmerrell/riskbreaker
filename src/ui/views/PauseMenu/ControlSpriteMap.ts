@@ -5,8 +5,8 @@ export type SpriteMap = [number, number, { width?: number; height?: number }];
 export type ControlSpriteMap = Partial<Record<Buttons | Keys, SpriteMap>>;
 
 export const GAMEPAD_GRID_CONFIG = {
-    rows: 30,
-    columns: 43,
+    rows: 10,
+    columns: 22,
     spriteWidth: 16,
     spriteHeight: 16,
 };
@@ -62,10 +62,16 @@ export const animatedKeyboardSpriteSheet = () => {
 };
 
 export const gamepadSpriteMap: ControlSpriteMap = {
-    [Buttons.Face1]: [15, 2, { width: 1 }],
-    [Buttons.Face2]: [15, 3, { width: 1 }],
-    [Buttons.Face3]: [15, 4, { width: 1 }],
-    [Buttons.Face4]: [15, 5, { width: 1 }],
+    [Buttons.Face1]: [15, 1, { width: 1 }],
+    [Buttons.Face2]: [15, 0, { width: 1 }],
+    [Buttons.Face3]: [15, 2, { width: 1 }],
+    [Buttons.Face4]: [15, 3, { width: 1 }],
+    [Buttons.Start]: [15, 4, { width: 1 }],
+    [Buttons.Select]: [15, 5, { width: 1 }],
+    [Buttons.DPadUp]: [15, 6, { width: 1 }],
+    [Buttons.DPadRight]: [15, 7, { width: 1 }],
+    [Buttons.DPadLeft]: [15, 8, { width: 1 }],
+    [Buttons.DPadDown]: [15, 9, { width: 1 }],
     [Buttons.LeftBumper]: [1, 7, { width: 1 }],
     [Buttons.LeftTrigger]: [1, 8, { width: 1 }],
     [Buttons.RightBumper]: [8, 7, { width: 1 }],

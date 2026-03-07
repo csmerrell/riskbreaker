@@ -126,6 +126,10 @@ export function useKeyboard() {
     function cullDebouncedHeldControls() {
         persistentKeys = [];
         TypedKeys(debounceCounts).forEach((command) => {
+            if (!debounceCounts[command]) {
+                debounceCounts[command] = 0;
+            }
+
             if (keyboardInputs[command]) {
                 debounceCounts[command]++;
                 if (debounceCounts[command] > 1 && debounceCounts[command] < 10) {

@@ -5,6 +5,7 @@ module.exports = {
         extend: {
             colors: {
                 bg: '#151d28',
+                'bg-semi-transparent': 'rgb(from var(--bg) r g b / 0.8)',
                 'bg-alt': '#303050',
                 'bg-dark': '#121821',
                 'blue-300': '#a38529',

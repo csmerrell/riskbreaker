@@ -4,11 +4,12 @@ import { PartyMember, useParty } from '../useParty';
 import { BattleManager } from './BattleManager';
 import { getEffectiveStat } from './UnitStats';
 import { getActorAnchor } from '../ui/useActorAnchors';
-import { addMenu } from '../ui/useMenuRegistry';
+import { addMenu, MenuInstance, removeMenu } from '../ui/useMenuRegistry';
 import { vec } from 'excalibur';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import ActiveUnitMenu from '@/ui/components/menus/activeUnitMenu/ActiveUnitMenu.vue';
 import CrossHotbar from '@/ui/components/menus/crossHotbar/CrossHotbar.vue';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 
 type BattleUnit = EnemyDef | PartyMember;
 type CTMapping = {
@@ -39,6 +40,9 @@ export class TurnManager {
     public reset() {
         this.unitCTs = [];
         this.forecastReady.set(false);
+        this.menus.forEach((menu) => {
+            removeMenu(menu.id);
+        });
     }
 
     public forecast = makeState<(EnemyDef | PartyMember)[]>([]);
@@ -113,10 +117,11 @@ export class TurnManager {
 
     private activateEnemy(_unit: EnemyDef) {}
 
+    private menus: MenuInstance[] = [];
     private async activatePartyMember(unit: PartyMember) {
         const actor = Object.values(this.parent.laneUnitMap)
             .flat()
-            .find((a) => a.unitId === unit.id);
+            .find((a) => a.unitId === unit.id) as CompositeActor;
         if (!actor) {
             throw new Error(
                 "[ActiveUnitMenu] was made visible, but the active unit wasn't found in the battle manager's lane map",
@@ -126,32 +131,38 @@ export class TurnManager {
         await this.parent.cameraManager!.focusUnit(actor);
 
         const arrowAnchor = getActorAnchor(actor, { offset: vec(4, -64) });
-        const _indicator = addMenu(TargetIndicator, {
-            position: arrowAnchor.anchor.pos,
-            props: {
-                type: 'arrow',
-                direction: 'down',
-                blink: true,
-                scale: 4,
-            },
-        });
+        this.menus.push(
+            addMenu(TargetIndicator, {
+                position: arrowAnchor.anchor.pos,
+                props: {
+                    type: 'arrow',
+                    direction: 'down',
+                    blink: true,
+                    scale: 4,
+                },
+            }),
+        );
 
         const menuAnchor = getActorAnchor(actor, { offset: vec(0, -78) });
-        const _menu = addMenu(ActiveUnitMenu, {
-            position: menuAnchor.anchor.pos,
-            props: {
-                unit,
-                actor,
-            },
-        });
+        this.menus.push(
+            addMenu(ActiveUnitMenu, {
+                position: menuAnchor.anchor.pos,
+                props: {
+                    unit,
+                    actor,
+                },
+            }),
+        );
 
         const hotbarAnchor = getActorAnchor(actor, { offset: vec(4, -84) });
-        const _crossHotbar = addMenu(CrossHotbar, {
-            position: hotbarAnchor.anchor.pos,
-            props: {
-                unit,
-                actor,
-            },
-        });
+        this.menus.push(
+            addMenu(CrossHotbar, {
+                position: hotbarAnchor.anchor.pos,
+                props: {
+                    unit,
+                    actor,
+                },
+            }),
+        );
     }
 }

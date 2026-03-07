@@ -37,13 +37,8 @@ function mount() {
                     <TurnForecast v-if="forecastReady" />
                 </Transition>
             </div>
-            <div class="absolute bottom-4 right-4">
-                <div class="bg-bg opacity-70">
-                    <PartyStatus class="invisible p-2" />
-                </div>
-                <MenuBox class="flex flex-col gap-2 rounded-br-md rounded-tl-md p-2">
-                    <PartyStatus />
-                </MenuBox>
+            <div class="absolute bottom-3 right-4">
+                <PartyStatus />
             </div>
         </div>
     </Transition>

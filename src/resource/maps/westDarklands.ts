@@ -19,14 +19,14 @@ const westDarklandsResources = {
                 }),
                 {},
             ),
-            '17_10': {
-                type: 'scriptTrigger',
-                scriptName: 'unique.newGameFirstBattle',
-            },
-            '20_9': {
-                type: 'scriptTrigger',
-                scriptName: 'unique.newGameDragonAttack',
-            },
+            // '17_10': {
+            //     type: 'scriptTrigger',
+            //     scriptName: 'unique.newGameFirstBattle',
+            // },
+            // '20_9': {
+            //     type: 'scriptTrigger',
+            //     scriptName: 'unique.newGameDragonAttack',
+            // },
         },
     },
 } as const satisfies Record<string, MapMeta>;

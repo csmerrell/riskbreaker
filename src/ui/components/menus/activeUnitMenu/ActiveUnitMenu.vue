@@ -3,12 +3,8 @@ import { onUnmounted, ref } from 'vue';
 
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 
-import MenuBox from '@/ui/components/MenuBox.vue';
-import ActionList from './ActionList.vue';
-
 import type { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import type { PartyMember } from '@/state/useParty';
-import KeySprite from '../../KeySprite.vue';
 import ActionItem from './ActionItem.vue';
 
 type Props = {

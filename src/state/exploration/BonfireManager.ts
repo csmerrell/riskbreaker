@@ -94,7 +94,7 @@ export class BonfireManager {
         this.parent.scene.add(fire.actor);
         this.parent.scene.on('moved', () => {
             fire.health = Math.max(0, fire.health - 1);
-            if (fire.health === 0) {
+            if (fire.health === 0 && fire.actor?.isAdded) {
                 fire.actor!.kill();
             }
         });

@@ -49,7 +49,7 @@ export function initGame() {
             width: gameEnum.nativeWidth,
             height: gameEnum.nativeHeight,
             pixelArt: true,
-            pixelRatio: 3,
+            pixelRatio: 4,
             backgroundColor: Color.Transparent,
             displayMode: DisplayMode.Fixed,
             suppressPlayButton: true,

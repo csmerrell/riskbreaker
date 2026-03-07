@@ -28,10 +28,19 @@ export type InputListener = {
 const stackOwners = ['root'];
 const stackOwner = makeState<string>(stackOwners[0]);
 const listenerStack: Record<string, InputListener[]>[] = [{}];
+const inputDebounceMap: Partial<Record<MappedCommand, number>> = {};
 const currentListeners = () => listenerStack[listenerStack.length - 1];
 function notifyListeners(result: InputMap) {
-    Object.entries(currentListeners()).forEach(
+    const debounceSnapshot = { ...inputDebounceMap };
+    (Object.entries(currentListeners()) as [MappedCommand, InputListener[]][]).forEach(
         ([key, listeners]: [MappedCommand, InputListener[]]) => {
+            if (!key.match(/\*|all/) && result[convergedCommandMap[key]!.key]) {
+                inputDebounceMap[key] = (inputDebounceMap[key] ?? 0) + 1;
+                if (inputDebounceMap[key] > 1 && inputDebounceMap[key] < 6) {
+                    return;
+                }
+            }
+
             if ((key as 'all') === 'all') {
                 return;
             } else if ((key as '*') === '*') {
@@ -41,8 +50,8 @@ function notifyListeners(result: InputMap) {
                         unregisterInputListener(listener.id);
                     }
                 });
-            } else if (result[convergedCommandMap[key].key]) {
-                const commandKey = convergedCommandMap[key].key;
+            } else if (result[convergedCommandMap[key]!.key]) {
+                const commandKey = convergedCommandMap[key]!.key;
                 let idx = listeners.length - 1;
                 let consumed: boolean | void = false;
                 while (!consumed && idx >= 0) {
@@ -53,26 +62,43 @@ function notifyListeners(result: InputMap) {
                             unregisterInputListener(listener.id);
                         }
                         delete result[commandKey];
+                        const collisions = consumeCollisions(result, [commandKey]);
+                        // Sync debounce counters for all consumed commands
+                        collisions.forEach((cmd) => {
+                            inputDebounceMap[cmd] = inputDebounceMap[key];
+                        });
                     }
                 }
             }
         },
     );
+
+    (Object.keys(inputDebounceMap) as MappedCommand[]).forEach((key) => {
+        if (inputDebounceMap[key] === debounceSnapshot[key]) {
+            delete inputDebounceMap[key];
+        }
+    });
 }
 
-export function consumeCollisions(inputs: InputMap, commands: MappedCommand[]) {
+export function consumeCollisions(inputs: InputMap, commands: MappedCommand[]): MappedCommand[] {
     const { buttonMap, getUnmappedButton } = useGamepad();
     const { keyMap, getUnmappedKey } = useKeyboard();
+    const consumedCommands: MappedCommand[] = [];
 
     commands.forEach((commandKey) => {
         const sharedInputs = [
-            ...(buttonMap[getUnmappedButton(commandKey)] ?? []),
-            ...(keyMap[getUnmappedKey(commandKey)] ?? []),
+            ...(buttonMap[getUnmappedButton(commandKey)!] ?? []),
+            ...(keyMap[getUnmappedKey(commandKey)!] ?? []),
         ];
         sharedInputs.forEach((key) => {
-            delete inputs[key];
+            if (inputs[key]) {
+                consumedCommands.push(key);
+                delete inputs[key];
+            }
         });
     });
+
+    return consumedCommands;
 }
 
 function notifyHoldListeners(result: InputMap) {

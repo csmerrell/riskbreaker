@@ -1,4 +1,4 @@
-import { Actor, Color, Rectangle, vec } from 'excalibur';
+import { Actor, Color, Graphic, Rectangle, vec, Vector } from 'excalibur';
 import { BattleManager } from './BattleManager';
 import { useGameContext } from '../useGameContext';
 import { getScale } from '@/lib/helpers/screen.helper';
@@ -89,5 +89,62 @@ export class HeadshotManager {
         );
 
         return dataURL;
+    }
+
+    async captureTemporalSnapshot(
+        graphic: Graphic,
+        opts: { height: number; width: number; scale?: Vector },
+    ) {
+        const actor = new Actor({
+            scale: opts.scale ?? vec(1, 1),
+        });
+        actor.graphics.add(graphic);
+        const scene = useGameContext().headshotEngine.value.currentScene;
+        scene.actors.forEach((a) => {
+            a.kill();
+        });
+
+        scene.add(actor);
+        scene.camera.strategy.lockToActor(actor);
+        await new Promise<void>((resolve) => {
+            actor.events.on('postupdate', () => {
+                resolve();
+            });
+        });
+
+        // Get the headshot canvas
+        const headshotCanvas = document.getElementById('headshot-canvas') as HTMLCanvasElement;
+        const pixelRatio = useGameContext().headshotEngine.value.pixelRatio;
+
+        const { height, width } = opts;
+
+        // Create portrait canvas at display resolution
+        const portraitCanvas = document.createElement('canvas');
+        portraitCanvas.width = width * getScale();
+        portraitCanvas.height = height * getScale();
+        const portraitCtx = portraitCanvas.getContext('2d')!;
+        portraitCtx.imageSmoothingEnabled = false;
+
+        // Calculate capture anchor
+        let captureAnchor = vec(0, 0);
+
+        // Scale to buffer coordinates
+        captureAnchor = captureAnchor.scale(pixelRatio);
+
+        // Capture from headshot canvas
+        portraitCtx.drawImage(
+            headshotCanvas,
+            captureAnchor.x, // source x
+            captureAnchor.y, // source y
+            width * pixelRatio, // source width
+            height * pixelRatio, // source height
+            0, // dest x
+            0, // dest y
+            portraitCanvas.width, // dest width
+            portraitCanvas.height, // dest height
+        );
+
+        // Convert to data URL
+        return portraitCanvas.toDataURL('image/png');
     }
 }
