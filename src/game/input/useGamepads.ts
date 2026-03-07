@@ -65,41 +65,11 @@ const axisComparisons = [
     [Axes.RightStickY, Axes.RightStickX],
 ];
 
-const heldButtons = [
-    Buttons.DpadDown,
-    Buttons.DpadLeft,
-    Buttons.DpadRight,
-    Buttons.DpadUp,
-    Buttons.RightTrigger,
-    Buttons.LeftTrigger,
-];
-const debouncedInputs: MappedCommand[] = [
-    'movement_left',
-    'movement_right',
-    'movement_down',
-    'movement_up',
-    'menu_right',
-    'menu_left',
-    'menu_down',
-    'menu_up',
-];
-const debounceCounts = debouncedInputs.reduce(
-    (acc: Partial<Record<MappedCommand, number>>, key) => {
-        return {
-            ...acc,
-            [key]: 0,
-        };
-    },
-    {},
-);
-
-const gamepadInputs = new InputMap();
-const previousButtonStates: Partial<Record<Buttons, boolean>> = {};
-
 export function useGamepad() {
     const buttonMap = { ...defaultGamepadMap };
+    
     function initGamepads() {
-        const { game, inputType } = useGameContext();
+        const { game } = useGameContext();
         const { input } = game.value;
 
         input.gamepads.toggleEnabled(true);
@@ -107,87 +77,37 @@ export function useGamepad() {
             axis: 2,
             buttons: 12,
         });
-
-        input.gamepads.on('connect', (connection) => {
-            connection.gamepad.on('button', (e) => {
-                inputType.set('controller');
-                const { button } = e;
-
-                // Skip held buttons - they're handled by polling
-                if (heldButtons.includes(button)) {
-                    return;
-                }
-
-                buttonMap[button].forEach((key) => {
-                    gamepadInputs[key] = true;
-                });
-            });
-        });
     }
 
-    function pollHeldButtons() {
-        const buttonMap = { ...defaultGamepadMap };
-
-        navigator.getGamepads().forEach((gp) => {
-            if ((gp?.buttons.length ?? 0) < 12) {
-                return;
-            }
-
-            heldButtons.forEach((button) => {
-                const isPressed = gp.buttons[button].pressed;
-                const wasPressed = previousButtonStates[button] ?? false;
-
-                if (isPressed) {
-                    // Keep setting to true every frame (like keyboard's 'hold' event)
-                    buttonMap[button].forEach((command) => {
-                        gamepadInputs[command] = true;
-                    });
-                } else if (!isPressed && wasPressed) {
-                    // Release: set to false (like keyboard's 'release' event)
-                    buttonMap[button].forEach((command) => {
-                        gamepadInputs[command] = false;
-                    });
-                }
-
-                previousButtonStates[button] = isPressed;
-            });
-        });
-    }
-
-    function mapHeldControls() {
+    function getGamepadInputs() {
         const { inputType } = useGameContext();
-        const buttonMap = { ...defaultGamepadMap };
         const result = new InputMap();
 
-        const debouncedCommands: Partial<Record<MappedCommand, boolean>> = {};
-        function checkCommandDebounce(command: MappedCommand) {
-            if (debounceCounts[command] === undefined) {
-                return false;
-            }
-
-            debounceCounts[command]++;
-            debouncedCommands[command] = true;
-            if (debounceCounts[command] > 1 && debounceCounts[command] < 9) {
-                return true;
-            }
-        }
-
         navigator.getGamepads().forEach((gp) => {
-            if (!gp) return;
-
-            if ((gp.buttons.length ?? 0) < 12) {
+            if (!gp || (gp.buttons.length ?? 0) < 12) {
                 return;
             }
 
+            // Poll all buttons
+            (Object.entries(buttonMap) as [string, MappedCommand[]][]).forEach(
+                ([buttonStr, commands]) => {
+                    const button = Number(buttonStr) as Buttons;
+                    if (gp.buttons[button]?.pressed) {
+                        inputType.set('controller');
+                        commands.forEach((command) => {
+                            result[command] = true;
+                        });
+                    }
+                },
+            );
+
+            // Poll analog sticks
             (axisComparisons as [Axes, Axes][]).forEach(
                 ([primaryKey, secondaryKey]: [Axes, Axes]) => {
                     const primaryValue = gp.axes[primaryKey];
                     const siblingValue = gp.axes[secondaryKey];
                     axisMap[primaryKey](primaryValue, siblingValue).forEach(
                         (command: MappedCommand) => {
-                            if (checkCommandDebounce(command)) {
-                                return;
-                            }
                             inputType.set('controller');
                             result[command] = true;
                         },
@@ -195,52 +115,7 @@ export function useGamepad() {
                 },
             );
         });
-
-        //reset debounce counts
-        debouncedInputs.forEach((command) => {
-            if ((debounceCounts[command] ?? 0) > 0 && !debouncedCommands[command]) {
-                debounceCounts[command] = 0;
-            }
-        });
-
         return result;
-    }
-
-    let persistentCommands: MappedCommand[] = [];
-
-    function cullDebouncedHeldControls() {
-        persistentCommands = [];
-        debouncedInputs.forEach((command) => {
-            if (!debounceCounts[command]) {
-                debounceCounts[command] = 0;
-            }
-
-            if (gamepadInputs[command]) {
-                debounceCounts[command]++;
-                if (debounceCounts[command] > 1 && debounceCounts[command] < 10) {
-                    delete gamepadInputs[command];
-                } else {
-                    persistentCommands.push(command);
-                }
-            } else {
-                debounceCounts[command] = 0;
-                delete gamepadInputs[command];
-            }
-        });
-    }
-
-    function getGamepadInputs() {
-        pollHeldButtons();
-        cullDebouncedHeldControls();
-
-        return new InputMap({
-            ...gamepadInputs.definedInputs(),
-            ...mapHeldControls().definedInputs(),
-        });
-    }
-
-    function clear() {
-        gamepadInputs.clear({ exemptCommands: persistentCommands });
     }
 
     function getUnmappedButton(mapped: MappedCommand) {
@@ -251,7 +126,6 @@ export function useGamepad() {
 
     return {
         buttonMap,
-        clear,
         getGamepadInputs,
         getUnmappedButton,
         initGamepads,

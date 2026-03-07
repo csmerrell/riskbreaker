@@ -28,7 +28,7 @@ export type InputListener = {
 const stackOwners = ['root'];
 const stackOwner = makeState<string>(stackOwners[0]);
 const listenerStack: Record<string, InputListener[]>[] = [{}];
-const inputDebounceMap: Partial<Record<MappedCommand, number>> = {};
+let inputDebounceMap: Partial<Record<MappedCommand, number>> = {};
 const currentListeners = () => listenerStack[listenerStack.length - 1];
 function notifyListeners(result: InputMap) {
     const debounceSnapshot = { ...inputDebounceMap };
@@ -137,8 +137,8 @@ export function unCaptureControls() {
 export const inputGlobalDebounce = 50;
 let commands: InputMap;
 export function readInput() {
-    const { getGamepadInputs, clear: clearGamepad } = useGamepad();
-    const { getKeyboardInputs, clear: clearKeyboard } = useKeyboard();
+    const { getGamepadInputs } = useGamepad();
+    const { getKeyboardInputs } = useKeyboard();
 
     commands = new InputMap({
         ...getKeyboardInputs().definedInputs(),
@@ -148,12 +148,11 @@ export function readInput() {
     notifyHoldListeners(commands);
     if (!commands.isEmpty()) {
         notifyListeners(commands);
-        clearGamepad();
-        clearKeyboard();
         setTimeout(() => {
             requestAnimationFrame(readInput);
         }, inputGlobalDebounce);
     } else {
+        inputDebounceMap = {};
         requestAnimationFrame(readInput);
     }
 }

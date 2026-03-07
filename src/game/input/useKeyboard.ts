@@ -46,114 +46,31 @@ export const defaultKeyboardMap: Partial<Record<Keys, MappedCommand[]>> = {
     [Keys.Key0]: ['hotbar10'],
 };
 
-const heldKeys = [
-    Keys.ArrowDown,
-    Keys.ArrowUp,
-    Keys.ArrowLeft,
-    Keys.ArrowRight,
-    Keys.W,
-    Keys.A,
-    Keys.S,
-    Keys.D,
-    Keys.ControlLeft,
-    Keys.ControlRight,
-    Keys.ShiftLeft,
-    Keys.ShiftRight,
-];
-const debouncedInputs: MappedCommand[] = [
-    'menu_right',
-    'menu_left',
-    'menu_down',
-    'menu_up',
-    'movement_right',
-    'movement_left',
-    'movement_down',
-    'movement_up',
-];
-const debounceCounts = debouncedInputs.reduce(
-    (acc: Partial<Record<MappedCommand, number>>, key) => {
-        return {
-            ...acc,
-            [key]: 0,
-        };
-    },
-    {},
-);
-
-const keyboardInputs = new InputMap();
-
 export function useKeyboard() {
     const keyMap = { ...defaultKeyboardMap };
 
     function initKeyboard() {
-        const keyMap = { ...defaultKeyboardMap };
-        const { game, inputType } = useGameContext();
+        const { game } = useGameContext();
         const { input } = game.value;
-
         input.keyboard.toggleEnabled(true);
-        input.keyboard.on('press', (e) => {
-            inputType.set('keyboard');
-            const { key } = e;
-            keyMap[key]?.forEach((command) => {
-                keyboardInputs[command] = true;
-            });
-        });
-
-        input.keyboard.on('hold', (e) => {
-            const { key } = e;
-            heldKeys.forEach((heldKey) => {
-                if (key === heldKey) {
-                    keyMap[key]?.forEach((command) => {
-                        keyboardInputs[command] = true;
-                    });
-                }
-            });
-        });
-
-        input.keyboard.on('release', (e) => {
-            const { key } = e;
-            heldKeys.forEach((heldKey) => {
-                if (key === heldKey) {
-                    keyMap[key]?.forEach((command) => {
-                        keyboardInputs[command] = false;
-                    });
-                }
-            });
-        });
-    }
-
-    let persistentKeys: MappedCommand[] = [];
-    function cullDebouncedHeldControls() {
-        persistentKeys = [];
-        TypedKeys(debounceCounts).forEach((command) => {
-            if (!debounceCounts[command]) {
-                debounceCounts[command] = 0;
-            }
-
-            if (keyboardInputs[command]) {
-                debounceCounts[command]++;
-                if (debounceCounts[command] > 1 && debounceCounts[command] < 10) {
-                    delete keyboardInputs[command];
-                } else {
-                    persistentKeys.push(command);
-                }
-            } else {
-                debounceCounts[command] = 0;
-                delete keyboardInputs[command];
-            }
-        });
-        return heldKeys;
     }
 
     function getKeyboardInputs() {
-        cullDebouncedHeldControls();
-        return new InputMap({
-            ...keyboardInputs.definedInputs(),
-        });
-    }
+        const { game, inputType } = useGameContext();
+        const { input } = game.value;
+        const result = new InputMap();
 
-    function clear() {
-        keyboardInputs.clear({ exemptCommands: persistentKeys });
+        // Poll all mapped keys
+        TypedKeys(keyMap).forEach((key) => {
+            if (input.keyboard.isHeld(key)) {
+                inputType.set('keyboard');
+                keyMap[key]?.forEach((command) => {
+                    result[command] = true;
+                });
+            }
+        });
+
+        return result;
     }
 
     function getUnmappedKey(mapped: MappedCommand) {
@@ -164,7 +81,6 @@ export function useKeyboard() {
 
     return {
         keyMap,
-        clear,
         getKeyboardInputs,
         getUnmappedKey,
         initKeyboard,
