@@ -25,17 +25,17 @@ export const RiskbreakerDefault: PartyMember = {
         shieldBash: {
             name: 'Shield Bash',
             key: 'shieldBash',
-            hotkey: 'right.hotbarFLeft',
+            hotkey: 'right.hotbarDLeft',
         },
         push: {
             name: 'Push',
             key: 'push',
-            hotkey: 'right.hotbarFDown',
+            hotkey: 'right.hotbarFLeft',
         },
         attack: {
             name: 'Attack',
             key: 'attack',
-            hotkey: 'right.hotbarFRight',
+            hotkey: 'right.hotbarFDown',
         },
     },
     passives: {

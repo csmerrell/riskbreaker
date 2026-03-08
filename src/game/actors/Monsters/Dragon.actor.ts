@@ -145,41 +145,41 @@ export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
         };
     }
 
-    // public battleFieldEntry = async (pos: Vector): Promise<void> => {
-    //     this.pos = vec(pos.x, pos.y - 125);
-    //     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    //     this.useAnimation('hover', {
-    //         strategy: AnimationStrategy.Loop,
-    //     });
-    //     this.vel = vec(0, 16);
-    //     return new Promise<void>((resolve) => {
-    //         const interval = setInterval(() => {
-    //             if (this.pos.y >= pos.y) {
-    //                 this.vel = vec(0, 0);
-    //                 this.useAnimation('touchDown').then(() => {
-    //                     resolve();
-    //                 });
-    //                 clearInterval(interval);
-    //                 return;
-    //             }
-    //         }, 25);
+    public battleFieldEntry = async (pos: Vector): Promise<void> => {
+        this.pos = vec(pos.x, pos.y - 125);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        this.useAnimation('hover', {
+            strategy: AnimationStrategy.Loop,
+        });
+        this.vel = vec(0, 16);
+        return new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+                if (this.pos.y >= pos.y) {
+                    this.vel = vec(0, 0);
+                    this.useAnimation('touchDown').then(() => {
+                        resolve();
+                    });
+                    clearInterval(interval);
+                    return;
+                }
+            }, 25);
 
-    //         this.get(Animator).registerAnimationEvent('frame', (e: FrameEvent) => {
-    //             switch (e.frameIndex) {
-    //                 case 2:
-    //                     this.vel = this.vel.add(vec(0, -5));
-    //                     break;
-    //                 case 3:
-    //                     this.vel = vec(0, 0);
-    //                     break;
-    //                 case 4:
-    //                     this.vel = vec(0, -10);
-    //                     break;
-    //                 default:
-    //                     this.vel = this.vel.add(vec(0, 16));
-    //                     break;
-    //             }
-    //         });
-    //     });
-    // };
+            this.get(Animator).registerAnimationEvent('frame', (e: FrameEvent) => {
+                switch (e.frameIndex) {
+                    case 2:
+                        this.vel = this.vel.add(vec(0, -5));
+                        break;
+                    case 3:
+                        this.vel = vec(0, 0);
+                        break;
+                    case 4:
+                        this.vel = vec(0, -10);
+                        break;
+                    default:
+                        this.vel = this.vel.add(vec(0, 16));
+                        break;
+                }
+            });
+        });
+    };
 }

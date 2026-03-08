@@ -1,43 +1,50 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import HotbarSet from './HotbarSet.vue';
 import { resources } from '@/resource';
-
-type Props = {
-    focusLeft?: boolean;
-    focusRight?: boolean;
-};
-
-const { focusLeft = false, focusRight = false } = defineProps<Props>();
+import { registerHoldListener, unregisterInputListener } from '@/game/input/useInput';
 
 const ready = ref(false);
+const focusLeft = ref(false);
+const focusRight = ref(false);
+const listeners: string[] = [];
 if (resources.image.icons.skills.isLoaded()) {
     ready.value = true;
+    registerListeners();
 } else {
     resources.image.icons.skills.load().then(() => {
         ready.value = true;
+        registerListeners();
     });
 }
+
+function registerListeners() {
+    listeners.push(
+        registerHoldListener((inputs) => {
+            if (inputs.shoulder_right && !focusLeft.value) {
+                focusRight.value = true;
+            } else if (inputs.shoulder_left && !focusRight.value) {
+                focusLeft.value = true;
+            } else {
+                focusLeft.value = false;
+                focusRight.value = false;
+            }
+        }),
+    );
+}
+
+onUnmounted(() => {
+    listeners.forEach((l) => unregisterInputListener(l));
+});
 </script>
 
 <template>
     <div
         v-if="ready"
-        class="cross-hotbar flex -translate-x-1/2 -translate-y-full flex-row items-center justify-end gap-4 self-center rounded-lg p-4"
+        class="cross-hotbar flex -translate-x-1/2 -translate-y-full flex-row items-end justify-end gap-4 self-center rounded-lg p-4"
     >
         <HotbarSet side="left" :focused="focusLeft" :class="focusRight ? 'text-[.75em]' : ''" />
         <div class="h-16 border-l border-bg-alt" />
         <HotbarSet side="right" :focused="focusRight" :class="focusLeft ? 'text-[.75em]' : ''" />
     </div>
 </template>
-
-<style scoped>
-.cross-hotbar {
-    background: radial-gradient(
-        ellipse 50% 50% at center,
-        rgba(21, 29, 40, 0.3) 0%,
-        rgba(21, 29, 40, 0.5) 80%,
-        rgba(21, 29, 40, 0) 100%
-    );
-}
-</style>

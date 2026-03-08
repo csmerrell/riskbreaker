@@ -53,6 +53,13 @@ export function useKeyboard() {
         const { game } = useGameContext();
         const { input } = game.value;
         input.keyboard.toggleEnabled(true);
+        
+        // Prevent Tab from triggering browser focus navigation
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+            }
+        });
     }
 
     function getKeyboardInputs() {

@@ -19,7 +19,6 @@ watch(activeView, (val) => {
 });
 
 const forecastReady = ref(false);
-const crossHotbarVisible = ref(false);
 function mount() {
     const { turnManager } = useExploration().getExplorationManager().battleManager;
     forecastReady.value = turnManager.forecastReady.value;
@@ -31,11 +30,9 @@ function mount() {
 
 <template>
     <Transition name="fade" :duration="500">
-        <div v-if="activeView === 'battle'">
-            <div class="relative size-full">
-                <Transition name="fade" :duration="500">
-                    <TurnForecast v-if="forecastReady" />
-                </Transition>
+        <div v-if="forecastReady">
+            <div class="absolute bottom-16 left-4">
+                <TurnForecast />
             </div>
             <div class="absolute bottom-3 right-4">
                 <PartyStatus />

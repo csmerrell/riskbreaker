@@ -26,10 +26,7 @@ const activeForecast = computed(() => {
 </script>
 
 <template>
-    <div
-        class="inset-unset absolute bottom-16 left-4 flex flex-row items-start"
-        :style="{ height: `${getScale() * 18}px` }"
-    >
+    <div class="flex flex-row items-start" :style="{ height: `${getScale() * 18}px` }">
         <ForecastedUnit
             v-for="(unit, idx) in visibleForecasts"
             :key="`${unit.id}-${idx}`"

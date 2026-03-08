@@ -10,4 +10,5 @@ export const controls = {
     ),
     gamepad: new ImageSource('image/import/ControllerUI/UI_Gamepad_01_Buttons.png'),
     gamepad_white: new ImageSource('image/import/ControllerUI/UI_Gamepad_04_Buttons.png'),
+    crossHotbarCenter: new ImageSource('image/icon/CrossHotbarCenter.png'),
 };

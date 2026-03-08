@@ -67,7 +67,7 @@ const axisComparisons = [
 
 export function useGamepad() {
     const buttonMap = { ...defaultGamepadMap };
-    
+
     function initGamepads() {
         const { game } = useGameContext();
         const { input } = game.value;

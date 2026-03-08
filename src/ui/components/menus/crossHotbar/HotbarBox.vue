@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { getScale } from '@/lib/helpers/screen.helper';
 import { resources } from '@/resource';
-import { SpriteSheet, vec, Vector } from 'excalibur';
+import { SpriteSheet } from 'excalibur';
 import { onMounted, ref } from 'vue';
 
 type Props = {
     row?: number;
     col?: number;
-    scale?: Vector;
+    name?: string;
+    focused?: boolean;
 };
 
-const { row, col, scale = vec(1, 1) } = defineProps<Props>();
+const { row, col, name, focused = false } = defineProps<Props>();
 
 const imgContainer = ref<HTMLDivElement>();
-const size = ref((~~getScale() / 2) * 24);
+const size = ref((getScale() - 2) * 24);
 onMounted(async () => {
     if (row && col) {
         const imageEl = await SpriteSheet.fromImageSource({
@@ -35,11 +36,11 @@ onMounted(async () => {
 <template>
     <div
         ref="imgContainer"
-        class="hotbar-box flex flex-col items-center justify-center overflow-hidden rounded-sm p-1"
+        class="hotbar-box overflow-hidden rounded-sm"
         :style="{
             height: `${size}px`,
             width: `${size}px`,
-            backgroundColor: 'rgb(from var(--yellow-700) r g b / 0.1)',
+            backgroundColor: 'rgb(from var(--bg-alt) r g b / 0.7)',
         }"
     />
 </template>
