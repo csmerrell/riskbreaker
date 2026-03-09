@@ -5,8 +5,8 @@ import { useGameContext } from '@/state/useGameContext';
 export const defaultGamepadMap: Record<Buttons, MappedCommand[]> = {
     [Buttons.Face1]: ['confirm', 'hotbarFDown'],
     [Buttons.Face2]: ['cancel', 'hotbarFRight'],
-    [Buttons.Face3]: ['context_menu_1', 'hotbarFUp'],
-    [Buttons.Face4]: ['inspect_details', 'hotbarFLeft'],
+    [Buttons.Face3]: ['inspect_details', 'hotbarFLeft'],
+    [Buttons.Face4]: ['context_menu_1', 'hotbarFUp'],
     [Buttons.DpadDown]: ['menu_down', 'movement_down', 'hotbarDDown'],
     [Buttons.DpadRight]: ['menu_right', 'movement_right', 'hotbarDRight'],
     [Buttons.DpadUp]: ['menu_up', 'movement_up', 'hotbarDUp'],

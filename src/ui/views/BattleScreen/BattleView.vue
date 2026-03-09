@@ -6,7 +6,6 @@ import PartyStatus from './PartyStatus.vue';
 import { useGameContext } from '@/state/useGameContext';
 import { ref, watch } from 'vue';
 import { useExploration } from '@/state/useExploration';
-import CrossHotbar from './crossHotbar/CrossHotbar.vue';
 
 const { activeView } = useGameContext();
 

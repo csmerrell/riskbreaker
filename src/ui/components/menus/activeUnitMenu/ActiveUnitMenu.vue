@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue';
 
-import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    registerHoldListener,
+    registerInputListener,
+    unregisterInputListener,
+} from '@/game/input/useInput';
 
 import type { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import type { PartyMember } from '@/state/useParty';
@@ -14,40 +18,57 @@ type Props = {
 
 defineProps<Props>();
 
-const selectedAction = ref(0);
-const actions = ref([
-    {
-        name: 'Act',
-        onSelect: async () => {},
-    },
-    {
-        name: 'Stock',
-        onSelect: async () => {},
-    },
-    {
-        name: 'Rest',
-        onSelect: async () => {},
-    },
-]);
-
+const actPressed = ref(false);
+const stockPressed = ref(false);
+const restPressed = ref(false);
 const listeners = [
+    registerHoldListener((inputs) => {
+        if (inputs.shoulder_left || inputs.shoulder_right) {
+            actPressed.value = true;
+        } else {
+            actPressed.value = false;
+        }
+    }),
     registerInputListener(() => {
-        selectedAction.value = Math.min(selectedAction.value + 1, actions.value.length - 1);
-    }, ['menu_down', 'movement_down']),
+        if (stockPressed.value) {
+            return;
+        }
+        stockPressed.value = true;
+        setTimeout(() => {
+            stockPressed.value = false;
+        }, 125);
+    }, 'context_menu_1'),
     registerInputListener(() => {
-        selectedAction.value = Math.max(selectedAction.value - 1, 0);
-    }, ['menu_up', 'movement_up']),
+        if (restPressed.value) {
+            return;
+        }
+        restPressed.value = true;
+        setTimeout(() => {
+            restPressed.value = false;
+        }, 125);
+    }, 'inspect_details'),
 ];
-
-onUnmounted(() => {
-    listeners.forEach((id) => unregisterInputListener(id));
-});
 </script>
 
 <template>
     <div class="relative flex flex-col items-start gap-2">
-        <ActionItem label="Act" command="shoulder_right" class="text-standard-md relative left-8" />
-        <ActionItem label="Stock" command="hotbarFUp" class="text-standard-md relative left-12" />
-        <ActionItem label="Rest" command="hotbarFLeft" class="text-standard-md relative left-16" />
+        <ActionItem
+            label="Act"
+            :active="actPressed"
+            command="shoulder_right"
+            class="text-standard-md relative left-8"
+        />
+        <ActionItem
+            label="Stock"
+            :active="stockPressed"
+            command="hotbarFUp"
+            class="text-standard-md relative left-12"
+        />
+        <ActionItem
+            label="Rest"
+            :active="restPressed"
+            command="hotbarFLeft"
+            class="text-standard-md relative left-16"
+        />
     </div>
 </template>
