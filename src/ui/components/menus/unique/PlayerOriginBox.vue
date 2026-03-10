@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import MenuBox from '../../MenuBox.vue';
 import KeySprite from '../../KeySprite.vue';
+import ControlIconSprite from '../../ControlIconSprite.vue';
 type PlayerOriginBoxProps = {
     origin: 'astrologian' | 'riskbreaker';
 };
@@ -48,7 +49,7 @@ const messageSplit = computed(() =>
             <div
                 class="text-standard-sm absolute right-4 top-4 flex flex-row gap-2 text-amber-300 opacity-70"
             >
-                <KeySprite command="confirm" size="md" :scale="0.5" /> Select
+                <ControlIconSprite command="confirm" size="xs" /> Select
             </div>
             <div class="flex flex-col border-b border-yellow-700 pb-4">
                 <strong class="text-standard-lg text-rose-700">{{ body.origin }}</strong>

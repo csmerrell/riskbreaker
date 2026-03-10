@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TileControlPrompt } from '@/state/useExploration';
+import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import KeySprite from '@/ui/components/KeySprite.vue';
 
 type Props = {
@@ -24,7 +25,7 @@ const { tileControls } = defineProps<Props>();
                 <span :class="prompt.labelColor ?? 'text-white'">
                     {{ prompt.label }}
                 </span>
-                <KeySprite v-if="prompt.command" :command="prompt.command" :scale="0.75" />
+                <ControlIconSprite v-if="prompt.command" :command="prompt.command" :scale="0.75" />
             </div>
         </div>
     </div>

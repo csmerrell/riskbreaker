@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGameContext } from '@/state/useGameContext';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import {
     gamepadSpriteMap,
     gamepadSpriteSheet,
@@ -28,7 +28,7 @@ const { inputType: inputTypeState } = useGameContext();
 const inputType = ref(inputTypeState.value);
 
 inputTypeState.subscribe((next) => {
-    inputType.value = next;
+    inputType.value = next!;
 });
 
 const keyboardText = computed(() => {
@@ -63,6 +63,7 @@ const spriteSize = computed(() => {
 });
 
 const renderSprite = async () => {
+    await nextTick();
     if (!imgContainer.value) return;
 
     // Clear previous content
@@ -124,7 +125,7 @@ watch(shouldRender, () => {
     <div
         v-else
         ref="imgContainer"
-        class="control-icon-sprite"
+        class="control-icon-sprite -mt-2"
         :style="{
             width: `${spriteSize}px`,
             height: `${spriteSize}px`,

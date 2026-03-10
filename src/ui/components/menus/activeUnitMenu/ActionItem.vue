@@ -21,7 +21,7 @@ const { label, command, active } = defineProps<Props>();
                 :command
                 force-gamepad
                 size="sm"
-                class="text-standard-sm absolute -right-2 -top-4 size-0 text-white"
+                class="text-standard-sm absolute -right-2 -top-2 size-0 text-white"
             />
             <div>{{ label }}</div>
         </div>

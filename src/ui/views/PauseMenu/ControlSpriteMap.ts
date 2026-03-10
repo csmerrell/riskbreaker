@@ -62,8 +62,8 @@ export const animatedKeyboardSpriteSheet = () => {
 };
 
 export const gamepadSpriteMap: ControlSpriteMap = {
-    [Buttons.Face1]: [15, 1, { width: 1 }],
-    [Buttons.Face2]: [15, 0, { width: 1 }],
+    [Buttons.Face1]: [15, 0, { width: 1 }],
+    [Buttons.Face2]: [15, 1, { width: 1 }],
     [Buttons.Face3]: [15, 3, { width: 1 }],
     [Buttons.Face4]: [15, 2, { width: 1 }],
     [Buttons.Start]: [15, 4, { width: 1 }],
@@ -76,11 +76,6 @@ export const gamepadSpriteMap: ControlSpriteMap = {
     [Buttons.LeftTrigger]: [1, 8, { width: 1 }],
     [Buttons.RightBumper]: [8, 7, { width: 1 }],
     [Buttons.RightTrigger]: [8, 8, { width: 1 }],
-};
-
-export const animatedGamepadSpriteMap: ControlSpriteMap = {
-    [Buttons.Face1]: [17, 2, { width: 1 }],
-    [Buttons.Face2]: [17, 3, { width: 1 }],
 };
 
 // Static sprite positions (23×15 grid)

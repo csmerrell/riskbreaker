@@ -207,7 +207,7 @@ export class BattleManager extends SceneManager {
         const opacityStep = -1 / numSteps;
         await Promise.all([
             leader.fadeIn(),
-            Object.values(this.laneUnitMap).flatMap(
+            this.getAllActors().map(
                 (a) => (a as unknown as CompositeActor).fadeOut?.(duration) ?? Promise.resolve(),
             ),
             loopUntil(
@@ -345,6 +345,10 @@ export class BattleManager extends SceneManager {
         for (const e of enemies) {
             await this.placeEnemy(e, e.config.battlePosition ?? 'right-1');
         }
+    }
+
+    public getAllActors() {
+        return Object.values(this.laneUnitMap).flat();
     }
 
     public startBattle() {

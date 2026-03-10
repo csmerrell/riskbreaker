@@ -3,6 +3,7 @@ import KeySprite from './KeySprite.vue';
 import type { MappedCommand } from '@/game/input/InputMap';
 import { ref } from 'vue';
 import { useGameContext } from '@/state/useGameContext';
+import ControlIconSprite from './ControlIconSprite.vue';
 
 interface ControlCommand {
     key: MappedCommand;
@@ -37,7 +38,7 @@ inputTypeState.subscribe((next) => {
             class="flex items-center gap-1 p-1"
         >
             <span class="whitespace-nowrap text-white"> {{ command.label }}: </span>
-            <KeySprite
+            <ControlIconSprite
                 :command="command.key"
                 :animated="command.animated ?? animateAll"
                 :animation-speed="animationSpeed"

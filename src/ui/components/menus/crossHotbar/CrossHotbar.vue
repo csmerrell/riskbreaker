@@ -2,7 +2,12 @@
 import { onUnmounted, ref, watch } from 'vue';
 import HotbarSet from './HotbarSet.vue';
 import { resources } from '@/resource';
-import { registerHoldListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    registerHoldListener,
+    registerInputListener,
+    unregisterInputListener,
+} from '@/game/input/useInput';
+import { targetEnemy } from '@/state/battle/actions/targetEnemy';
 
 const ready = ref(false);
 const focusLeft = ref(false);
@@ -18,19 +23,35 @@ if (resources.image.icons.skills.isLoaded()) {
     });
 }
 
+let nestedListeners: string[] = [];
 function registerListeners() {
     listeners.push(
         registerHoldListener((inputs) => {
             if (inputs.shoulder_right && !focusLeft.value) {
                 focusRight.value = true;
+                nestedListeners = registerRightHotbarListeners();
             } else if (inputs.shoulder_left && !focusRight.value) {
+                nestedListeners = registerLeftHotbarListeners();
                 focusLeft.value = true;
             } else {
+                nestedListeners.forEach((l) => unregisterInputListener(l));
                 focusLeft.value = false;
                 focusRight.value = false;
             }
         }),
     );
+}
+
+function registerRightHotbarListeners() {
+    return [
+        registerInputListener(() => {
+            targetEnemy();
+        }, 'hotbarFDown'),
+    ];
+}
+
+function registerLeftHotbarListeners() {
+    return [];
 }
 
 onUnmounted(() => {
