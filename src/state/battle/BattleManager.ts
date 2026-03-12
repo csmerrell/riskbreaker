@@ -11,6 +11,7 @@ import {
 } from 'excalibur';
 import { SceneManager } from '../SceneManager';
 import { colors } from '@/lib/enum/colors.enum';
+import { useShader } from '../useShader';
 import { battleground, toLayerArray } from '@/resource/image/battleground';
 import {
     captureControls,
@@ -45,7 +46,7 @@ function getPositionInLane(
 
 export class BattleManager extends SceneManager {
     private mask!: Actor;
-    private terrain!: Actor;
+    private terrain: Actor[] = [];
     public headshotManager: HeadshotManager;
     public turnManager: TurnManager;
 
@@ -86,25 +87,38 @@ export class BattleManager extends SceneManager {
         this.mask.graphics.use(graphic);
     }
 
+    public laneActors = {} as Record<LaneKey, Actor>;
+    private groundActor!: Actor;
     public setTerrain(type: 'grass' | 'dirt') {
-        const bgGraphic = new GraphicsGroup({
-            useAnchor: true,
-            members: toLayerArray(battleground, type).map((img) => ({
-                graphic: img.toSprite(),
-                offset: vec(0, 12),
-            })),
-        });
-        this.terrain = new Actor({
-            name: 'terrain',
-            opacity: 1,
-            z: 1001,
-        });
-        this.terrain.graphics.add(bgGraphic);
-        this.terrain.graphics.use(bgGraphic);
+        if (this.terrain) this.terrain.forEach((t) => t.isAdded && t.kill());
 
-        this.terrainMaterial = this.engine.graphicsContext.createMaterial({
-            name: 'fadeBg',
-            fragmentSource: FADE_BG_SHADER,
+        toLayerArray(battleground, type).forEach((terrainGroup) => {
+            const bgGraphic = new GraphicsGroup({
+                useAnchor: true,
+                members: terrainGroup.sources.map((img) => ({
+                    graphic: img.toSprite(),
+                    offset: vec(0, 12),
+                })),
+            });
+            const layerActor = new Actor({
+                name: 'terrain',
+                opacity: 1,
+                z: terrainGroup.zIndex,
+            });
+
+            if (terrainGroup.lane !== undefined) {
+                this.laneActors[terrainGroup.lane] = layerActor;
+            } else if (terrainGroup.isGround) {
+                this.groundActor = layerActor;
+            }
+            layerActor.graphics.add(bgGraphic);
+            layerActor.graphics.use(bgGraphic);
+            this.terrain.push(layerActor);
+
+            this.terrainMaterial = this.engine.graphicsContext.createMaterial({
+                name: 'fadeBg',
+                fragmentSource: FADE_BG_SHADER,
+            });
         });
     }
 
@@ -117,6 +131,14 @@ export class BattleManager extends SceneManager {
             shader.trySetUniformFloat('u_fogB', fogColor.b / 255);
             shader.trySetUniformFloat('u_progress', this.terrainShaderProgress);
         });
+
+        // Update lane target shader time uniform
+        if (this.currentTargetedLane && this.laneActors[this.currentTargetedLane]) {
+            const elapsedTime = Date.now() - this.laneTargetStartTime;
+            this.laneActors[this.currentTargetedLane].graphics.material?.update((shader) => {
+                shader.trySetUniformFloat('u_time', elapsedTime);
+            });
+        }
     }
 
     private scaleMask() {
@@ -156,11 +178,13 @@ export class BattleManager extends SceneManager {
 
             //add terrain actor. It has a fade-in-out material.
             //terrainShaderProgress controls how much bg color is blended to the terrain during fade.
-            this.terrain.graphics.material = this.terrainMaterial;
-            this.terrain.graphics.opacity = 0;
             this.terrainShaderProgress = 1;
-            this.terrain.pos = this.scene.camera.pos;
-            this.scene.add(this.terrain);
+            this.terrain.forEach((layer) => {
+                layer.graphics.material = this.terrainMaterial;
+                layer.graphics.opacity = 0;
+                layer.pos = this.scene.camera.pos;
+                this.scene.add(layer);
+            });
 
             //Fade in
             const duration = 250;
@@ -170,13 +194,13 @@ export class BattleManager extends SceneManager {
             await Promise.all([
                 this.parent.mapManager.explorationTarget?.fadeOut() ?? Promise.resolve(),
                 loopUntil(
-                    () => this.terrain.graphics.opacity === 1,
+                    () => this.terrain[0].graphics.opacity === 1,
                     () => this.stepOpacity(opacityStep),
                     step,
                 ),
             ]);
 
-            this.terrain.graphics.material = null;
+            this.terrain.forEach((layer) => (layer.graphics.material = null));
 
             if (!opts.empty) {
                 await this.placeParty();
@@ -199,7 +223,10 @@ export class BattleManager extends SceneManager {
         const leader = this.parent.actorManager.getLeader();
 
         this.terrainShaderProgress = 0;
-        this.terrain.graphics.material = this.terrainMaterial;
+        this.terrain.forEach((layer) => {
+            layer.graphics.material = this.terrainMaterial;
+        });
+
         //Fade out
         const duration = 250;
         const step = 25;
@@ -211,7 +238,7 @@ export class BattleManager extends SceneManager {
                 (a) => (a as unknown as CompositeActor).fadeOut?.(duration) ?? Promise.resolve(),
             ),
             loopUntil(
-                () => this.terrain.graphics.opacity === 0,
+                () => this.terrain[0].graphics.opacity === 0,
                 () => this.stepOpacity(opacityStep),
                 step,
             ),
@@ -227,8 +254,10 @@ export class BattleManager extends SceneManager {
             });
             this.laneUnitMap[key] = [];
         });
-        this.terrain.graphics.material = null;
-        this.scene.remove(this.terrain);
+        this.terrain.forEach((layer) => {
+            layer.graphics.material = null;
+            this.scene.remove(layer);
+        });
         this.scene.remove(this.mask);
 
         activeView.value = this.previousView;
@@ -240,9 +269,9 @@ export class BattleManager extends SceneManager {
     private stepOpacity(opacityStep: number) {
         const nextOpacity =
             opacityStep < 0
-                ? Math.max(0, this.terrain.graphics.opacity + opacityStep)
-                : Math.min(this.terrain.graphics.opacity + opacityStep, 1);
-        this.terrain.graphics.opacity = nextOpacity;
+                ? Math.max(0, this.terrain[0].graphics.opacity + opacityStep)
+                : Math.min(this.terrain[0].graphics.opacity + opacityStep, 1);
+        this.terrain.forEach((layer) => (layer.graphics.opacity = nextOpacity));
         Object.values(this.laneUnitMap).forEach((lane) =>
             lane.forEach((actor) => {
                 if (!(actor as CompositeActor).fadeOut) {
@@ -276,7 +305,7 @@ export class BattleManager extends SceneManager {
             getPositionInLane(lane, { numInLane, idxInLane: this.laneUnitMap[lane].length }),
         );
         actor.pos = vec(boundingBox.left, boundingBox.top + boundingBox.height / 2);
-        actor.z = this.terrain.z + 1;
+        actor.z = this.groundActor.z + 1;
         actor.scale = vec(-1, 1);
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
@@ -318,7 +347,7 @@ export class BattleManager extends SceneManager {
             boundingBox.right + enemy.getDimensions().spriteWidth,
             boundingBox.top + boundingBox.height / 2,
         );
-        enemy.z = this.terrain.z + 1;
+        enemy.z = this.groundActor.z + 1;
         this.laneUnitMap[lane].push(enemy);
         this.parent.scene.add(enemy);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -357,6 +386,25 @@ export class BattleManager extends SceneManager {
 
     public endBattle() {
         this.turnManager.reset();
+    }
+
+    private currentTargetedLane?: LaneKey;
+    private laneTargetStartTime = 0;
+
+    public setTargetedLane(lane: LaneKey | undefined) {
+        // Remove shader from previously targeted lane
+        if (this.currentTargetedLane && this.laneActors[this.currentTargetedLane]) {
+            this.laneActors[this.currentTargetedLane].graphics.material = null;
+        }
+
+        this.currentTargetedLane = lane;
+        this.laneTargetStartTime = Date.now();
+
+        // Apply shader to newly targeted lane
+        if (lane && this.laneActors[lane]) {
+            const { laneTargetMaterial } = useShader();
+            this.laneActors[lane].graphics.material = laneTargetMaterial.value;
+        }
     }
 
     private listeners: string[] = [];

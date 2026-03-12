@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { useExploration } from '@/state/useExploration';
 import HotbarBox from './HotbarBox.vue';
 import StyledGamepadIcon from './StyledGamepadIcon.vue';
 import { computed, ref } from 'vue';
-import { Vector } from 'excalibur';
-import { SkillMetadata } from '@/state/useParty';
+import { PartyMember, SkillMetadata } from '@/state/useParty';
 import { getScale } from '@/lib/helpers/screen.helper';
 import HotbarName from './HotbarName.vue';
 
@@ -20,51 +18,35 @@ export type HotbarKey =
 
 type Props = {
     focused: boolean;
+    unit: PartyMember;
     side: 'left' | 'right';
 };
 
-type SkillOpts = { row: number; col: number; name: string };
-const skillMap: Record<string, SkillOpts> = {
-    starflash: { row: 4, col: 4, name: 'Starflash' },
-    compress: { row: 1, col: 6, name: 'Compress' },
-    shieldBash: { row: 1, col: 4, name: 'Shield Bash' },
-    push: { row: 4, col: 6, name: 'Push' },
-    attack: { row: 3, col: 9, name: 'Attack' },
-    pulse: { row: 1, col: 5, name: 'Pulse' },
-};
+// const skillMap: Record<string, SkillOpts> = {
+//     starflash: { row: 4, col: 4, name: 'Starflash' },
+//     compress: { row: 1, col: 6, name: 'Compress' },
+//     shieldBash: { row: 1, col: 4, name: 'Shield Bash' },
+//     push: { row: 4, col: 6, name: 'Push' },
+//     attack: { row: 3, col: 9, name: 'Attack' },
+//     pulse: { row: 1, col: 5, name: 'Pulse' },
+// };
 
-const { focused, side } = defineProps<Props>();
-const activeUnit = useExploration().getExplorationManager().battleManager.turnManager.activeUnit;
-
-const skills = ref<Record<string, SkillMetadata>>(
-    activeUnit.value && activeUnit.value.alignment === 'party' ? activeUnit.value.abilities : {},
-);
-activeUnit.subscribe((val) => {
-    if (!val || val.alignment !== 'party') {
-        skills.value = {};
-    } else {
-        skills.value = val.abilities;
-    }
-});
+const { focused, side, unit } = defineProps<Props>();
 
 const unitSkills = computed(() => {
-    const hotbarMappedSkills: Record<string, keyof typeof skillMap> = {};
-    (Object.values(skills.value) as SkillMetadata[])
-        .filter((s) => s.hotkey !== undefined && s.hotkey.split('.')[0] === side)
-        .forEach((s) => {
-            const hotkey = s.hotkey!.split('.')[1] as HotbarKey;
-            hotbarMappedSkills[hotkey] = s.key;
-        });
-
-    const map: Record<HotbarKey, SkillOpts> = {
-        hotbarDUp: skillMap[hotbarMappedSkills.hotbarDUp],
-        hotbarDLeft: skillMap[hotbarMappedSkills.hotbarDLeft],
-        hotbarDRight: skillMap[hotbarMappedSkills.hotbarDRight],
-        hotbarDDown: skillMap[hotbarMappedSkills.hotbarDDown],
-        hotbarFUp: skillMap[hotbarMappedSkills.hotbarFUp],
-        hotbarFLeft: skillMap[hotbarMappedSkills.hotbarFLeft],
-        hotbarFRight: skillMap[hotbarMappedSkills.hotbarFRight],
-        hotbarFDown: skillMap[hotbarMappedSkills.hotbarFDown],
+    const map: Record<HotbarKey, SkillMetadata | undefined> = {
+        hotbarDUp: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarDUp`),
+        hotbarDLeft: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarDLeft`),
+        hotbarDRight: Object.values(unit.abilities).find(
+            (v) => v.hotkey === `${side}.hotbarDRight`,
+        ),
+        hotbarDDown: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarDDown`),
+        hotbarFUp: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarFUp`),
+        hotbarFLeft: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarFLeft`),
+        hotbarFRight: Object.values(unit.abilities).find(
+            (v) => v.hotkey === `${side}.hotbarFRight`,
+        ),
+        hotbarFDown: Object.values(unit.abilities).find((v) => v.hotkey === `${side}.hotbarFDown`),
     };
     return map;
 });
@@ -82,56 +64,56 @@ const focusTranslate = ref(1 / getScale() / 2);
         }"
     >
         <div class="relative">
-            <HotbarBox v-bind="unitSkills.hotbarDLeft" />
+            <HotbarBox v-bind="unitSkills.hotbarDLeft" :focused />
             <HotbarName v-if="unitSkills.hotbarDLeft && focused">
                 {{ unitSkills.hotbarDLeft.name }}
             </HotbarName>
         </div>
         <div class="flex flex-col items-center gap-2">
             <div class="relative">
-                <HotbarBox v-bind="unitSkills.hotbarDUp" />
+                <HotbarBox v-bind="unitSkills.hotbarDUp" :focused />
                 <HotbarName v-if="unitSkills.hotbarDUp && focused">
                     {{ unitSkills.hotbarDUp.name }}
                 </HotbarName>
             </div>
             <StyledGamepadIcon v-if="focused" icon="dpad" />
             <div class="relative">
-                <HotbarBox v-bind="unitSkills.hotbarDDown" />
+                <HotbarBox v-bind="unitSkills.hotbarDDown" :focused />
                 <HotbarName v-if="unitSkills.hotbarDDown && focused">
                     {{ unitSkills.hotbarDDown.name }}
                 </HotbarName>
             </div>
         </div>
         <div class="relative">
-            <HotbarBox v-bind="unitSkills.hotbarDRight" />
+            <HotbarBox v-bind="unitSkills.hotbarDRight" :focused />
             <HotbarName v-if="unitSkills.hotbarDRight && focused">
                 {{ unitSkills.hotbarDRight.name }}
             </HotbarName>
         </div>
         <div class="mx-1" />
         <div class="relative">
-            <HotbarBox v-bind="unitSkills.hotbarFLeft" />
+            <HotbarBox v-bind="unitSkills.hotbarFLeft" :focused />
             <HotbarName v-if="unitSkills.hotbarFLeft && focused">
                 {{ unitSkills.hotbarFLeft.name }}
             </HotbarName>
         </div>
         <div class="flex flex-col items-center gap-2">
             <div class="relative">
-                <HotbarBox v-bind="unitSkills.hotbarFUp" />
+                <HotbarBox v-bind="unitSkills.hotbarFUp" :focused />
                 <HotbarName v-if="unitSkills.hotbarFUp && focused">
                     {{ unitSkills.hotbarFUp.name }}
                 </HotbarName>
             </div>
             <StyledGamepadIcon v-if="focused" icon="faceButtons" />
             <div class="relative">
-                <HotbarBox v-bind="unitSkills.hotbarFDown" />
+                <HotbarBox v-bind="unitSkills.hotbarFDown" :focused />
                 <HotbarName v-if="unitSkills.hotbarFDown && focused">
                     {{ unitSkills.hotbarFDown.name }}
                 </HotbarName>
             </div>
         </div>
         <div class="relative">
-            <HotbarBox v-bind="unitSkills.hotbarFRight" />
+            <HotbarBox v-bind="unitSkills.hotbarFRight" :focused />
             <HotbarName v-if="unitSkills.hotbarFRight && focused">
                 {{ unitSkills.hotbarFRight.name }}
             </HotbarName>

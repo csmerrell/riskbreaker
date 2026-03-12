@@ -10,8 +10,9 @@ import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import ActiveUnitMenu from '@/ui/components/menus/activeUnitMenu/ActiveUnitMenu.vue';
 import CrossHotbar from '@/ui/components/menus/crossHotbar/CrossHotbar.vue';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { getScale } from '@/lib/helpers/screen.helper';
 
-type BattleUnit = EnemyDef | PartyMember;
+export type BattleUnit = EnemyDef | PartyMember;
 type CTMapping = {
     unit: BattleUnit;
     ctVal: number;
@@ -101,7 +102,7 @@ export class TurnManager {
         }));
     }
 
-    private activateUnit() {
+    public activateUnit() {
         const unit = this.unitCTs.reduce(
             (active: CTMapping, unitCT) => (unitCT.ctVal > (active?.ctVal ?? 0) ? unitCT : active),
             this.unitCTs[0],
@@ -110,9 +111,27 @@ export class TurnManager {
         this.activeUnit.set(unit);
         if (unit.alignment === 'enemy') {
             this.activateEnemy(unit);
-        } else if (unit.alignment === 'party') {
+        } else if (unit.alignment === 'ally') {
             this.activatePartyMember(unit);
         }
+    }
+
+    public suppressActiveUnitMenu() {
+        this.menus.forEach((m) => {
+            removeMenu(m.id);
+        });
+        const handles = { resolve: () => {}, reject: () => {} };
+        const _promise = new Promise<void>((resolve, reject) => {
+            handles.resolve = resolve;
+            handles.reject = reject;
+        })
+            .then(() => {
+                this.activateUnit();
+            })
+            .catch(() => {
+                //do nothing
+            });
+        return handles;
     }
 
     private activateEnemy(_unit: EnemyDef) {}
@@ -138,7 +157,7 @@ export class TurnManager {
                     type: 'arrow',
                     direction: 'down',
                     blink: true,
-                    scale: 4,
+                    scale: getScale(),
                 },
             }),
         );

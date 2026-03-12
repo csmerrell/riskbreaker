@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MENU_TRANSITION_DURATION, MenuInstance } from '@/state/ui/useMenuRegistry';
-import { computed } from 'vue';
+import { nanoid } from 'nanoid';
+import { computed, onMounted, ref } from 'vue';
 
 type Props = {
     menu: MenuInstance;

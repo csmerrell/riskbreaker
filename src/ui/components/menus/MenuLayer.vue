@@ -7,6 +7,6 @@ const menus = useMenuRegistry();
 
 <template>
     <div class="pointer-events-none fixed inset-0 z-[1000]">
-        <MenuItem v-for="menu in menus" :key="menu.id" :menu class="pointer-events-auto" />
+        <MenuItem v-for="menu in menus" :key="menu.id" :menu="menu" class="pointer-events-auto" />
     </div>
 </template>

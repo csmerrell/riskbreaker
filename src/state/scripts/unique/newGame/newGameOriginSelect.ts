@@ -46,7 +46,7 @@ function displayPlayerOrigin(
                 type: 'arrow',
                 direction: 'down',
                 blink: true,
-                scale: 4,
+                scale: getScale(),
             },
         }),
     });

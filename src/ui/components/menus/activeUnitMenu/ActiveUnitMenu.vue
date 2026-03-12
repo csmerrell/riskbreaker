@@ -48,6 +48,10 @@ const listeners = [
         }, 125);
     }, 'inspect_details'),
 ];
+
+onUnmounted(() => {
+    listeners.forEach((l) => unregisterInputListener(l));
+});
 </script>
 
 <template>

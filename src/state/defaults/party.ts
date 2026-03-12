@@ -2,10 +2,14 @@ import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActo
 import { PartyMember } from '../useParty';
 import { nanoid } from 'nanoid';
 import { emptyStatMods } from '../battle/UnitStats';
+import { ShieldChargeSkill } from '@/game/actions/Riskbreaker/ShieldCharge';
+import { vec } from 'excalibur';
+import { StaggerBashSkill } from '@/game/actions/Riskbreaker/StaggerBash';
+import { AttackSkill } from '@/game/actions/Attack';
 
 export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
-    alignment: 'party',
+    alignment: 'ally',
     name: 'Riskbreaker',
     config: {
         battlePosition: 'left-1',
@@ -22,20 +26,26 @@ export const RiskbreakerDefault: PartyMember = {
         offHand: 'worn_buckler',
     },
     abilities: {
-        shieldBash: {
-            name: 'Shield Bash',
-            key: 'shieldBash',
+        staggerBash: {
+            name: 'Stagger Bash',
+            skillKey: 'staggerBash',
             hotkey: 'right.hotbarDLeft',
+            spritePos: vec(1, 4),
+            action: new StaggerBashSkill(),
         },
-        push: {
-            name: 'Push',
-            key: 'push',
+        shieldCharge: {
+            name: 'Shield Charge',
+            skillKey: 'shieldCharge',
             hotkey: 'right.hotbarFLeft',
+            spritePos: vec(4, 6),
+            action: new ShieldChargeSkill(),
         },
         attack: {
             name: 'Attack',
-            key: 'attack',
+            skillKey: 'attack',
             hotkey: 'right.hotbarFDown',
+            spritePos: vec(3, 9),
+            action: new AttackSkill(),
         },
     },
     passives: {
@@ -62,7 +72,7 @@ export const RiskbreakerDefault: PartyMember = {
 export const AstrologianDefault: PartyMember = {
     id: nanoid(16),
     name: 'Astrologian',
-    alignment: 'party',
+    alignment: 'ally',
     config: {
         battlePosition: 'left-2',
     },
@@ -76,17 +86,17 @@ export const AstrologianDefault: PartyMember = {
     abilities: {
         starflash: {
             name: 'Starflash',
-            key: 'starflash',
+            skillKey: 'starflash',
             hotkey: 'right.hotbarDLeft',
         },
         compress: {
             name: 'Compress',
-            key: 'compress',
+            skillKey: 'compress',
             hotkey: 'right.hotbarFDown',
         },
         pulse: {
             name: 'Pulse',
-            key: 'pulse',
+            skillKey: 'pulse',
             hotkey: 'right.hotbarFRight',
         },
     },

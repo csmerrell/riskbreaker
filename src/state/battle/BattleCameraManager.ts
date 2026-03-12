@@ -17,19 +17,13 @@ export class BattleCameraManager {
         this.rootCameraManager.unlock();
     }
 
-    public restoreCenter() {
+    public async restoreCenter() {
         this.movementDuration.set(500);
         this.zoomFactor.set(1.0);
-        this.parent.scene.camera.move(
-            this.battleCenter,
-            this.movementDuration.value,
-            EasingFunctions.EaseOutCubic,
-        );
-        this.parent.scene.camera.zoomOverTime(
-            1.0,
-            this.movementDuration.value,
-            EasingFunctions.EaseOutCubic,
-        );
+        return Promise.all([
+            this.parent.scene.camera.move(this.battleCenter, this.movementDuration.value),
+            this.parent.scene.camera.zoomOverTime(1.0, this.movementDuration.value),
+        ]);
     }
 
     public async focusUnit(unit: Actor) {
@@ -39,15 +33,10 @@ export class BattleCameraManager {
         const diff = unit.pos.sub(this.battleCenter);
         const newPos = this.battleCenter.add(diff.scale(this.zoomFactor.value));
         await Promise.all([
-            this.parent.scene.camera.move(
-                newPos,
-                this.movementDuration.value,
-                EasingFunctions.EaseOutCubic,
-            ),
+            this.parent.scene.camera.move(newPos, this.movementDuration.value),
             this.parent.scene.camera.zoomOverTime(
                 1 + this.zoomFactor.value,
                 this.movementDuration.value,
-                EasingFunctions.EaseOutCubic,
             ),
         ]);
         this.parent.scene.camera.move(newPos, 0);

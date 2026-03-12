@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from 'vue';
+import { onUnmounted, ref } from 'vue';
 import HotbarSet from './HotbarSet.vue';
 import { resources } from '@/resource';
-import {
-    registerHoldListener,
-    registerInputListener,
-    unregisterInputListener,
-} from '@/game/input/useInput';
-import { targetEnemy } from '@/state/battle/actions/targetEnemy';
+import { registerHoldListener, unregisterInputListener } from '@/game/input/useInput';
+import { PartyMember } from '@/state/useParty';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+
+type Props = {
+    unit: PartyMember;
+    actor: CompositeActor;
+};
+
+const { unit } = defineProps<Props>();
 
 const ready = ref(false);
 const focusLeft = ref(false);
@@ -23,35 +27,19 @@ if (resources.image.icons.skills.isLoaded()) {
     });
 }
 
-let nestedListeners: string[] = [];
 function registerListeners() {
     listeners.push(
         registerHoldListener((inputs) => {
             if (inputs.shoulder_right && !focusLeft.value) {
                 focusRight.value = true;
-                nestedListeners = registerRightHotbarListeners();
             } else if (inputs.shoulder_left && !focusRight.value) {
-                nestedListeners = registerLeftHotbarListeners();
                 focusLeft.value = true;
             } else {
-                nestedListeners.forEach((l) => unregisterInputListener(l));
                 focusLeft.value = false;
                 focusRight.value = false;
             }
         }),
     );
-}
-
-function registerRightHotbarListeners() {
-    return [
-        registerInputListener(() => {
-            targetEnemy();
-        }, 'hotbarFDown'),
-    ];
-}
-
-function registerLeftHotbarListeners() {
-    return [];
 }
 
 onUnmounted(() => {
@@ -64,8 +52,18 @@ onUnmounted(() => {
         v-if="ready"
         class="cross-hotbar flex -translate-x-1/2 -translate-y-full flex-row items-end justify-end gap-4 self-center rounded-lg p-4"
     >
-        <HotbarSet side="left" :focused="focusLeft" :class="focusRight ? 'text-[.75em]' : ''" />
+        <HotbarSet
+            side="left"
+            :focused="focusLeft"
+            :unit
+            :class="focusRight ? 'text-[.75em]' : ''"
+        />
         <div class="h-16 border-l border-bg-alt" />
-        <HotbarSet side="right" :focused="focusRight" :class="focusLeft ? 'text-[.75em]' : ''" />
+        <HotbarSet
+            side="right"
+            :focused="focusRight"
+            :unit
+            :class="focusLeft ? 'text-[.75em]' : ''"
+        />
     </div>
 </template>

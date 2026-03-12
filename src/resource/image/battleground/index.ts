@@ -1,3 +1,4 @@
+import { LaneKey } from '@/state/useParty';
 import { ImageSource } from 'excalibur';
 
 export const battleground = {
@@ -14,7 +15,15 @@ export const battleground = {
     frontShadowTrees: new ImageSource('/image/battle/FrontShadowTrees.png'),
 };
 
-export function toLayerArray(bg: typeof battleground, type: 'grass' | 'dirt') {
+export function toLayerArray(
+    bg: typeof battleground,
+    type: 'grass' | 'dirt',
+): {
+    sources: ImageSource[];
+    zIndex: number;
+    lane?: LaneKey;
+    isGround?: boolean;
+}[] {
     const {
         backShadowTrees,
         left,
@@ -28,15 +37,36 @@ export function toLayerArray(bg: typeof battleground, type: 'grass' | 'dirt') {
     } = bg;
 
     return [
-        backShadowTrees,
-        left,
-        leftMid,
-        mid,
-        rightMid,
-        right,
-        bg[`${type}Ring`],
-        backDeco,
-        frontDeco,
-        frontShadowTrees,
+        {
+            sources: [backShadowTrees],
+            zIndex: 1000,
+        },
+        {
+            sources: [left],
+            zIndex: 1010,
+            lane: 'left-2',
+        },
+        {
+            sources: [leftMid],
+            zIndex: 1010,
+            lane: 'left-1',
+        },
+        {
+            sources: [mid],
+            zIndex: 1010,
+            lane: 'mid',
+        },
+        {
+            sources: [rightMid],
+            zIndex: 1010,
+            lane: 'right-1',
+        },
+        {
+            sources: [right],
+            zIndex: 1010,
+            lane: 'right-2',
+        },
+        { sources: [bg[`${type}Ring`], backDeco], zIndex: 1020, isGround: true },
+        { sources: [frontDeco, frontShadowTrees], zIndex: 1030 },
     ];
 }

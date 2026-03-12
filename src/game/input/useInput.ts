@@ -24,54 +24,63 @@ export type InputListener = {
     id: string;
     cb: (commands?: InputMap) => boolean | void;
     opts: InputListenerOptions;
+    registrationOrder: number;
 };
 const stackOwners = ['root'];
 const stackOwner = makeState<string>(stackOwners[0]);
 const listenerStack: Record<string, InputListener[]>[] = [{}];
 let inputDebounceMap: Partial<Record<MappedCommand, number>> = {};
+let registrationCounter = 0;
 const currentListeners = () => listenerStack[listenerStack.length - 1];
 function notifyListeners(result: InputMap) {
     const debounceSnapshot = { ...inputDebounceMap };
-    (Object.entries(currentListeners()) as [MappedCommand, InputListener[]][]).forEach(
-        ([key, listeners]: [MappedCommand, InputListener[]]) => {
-            if (!key.match(/\*|all/) && result[convergedCommandMap[key]!.key]) {
-                inputDebounceMap[key] = (inputDebounceMap[key] ?? 0) + 1;
-                if (inputDebounceMap[key] > 1 && inputDebounceMap[key] < 6) {
-                    return;
-                }
-            }
+    // Sort commands by most recent listener registration to handle button collisions correctly
+    const sortedEntries = (
+        Object.entries(currentListeners()) as [MappedCommand, InputListener[]][]
+    ).sort(([_keyA, listenersA], [_keyB, listenersB]) => {
+        const maxOrderA = Math.max(...listenersA.map((l) => l.registrationOrder));
+        const maxOrderB = Math.max(...listenersB.map((l) => l.registrationOrder));
+        return maxOrderB - maxOrderA; // Most recent first
+    });
 
-            if ((key as 'all') === 'all') {
+    sortedEntries.forEach(([key, listeners]: [MappedCommand, InputListener[]]) => {
+        if (!key.match(/\*|all/) && result[convergedCommandMap[key]!.key]) {
+            inputDebounceMap[key] = (inputDebounceMap[key] ?? 0) + 1;
+            if (inputDebounceMap[key] > 1 && inputDebounceMap[key] < 6) {
                 return;
-            } else if ((key as '*') === '*') {
-                listeners.forEach((listener) => {
-                    const shouldRemove = listener.cb(result);
-                    if (listener.opts.selfRemoving && shouldRemove) {
+            }
+        }
+
+        if ((key as 'all') === 'all') {
+            return;
+        } else if ((key as '*') === '*') {
+            listeners.forEach((listener) => {
+                const shouldRemove = listener.cb(result);
+                if (listener.opts.selfRemoving && shouldRemove) {
+                    unregisterInputListener(listener.id);
+                }
+            });
+        } else if (result[convergedCommandMap[key]!.key]) {
+            const commandKey = convergedCommandMap[key]!.key;
+            let idx = listeners.length - 1;
+            let consumed: boolean | void = false;
+            while (!consumed && idx >= 0) {
+                const listener = listeners[idx--];
+                consumed = listener.cb() ?? true;
+                if (consumed) {
+                    if (listener.opts.selfRemoving) {
                         unregisterInputListener(listener.id);
                     }
-                });
-            } else if (result[convergedCommandMap[key]!.key]) {
-                const commandKey = convergedCommandMap[key]!.key;
-                let idx = listeners.length - 1;
-                let consumed: boolean | void = false;
-                while (!consumed && idx >= 0) {
-                    const listener = listeners[idx--];
-                    consumed = listener.cb() ?? true;
-                    if (consumed) {
-                        if (listener.opts.selfRemoving) {
-                            unregisterInputListener(listener.id);
-                        }
-                        delete result[commandKey];
-                        const collisions = consumeCollisions(result, [commandKey]);
-                        // Sync debounce counters for all consumed commands
-                        collisions.forEach((cmd) => {
-                            inputDebounceMap[cmd] = inputDebounceMap[key];
-                        });
-                    }
+                    delete result[commandKey];
+                    const collisions = consumeCollisions(result, [commandKey]);
+                    // Sync debounce counters for all consumed commands
+                    collisions.forEach((cmd) => {
+                        inputDebounceMap[cmd] = inputDebounceMap[key];
+                    });
                 }
             }
-        },
-    );
+        }
+    });
 
     (Object.keys(inputDebounceMap) as MappedCommand[]).forEach((key) => {
         if (inputDebounceMap[key] === debounceSnapshot[key]) {
@@ -176,6 +185,7 @@ export function registerInputListener(
     opts: InputListenerOptions = {},
 ) {
     const id = nanoid(16);
+    const registrationOrder = ++registrationCounter;
     (Array.isArray(command) ? command : [command]).forEach((arg) => {
         const commandMapping = convergedCommandMap[arg];
         if (!commandMapping) {
@@ -188,6 +198,7 @@ export function registerInputListener(
                 id,
                 cb,
                 opts,
+                registrationOrder,
             },
         ];
     });
@@ -199,12 +210,14 @@ export function registerWildcardListener(
     opts: InputListenerOptions = {},
 ) {
     const id = nanoid(16);
+    const registrationOrder = ++registrationCounter;
     currentListeners()['*'] = [
         ...(currentListeners()['*'] ?? []),
         {
             id,
             cb: cb as () => boolean,
             opts,
+            registrationOrder,
         },
     ];
     return id;
@@ -215,7 +228,11 @@ export function registerHoldListener(
     opts: InputListenerOptions = {},
 ) {
     const id = nanoid(16);
-    currentListeners()['all'] = [...(currentListeners()['all'] ?? []), { id, cb, opts }];
+    const registrationOrder = ++registrationCounter;
+    currentListeners()['all'] = [
+        ...(currentListeners()['all'] ?? []),
+        { id, cb, opts, registrationOrder },
+    ];
     return id;
 }
 

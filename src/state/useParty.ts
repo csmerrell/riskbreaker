@@ -5,6 +5,7 @@ import type { EquipmentSlotKey, StaticEquipmentKey } from '@/db/static/types/Equ
 import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
 import { UnitStats } from './battle/UnitStats';
 import { HotbarKey } from '@/ui/components/menus/crossHotbar/HotbarSet.vue';
+import { Entity, Vector } from 'excalibur';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
@@ -12,12 +13,16 @@ export type HotkeyString = `${'right' | 'left'}.${HotbarKey}`;
 
 export type SkillMetadata = {
     name: string;
-    key: string;
+    skillKey: string;
     hotkey?: HotkeyString;
+    spritePos?: Vector;
+    action?: Entity & {
+        activate: () => Promise<void>;
+    };
 };
 export type PartyMember = {
     name: string;
-    alignment: 'party';
+    alignment: 'ally';
     id: string;
     config: {
         leader?: boolean;
@@ -42,8 +47,8 @@ function getLeader() {
     return partyState.value.party.find((m) => m.config.leader)!;
 }
 
-function addPartyMember(member: Omit<PartyMember, 'alignment'> & { alignment?: 'party' }) {
-    member.alignment = 'party';
+function addPartyMember(member: Omit<PartyMember, 'alignment'> & { alignment?: 'ally' }) {
+    member.alignment = 'ally';
     if (partyState.value.party.length === 2) {
         throw new Error('Cannot safely support more than 2 party members');
     }
