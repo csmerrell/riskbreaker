@@ -3,9 +3,7 @@ import { LaneKey, useParty } from '@/state/useParty';
 import { Component, Entity, vec, Vector } from 'excalibur';
 import { KeyedAnimationActor } from '../actors/KeyedAnimationActor';
 import { CompositeActor } from '../actors/CompositeActor/CompositeActor';
-import { useBattle } from '@/state/battle/useBattle';
-import { BattleUnit } from '@/state/battle/TurnManager';
-import { getActorAnchor } from '@/state/ui/useActorAnchors';
+import { BattleUnit, useBattle } from '@/state/battle/useBattle';
 import { useGameContext } from '@/state/useGameContext';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { ref } from 'vue';
@@ -48,7 +46,7 @@ export class TargetComponent extends Component {
     private listeners: string[] = [];
     public async promptTarget() {
         const { battleManager } = useExploration().getExplorationManager();
-        const menuSuppression = battleManager.turnManager.suppressActiveUnitMenu();
+        const { restoreMenus } = battleManager.turnManager.suppressActiveUnitMenu();
         await battleManager.cameraManager!.restoreCenter();
 
         const targetLanes = this.getTargetLanes();
@@ -89,7 +87,7 @@ export class TargetComponent extends Component {
                 removeMenu(indicator.id);
                 battleManager.setTargetedLane(undefined);
                 battleManager.turnManager.activateUnit();
-                menuSuppression.resolve();
+                restoreMenus();
                 this.listeners.forEach((l) => unregisterInputListener(l));
             }, 'cancel'),
         ];

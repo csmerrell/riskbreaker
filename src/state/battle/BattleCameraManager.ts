@@ -1,4 +1,4 @@
-import { Actor, EasingFunctions, Vector } from 'excalibur';
+import { Actor, Vector } from 'excalibur';
 import { BattleManager } from './BattleManager';
 import { useExploration } from '../useExploration';
 import { CameraManager } from '../exploration/CameraManager';
@@ -6,7 +6,7 @@ import { getScale } from '@/lib/helpers/screen.helper';
 import { makeState } from '../Observable';
 
 export class BattleCameraManager {
-    private battleCenter: Vector;
+    public battleCenter: Vector;
     private rootCameraManager: CameraManager;
     public zoomFactor = makeState(1 / getScale());
     public movementDuration = makeState(500);
@@ -26,17 +26,23 @@ export class BattleCameraManager {
         ]);
     }
 
-    public async focusUnit(unit: Actor) {
+    public async focusUnit(
+        unit: Actor,
+        opts: {
+            forcePosition?: Vector;
+            duration?: number;
+        } = {},
+    ) {
         this.zoomFactor.set(1 / getScale());
         this.movementDuration.set(500);
 
-        const diff = unit.pos.sub(this.battleCenter);
+        const diff = (opts.forcePosition ? opts.forcePosition : unit.pos).sub(this.battleCenter);
         const newPos = this.battleCenter.add(diff.scale(this.zoomFactor.value));
         await Promise.all([
-            this.parent.scene.camera.move(newPos, this.movementDuration.value),
+            this.parent.scene.camera.move(newPos, opts.duration ?? this.movementDuration.value),
             this.parent.scene.camera.zoomOverTime(
                 1 + this.zoomFactor.value,
-                this.movementDuration.value,
+                opts.duration ?? this.movementDuration.value,
             ),
         ]);
         this.parent.scene.camera.move(newPos, 0);

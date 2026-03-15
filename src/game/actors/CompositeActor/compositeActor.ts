@@ -37,7 +37,6 @@ export class CompositeActor extends Actor {
     private hair?: CompositeLayer;
     private accessory?: CompositeLayer;
     private currentAnimationKey: AnimationKey = 'static';
-    private velCheckCt: number = 0;
 
     constructor(private opts: ActorArgs & CompositeActorConfig) {
         const {
@@ -93,23 +92,39 @@ export class CompositeActor extends Actor {
 
     onInitialize(_engine: Engine): void {}
 
+    private velCheckCt: number = 0;
+    private lastVel = vec(0, 0);
     onPreUpdate(_engine: Engine, _elapsed: number): void {
         if (
             !this.suppressMovementAnimation &&
-            this.currentAnimationKey.match(/static|walkFace|runFace/)
+            this.currentAnimationKey.match(/static|staticBack|walkFace|walkBack|runFace/)
         ) {
             if (this.vel.magnitude > 0) {
-                this.useAnimation('walkFace', {
-                    strategy: AnimationStrategy.Loop,
-                    noReset: true,
-                    noSuppress: true,
-                });
+                if (this.vel.y < 0 && Math.abs(this.vel.y) > 1) {
+                    console.log(Math.abs(this.vel.y));
+                    this.useAnimation('walkBack', {
+                        strategy: AnimationStrategy.Loop,
+                        noReset: true,
+                        noSuppress: true,
+                    });
+                } else {
+                    this.useAnimation('walkFace', {
+                        strategy: AnimationStrategy.Loop,
+                        noReset: true,
+                        noSuppress: true,
+                    });
+                }
+                this.lastVel = this.vel;
             } else {
                 setTimeout(() => {
                     if (this.suppressMovementAnimation) return;
                     if (this.vel.magnitude === 0) {
                         if (this.velCheckCt > 4) {
-                            this.useAnimation('static');
+                            if (this.lastVel.y < 0) {
+                                this.useAnimation('staticBack');
+                            } else {
+                                this.useAnimation('static');
+                            }
                         } else {
                             this.velCheckCt++;
                         }
@@ -168,7 +183,7 @@ export class CompositeActor extends Actor {
             noSuppress?: boolean;
         },
     ) {
-        if (!opts?.noSuppress && key !== 'static') {
+        if (!opts?.noSuppress && !key.match(/static|staticBack/)) {
             this.suppressMovementAnimation = true;
         } else {
             this.suppressMovementAnimation = false;

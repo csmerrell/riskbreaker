@@ -15,7 +15,7 @@ const props = withDefaults(
     defineProps<{
         command: MappedCommand;
         forceGamepad?: boolean;
-        size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+        size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
     }>(),
     {
         forceGamepad: false,
@@ -43,6 +43,8 @@ const keyboardText = computed(() => {
 const scaleFactor = computed(() => {
     const baseScale = getScale();
     switch (props.size) {
+        case '2xs':
+            return Math.max(baseScale - 3, 1);
         case 'xs':
             return Math.max(baseScale - 2, 1);
         case 'sm':

@@ -1,7 +1,8 @@
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { makeState } from '../Observable';
-import { LaneKey } from '../useParty';
+import { LaneKey, PartyMember, useParty } from '../useParty';
 import { UnitStats } from './UnitStats';
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 
 export type EnemyDef = {
     id: string;
@@ -13,6 +14,8 @@ export type EnemyDef = {
     };
     stats: UnitStats;
 };
+export type BattleUnit = EnemyDef | PartyMember;
+export type BattleActor = KeyedAnimationActor<string> | CompositeActor;
 
 export type BattleState = {
     enemies: EnemyDef[];
@@ -49,11 +52,19 @@ function clearEnemies() {
     });
 }
 
+function getUnits(): BattleUnit[] {
+    const party = useParty().partyState.value.party;
+    const enemies = battleState.value.enemies;
+
+    return [...party, ...enemies];
+}
+
 export function useBattle() {
     return {
         battleState,
         addEnemy,
         removeEnemy,
         clearEnemies,
+        getUnits,
     };
 }

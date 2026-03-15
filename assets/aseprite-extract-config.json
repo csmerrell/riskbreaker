@@ -1,0 +1,17 @@
+{
+  "default": "../public/image/units",
+  "layers": {
+    "ShieldBack": "../public/image/units/weapons",
+    "SwordBack": "../public/image/units/weapons",
+    "Shield": "../public/image/units/weapons",
+    "Sword": "../public/image/units/weapons",
+    "Mannequin": "../public/image/units",
+    "StonecallerRobe": "../public/image/units/armor",
+    "RiskbreakerLeathers": "../public/image/units/armor",
+    "StonecallerPendant": "../public/image/units/accessory",
+    "PoofyBob": "../public/image/units/hair",
+    "ShortMessy": "../public/image/units/hair",
+    "DragonBob": "../public/image/units/hair",
+    "StonecallerHood": "../public/image/units/hair"
+  }
+}

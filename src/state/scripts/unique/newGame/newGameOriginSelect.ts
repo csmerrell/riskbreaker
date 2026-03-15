@@ -132,7 +132,6 @@ export const newGameOriginSelect: GameScript = {
                     while (menus.length > 0) {
                         const menu = menus.pop()!;
                         removeMenu(menu.id);
-                        menu.anchor.cleanup();
                     }
                 }
 
@@ -176,7 +175,6 @@ export const newGameOriginSelect: GameScript = {
                         while (menus.length > 0) {
                             const menu = menus.pop()!;
                             removeMenu(menu.id);
-                            menu.anchor.cleanup();
                         }
                         document.getElementById('main-container')!.removeChild(header);
                         listeners.forEach((l) => unregisterInputListener(l));

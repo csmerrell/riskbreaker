@@ -1,18 +1,18 @@
 import { makeState } from '../Observable';
-import { EnemyDef, useBattle } from './useBattle';
-import { PartyMember, useParty } from '../useParty';
+import { BattleUnit, EnemyDef, useBattle } from './useBattle';
+import { PartyMember } from '../useParty';
 import { BattleManager } from './BattleManager';
 import { getEffectiveStat } from './UnitStats';
-import { getActorAnchor } from '../ui/useActorAnchors';
+import { getActorAnchor, getMenuPosition, MenuAnchor } from '../ui/useActorAnchors';
 import { addMenu, MenuInstance, removeMenu } from '../ui/useMenuRegistry';
-import { vec } from 'excalibur';
+import { vec, Vector } from 'excalibur';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import ActiveUnitMenu from '@/ui/components/menus/activeUnitMenu/ActiveUnitMenu.vue';
 import CrossHotbar from '@/ui/components/menus/crossHotbar/CrossHotbar.vue';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { getScale } from '@/lib/helpers/screen.helper';
+import { MenuItemHooks } from '@/ui/components/menus/MenuItem.vue';
 
-export type BattleUnit = EnemyDef | PartyMember;
 type CTMapping = {
     unit: BattleUnit;
     ctVal: number;
@@ -21,12 +21,6 @@ export class TurnManager {
     public forecastReady = makeState<boolean>(false);
     public activeUnit = makeState<BattleUnit | null>(null);
     constructor(private parent: BattleManager) {}
-
-    private getUnits(): BattleUnit[] {
-        const party = useParty().partyState.value.party;
-        const enemies = useBattle().battleState.value.enemies;
-        return [...party, ...enemies];
-    }
 
     private unitCTs: CTMapping[] = [];
     public start() {
@@ -42,7 +36,7 @@ export class TurnManager {
         this.unitCTs = [];
         this.forecastReady.set(false);
         this.menus.forEach((menu) => {
-            removeMenu(menu.id);
+            removeMenu(menu.instance.id);
         });
     }
 
@@ -82,8 +76,9 @@ export class TurnManager {
 
     public advanceTurn(opts: { random?: boolean } = {}) {
         const { random = false } = opts;
+        const { getUnits } = useBattle();
         while (!Object.values(this.unitCTs).some((unit) => unit.ctVal >= 100)) {
-            this.unitCTs = this.getUnits().map((unit) => {
+            this.unitCTs = getUnits().map((unit) => {
                 const speed = getEffectiveStat('speed', unit.stats);
                 return {
                     unit,
@@ -109,6 +104,9 @@ export class TurnManager {
         ).unit;
 
         this.activeUnit.set(unit);
+        this.menus.forEach((m) => {
+            removeMenu(m.instance.id);
+        });
         if (unit.alignment === 'enemy') {
             this.activateEnemy(unit);
         } else if (unit.alignment === 'ally') {
@@ -116,14 +114,40 @@ export class TurnManager {
         }
     }
 
+    public moveMenus(opts: { pos: Vector; duration?: number }) {
+        this.menus.forEach((m) => {
+            this.moveMenu(m, opts);
+        });
+    }
+
+    private moveMenu(
+        menu: { instance: MenuInstance; key: 'arrow' | 'menu' | 'hotbar' },
+        opts: { pos: Vector; duration?: number },
+    ) {
+        if (opts.duration) {
+            (menu.instance.hooks as MenuItemHooks)?.overrideTransitionSpeedOnce(opts.duration);
+        }
+        const offset: Vector = this[`${menu.key}Offset`].scale(getScale());
+        menu.instance.position.value = getMenuPosition(opts.pos, offset);
+
+        if (opts.duration && opts.duration > 0) {
+            setTimeout(() => {
+                this.moveMenu(menu, {
+                    ...opts,
+                    duration: opts.duration ? opts.duration - 50 : undefined,
+                });
+            }, 50);
+        }
+    }
+
     public suppressActiveUnitMenu() {
         this.menus.forEach((m) => {
-            removeMenu(m.id);
+            removeMenu(m.instance.id);
         });
-        const handles = { resolve: () => {}, reject: () => {} };
+        const handles = { restoreMenus: () => {}, discardMenus: () => {} };
         const _promise = new Promise<void>((resolve, reject) => {
-            handles.resolve = resolve;
-            handles.reject = reject;
+            handles.restoreMenus = resolve;
+            handles.discardMenus = reject;
         })
             .then(() => {
                 this.activateUnit();
@@ -136,7 +160,13 @@ export class TurnManager {
 
     private activateEnemy(_unit: EnemyDef) {}
 
-    private menus: MenuInstance[] = [];
+    private arrowAnchor?: MenuAnchor;
+    private arrowOffset = vec(1, -16);
+    private menuAnchor?: MenuAnchor;
+    private menuOffset = vec(0, -19);
+    private hotbarAnchor?: MenuAnchor;
+    private hotbarOffset = vec(1, -21);
+    private menus: { key: 'arrow' | 'menu' | 'hotbar'; instance: MenuInstance }[] = [];
     private async activatePartyMember(unit: PartyMember) {
         const actor = Object.values(this.parent.laneUnitMap)
             .flat()
@@ -149,10 +179,10 @@ export class TurnManager {
 
         await this.parent.cameraManager!.focusUnit(actor);
 
-        const arrowAnchor = getActorAnchor(actor, { offset: vec(4, -64) });
-        this.menus.push(
-            addMenu(TargetIndicator, {
-                position: arrowAnchor.anchor.pos,
+        this.arrowAnchor = getActorAnchor(actor, { offset: this.arrowOffset.scale(getScale()) });
+        this.menus.push({
+            instance: addMenu(TargetIndicator, {
+                position: this.arrowAnchor.anchor.pos,
                 props: {
                     type: 'arrow',
                     direction: 'down',
@@ -160,28 +190,31 @@ export class TurnManager {
                     scale: getScale(),
                 },
             }),
-        );
+            key: 'arrow',
+        });
 
-        const menuAnchor = getActorAnchor(actor, { offset: vec(0, -78) });
-        this.menus.push(
-            addMenu(ActiveUnitMenu, {
-                position: menuAnchor.anchor.pos,
+        this.menuAnchor = getActorAnchor(actor, { offset: this.menuOffset.scale(getScale()) });
+        this.menus.push({
+            instance: addMenu(ActiveUnitMenu, {
+                position: this.menuAnchor.anchor.pos,
                 props: {
                     unit,
                     actor,
                 },
             }),
-        );
+            key: 'menu',
+        });
 
-        const hotbarAnchor = getActorAnchor(actor, { offset: vec(4, -84) });
-        this.menus.push(
-            addMenu(CrossHotbar, {
-                position: hotbarAnchor.anchor.pos,
+        this.hotbarAnchor = getActorAnchor(actor, { offset: this.hotbarOffset.scale(getScale()) });
+        this.menus.push({
+            instance: addMenu(CrossHotbar, {
+                position: this.hotbarAnchor.anchor.pos,
                 props: {
                     unit,
                     actor,
                 },
             }),
-        );
+            key: 'hotbar',
+        });
     }
 }

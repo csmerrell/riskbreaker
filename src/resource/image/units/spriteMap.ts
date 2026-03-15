@@ -16,11 +16,21 @@ const map = {
     static: {
         frames: [[0, 0, 0]],
     },
+    staticBack: {
+        frames: [[8, 1, 0]],
+    },
     walkFace: {
         frames: [
             [9, 0, 4],
             [10, 0, 4],
             [11, 0, 4],
+        ],
+    },
+    walkBack: {
+        frames: [
+            [9, 1, 4],
+            [10, 1, 4],
+            [11, 1, 4],
         ],
     },
     runFace: {

@@ -10,7 +10,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --fix .",
-    "dropDb": "node dropDb.mjs"
+    "dropDb": "node dropDb.mjs",
+    "spriteExtract": "node assets/extract-aseprite.mjs"
   },
   "dependencies": {
     "@excaliburjs/plugin-tiled": "^0.32.0",
@@ -45,6 +46,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.3.0",
+    "ase-parser": "^0.0.18",
     "auto-prefixer": "^0.4.2",
     "autoprefixer": "^10.4.20",
     "electron": "34.0.1",

@@ -1,7 +1,10 @@
+import { MenuItemHooks } from '@/ui/components/menus/MenuItem.vue';
 import { Component, Ref, shallowRef } from 'vue';
 export type MenuInstance = {
     id: number;
     component: Component;
+    addHooks: (hooks: MenuItemHooks) => void;
+    hooks?: MenuItemHooks;
     props?: Record<string, unknown>;
     position: Ref<{ x: number; y: number }>;
     xAnchor?: 'left' | 'right';
@@ -22,12 +25,15 @@ export function useMenuRegistry() {
 
 export function addMenu(
     component: Component,
-    options: Omit<MenuInstance, 'id' | 'zIndex' | 'component'>,
+    options: Omit<MenuInstance, 'id' | 'zIndex' | 'component' | 'addHooks'>,
 ) {
     const instance: MenuInstance = {
         id: nextId++,
         zIndex: zCounter++,
         component,
+        addHooks: (hooks) => {
+            instance.hooks = hooks;
+        },
         ...options,
     };
 

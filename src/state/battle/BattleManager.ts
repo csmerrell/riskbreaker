@@ -28,7 +28,7 @@ import { useGameContext } from '../useGameContext';
 import { LaneKey, PartyMember, useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LANE_POSITIONS } from './lanePositions.enum';
-import { EnemyDef, useBattle } from './useBattle';
+import { BattleActor, BattleUnit, EnemyDef, useBattle } from './useBattle';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
 import { TurnManager } from './TurnManager';
@@ -47,6 +47,7 @@ function getPositionInLane(
 export class BattleManager extends SceneManager {
     private mask!: Actor;
     private terrain: Actor[] = [];
+    public static laneKeys: LaneKey[] = ['left-2', 'left-1', 'mid', 'right-1', 'right-2'];
     public headshotManager: HeadshotManager;
     public turnManager: TurnManager;
 
@@ -374,6 +375,83 @@ export class BattleManager extends SceneManager {
         for (const e of enemies) {
             await this.placeEnemy(e, e.config.battlePosition ?? 'right-1');
         }
+    }
+
+    public async moveUnit(dest: LaneKey, unit: BattleUnit, actor: BattleActor) {
+        const current = unit.config.battlePosition;
+        const unitsInCurrent = this.laneUnitMap[current];
+        const unitsInDest = this.laneUnitMap[dest];
+        const { getUnits } = useBattle();
+        if (unitsInDest.length === 3) return; //cannot move into full lane
+        if (
+            unitsInDest.some((u) => {
+                const u_unit = getUnits().find((battleUnit) => battleUnit.id === u.unitId);
+                return u_unit?.alignment !== unit.alignment;
+            })
+        ) {
+            //Cannot move into lane occupied by enemy
+            return;
+        }
+
+        const actorIdxInLane = unitsInCurrent.findIndex((u) => u.id === actor.id);
+        const newPosition = this.cameraManager!.battleCenter.add(
+            getPositionInLane(dest, {
+                numInLane: unitsInDest.length + 1,
+                idxInLane: unitsInDest.length,
+            }),
+        );
+        const duration = 250;
+        const pixels = actor.pos.sub(newPosition).magnitude;
+        const moveSpeed = (1000 / duration) * pixels;
+        await Promise.all([
+            ...unitsInDest.map((u, idx) =>
+                u.actions
+                    .moveTo({
+                        pos: this.cameraManager!.battleCenter.add(
+                            getPositionInLane(dest, {
+                                numInLane: unitsInDest.length + 1,
+                                idxInLane: idx,
+                            }),
+                        ),
+                        duration: moveSpeed,
+                        easing: EasingFunctions.EaseOutCubic,
+                    })
+                    .toPromise(),
+            ),
+            actor.actions
+                .moveTo({
+                    pos: newPosition,
+                    duration: moveSpeed,
+                    easing: EasingFunctions.EaseOutCubic,
+                })
+                .toPromise(),
+            ...unitsInCurrent
+                .map((u, idx) => {
+                    if (u.id === actor.id) return undefined;
+                    return u.actions
+                        .moveTo({
+                            pos: this.cameraManager!.battleCenter.add(
+                                getPositionInLane(current, {
+                                    numInLane: unitsInCurrent.length - 1,
+                                    idxInLane: idx < actorIdxInLane ? idx : idx - 1,
+                                }),
+                            ),
+                            duration: moveSpeed,
+                            easing: EasingFunctions.EaseOutCubic,
+                        })
+                        .toPromise();
+                })
+                .filter((p) => p !== undefined),
+            this.cameraManager!.focusUnit(actor, { forcePosition: newPosition, duration }),
+            this.turnManager.moveMenus({
+                pos: newPosition,
+                duration,
+            }),
+        ]);
+
+        this.laneUnitMap[current].splice(actorIdxInLane, 1);
+        this.laneUnitMap[dest].push(actor);
+        unit.config.battlePosition = dest;
     }
 
     public getAllActors() {
