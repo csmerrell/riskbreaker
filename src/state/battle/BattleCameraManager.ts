@@ -45,6 +45,6 @@ export class BattleCameraManager {
                 opts.duration ?? this.movementDuration.value,
             ),
         ]);
-        this.parent.scene.camera.move(newPos, 0);
+        await this.parent.scene.camera.move(newPos, 0);
     }
 }

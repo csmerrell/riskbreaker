@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue';
+import { computed, CSSProperties, onUnmounted, ref } from 'vue';
 import HotbarSet from './HotbarSet.vue';
 import { resources } from '@/resource';
 import { registerHoldListener, unregisterInputListener } from '@/game/input/useInput';
@@ -9,9 +9,10 @@ import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 type Props = {
     unit: PartyMember;
     actor: CompositeActor;
+    styles: CSSProperties;
 };
 
-const { unit } = defineProps<Props>();
+const { unit, styles } = defineProps<Props>();
 
 const ready = ref(false);
 const focusLeft = ref(false);
@@ -42,6 +43,15 @@ function registerListeners() {
     );
 }
 
+const el = ref<HTMLElement>();
+defineOptions({ inheritAttrs: false });
+const computedStyles = computed(() => {
+    const { left, right, ...rest } = styles;
+    return {
+        ...rest,
+    };
+});
+
 onUnmounted(() => {
     listeners.forEach((l) => unregisterInputListener(l));
 });
@@ -50,7 +60,9 @@ onUnmounted(() => {
 <template>
     <div
         v-if="ready"
-        class="cross-hotbar flex -translate-x-1/2 -translate-y-full flex-row items-end justify-end gap-4 self-center rounded-lg p-4"
+        ref="el"
+        class="cross-hotbar left-[4.5rem] flex -translate-y-full flex-row items-end justify-end gap-4 self-center rounded-lg p-4"
+        :style="computedStyles"
     >
         <HotbarSet
             side="left"

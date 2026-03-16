@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MENU_TRANSITION_DURATION, MenuInstance } from '@/state/ui/useMenuRegistry';
-import { computed, onMounted, ref, ComponentPublicInstance } from 'vue';
+import { computed, onMounted, ref, ComponentPublicInstance, watch } from 'vue';
 
 type Props = {
     menu: MenuInstance;
@@ -25,19 +25,27 @@ const yPosition = computed(() => {
 });
 
 const durationOverride = ref<number | undefined>(undefined);
+
+const transitionSuppressed = ref(false);
 const styles = computed(() => {
     return {
         position: 'absolute',
-        [menu.xAnchor ?? 'left']: `${xPosition.value}px`,
-        [menu.yAnchor ?? 'top']: `${yPosition.value}px`,
         zIndex: menu.zIndex,
         transitionDuration: `${durationOverride.value ?? MENU_TRANSITION_DURATION}ms`,
+        [menu.xAnchor ?? 'left']: `${xPosition.value}px`,
+        [menu.yAnchor ?? 'top']: `${yPosition.value}px`,
+        ...(transitionSuppressed.value && { transition: 'none' }),
     };
 });
 
 const hooks = {
     overrideTransitionSpeedOnce: (ms: number) => {
         durationOverride.value = ms;
+    },
+    suppressTransition: () => {
+        const restoreTransition = () => (transitionSuppressed.value = false);
+        transitionSuppressed.value = true;
+        return restoreTransition;
     },
 };
 export type MenuItemHooks = typeof hooks;
@@ -56,11 +64,16 @@ onMounted(() => {
 </script>
 
 <template>
-    <component
-        :is="menu.component"
-        ref="componentRef"
-        v-bind="menu.props"
-        :style="styles"
-        class="transition-all"
-    />
+    <div>
+        <component
+            :is="menu.component"
+            ref="componentRef"
+            v-bind="{
+                ...menu.props,
+                styles,
+            }"
+            :style="styles"
+            class="transition-all"
+        />
+    </div>
 </template>

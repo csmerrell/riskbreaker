@@ -377,12 +377,16 @@ export class BattleManager extends SceneManager {
         }
     }
 
-    public async moveUnit(dest: LaneKey, unit: BattleUnit, actor: BattleActor) {
+    public moveUnit(
+        dest: LaneKey,
+        unit: BattleUnit,
+        actor: BattleActor,
+    ): { promise: Promise<void>; duration: number } {
         const current = unit.config.battlePosition;
         const unitsInCurrent = this.laneUnitMap[current];
         const unitsInDest = this.laneUnitMap[dest];
         const { getUnits } = useBattle();
-        if (unitsInDest.length === 3) return; //cannot move into full lane
+        if (unitsInDest.length === 3) return { promise: Promise.resolve(), duration: 0 }; //cannot move into full lane
         if (
             unitsInDest.some((u) => {
                 const u_unit = getUnits().find((battleUnit) => battleUnit.id === u.unitId);
@@ -390,7 +394,7 @@ export class BattleManager extends SceneManager {
             })
         ) {
             //Cannot move into lane occupied by enemy
-            return;
+            return { promise: Promise.resolve(), duration: 0 };
         }
 
         const actorIdxInLane = unitsInCurrent.findIndex((u) => u.id === actor.id);
@@ -401,9 +405,11 @@ export class BattleManager extends SceneManager {
             }),
         );
         const duration = 250;
-        const pixels = actor.pos.sub(newPosition).magnitude;
-        const moveSpeed = (1000 / duration) * pixels;
-        await Promise.all([
+        const cameraFocusPromise = this.cameraManager!.focusUnit(actor, {
+            forcePosition: newPosition,
+            duration,
+        });
+        const promise = Promise.all([
             ...unitsInDest.map((u, idx) =>
                 u.actions
                     .moveTo({
@@ -413,7 +419,7 @@ export class BattleManager extends SceneManager {
                                 idxInLane: idx,
                             }),
                         ),
-                        duration: moveSpeed,
+                        duration,
                         easing: EasingFunctions.EaseOutCubic,
                     })
                     .toPromise(),
@@ -421,7 +427,7 @@ export class BattleManager extends SceneManager {
             actor.actions
                 .moveTo({
                     pos: newPosition,
-                    duration: moveSpeed,
+                    duration,
                     easing: EasingFunctions.EaseOutCubic,
                 })
                 .toPromise(),
@@ -436,22 +442,23 @@ export class BattleManager extends SceneManager {
                                     idxInLane: idx < actorIdxInLane ? idx : idx - 1,
                                 }),
                             ),
-                            duration: moveSpeed,
+                            duration,
                             easing: EasingFunctions.EaseOutCubic,
                         })
                         .toPromise();
                 })
                 .filter((p) => p !== undefined),
-            this.cameraManager!.focusUnit(actor, { forcePosition: newPosition, duration }),
             this.turnManager.moveMenus({
-                pos: newPosition,
-                duration,
+                actor,
+                dependentPromise: cameraFocusPromise,
             }),
-        ]);
+        ]).then(() => {
+            this.laneUnitMap[current].splice(actorIdxInLane, 1);
+            this.laneUnitMap[dest].push(actor);
+            unit.config.battlePosition = dest;
+        });
 
-        this.laneUnitMap[current].splice(actorIdxInLane, 1);
-        this.laneUnitMap[dest].push(actor);
-        unit.config.battlePosition = dest;
+        return { promise, duration };
     }
 
     public getAllActors() {

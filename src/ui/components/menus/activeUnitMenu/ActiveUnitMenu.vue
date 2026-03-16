@@ -24,6 +24,55 @@ const actPressed = ref(false);
 const stockPressed = ref(false);
 const restPressed = ref(false);
 const moving = ref(false);
+let bufferedDirection: 'left' | 'right' | null = null;
+let acceptBufferAfter = 0;
+
+const handleMovement = (direction: 'left' | 'right') => {
+    const now = Date.now();
+
+    // If moving and buffer window not open, buffer this input
+    if (moving.value && now < acceptBufferAfter) {
+        return;
+    }
+
+    // If moving and buffer window is open, buffer this input
+    if (moving.value) {
+        bufferedDirection = direction;
+        return;
+    }
+
+    // Execute movement
+    moving.value = true;
+    const { battleManager } = useExploration().getExplorationManager();
+    const currentIdx = BattleManager.laneKeys.findIndex((l) => l === unit.config.battlePosition);
+    const destIdx =
+        direction === 'left'
+            ? Math.max(0, currentIdx - 1)
+            : Math.min(BattleManager.laneKeys.length - 1, currentIdx + 1);
+    const dest = BattleManager.laneKeys[destIdx];
+
+    if (dest === unit.config.battlePosition) {
+        moving.value = false;
+        return;
+    }
+
+    const result = battleManager.moveUnit(dest, unit, actor);
+
+    // Open buffer window at duration/2
+    acceptBufferAfter = now + result.duration / 2;
+
+    void result.promise.then(() => {
+        moving.value = false;
+
+        // Execute buffered input if one exists
+        if (bufferedDirection) {
+            const nextDirection = bufferedDirection;
+            bufferedDirection = null;
+            handleMovement(nextDirection);
+        }
+    });
+};
+
 const listeners = [
     registerHoldListener((inputs) => {
         if (inputs.shoulder_left || inputs.shoulder_right) {
@@ -50,32 +99,8 @@ const listeners = [
             restPressed.value = false;
         }, 125);
     }, 'inspect_details'),
-    registerInputListener(() => {
-        if (moving.value) return;
-        moving.value = true;
-        const { battleManager } = useExploration().getExplorationManager();
-        const destIdx = Math.max(
-            0,
-            BattleManager.laneKeys.findIndex((l) => l === unit.config.battlePosition) - 1,
-        );
-        const dest = BattleManager.laneKeys[destIdx];
-        if (dest === unit.config.battlePosition) return;
-
-        battleManager.moveUnit(dest, unit, actor).then(() => (moving.value = false));
-    }, ['menu_left', 'movement_left']),
-    registerInputListener(() => {
-        if (moving.value) return;
-        moving.value = true;
-        const { battleManager } = useExploration().getExplorationManager();
-        const destIdx = Math.min(
-            BattleManager.laneKeys.length - 1,
-            BattleManager.laneKeys.findIndex((l) => l === unit.config.battlePosition) + 1,
-        );
-        const dest = BattleManager.laneKeys[destIdx];
-        if (dest === unit.config.battlePosition) return;
-
-        battleManager.moveUnit(dest, unit, actor).then(() => (moving.value = false));
-    }, ['menu_right', 'movement_right']),
+    registerInputListener(() => handleMovement('left'), ['menu_left', 'movement_left']),
+    registerInputListener(() => handleMovement('right'), ['menu_right', 'movement_right']),
 ];
 
 onUnmounted(() => {

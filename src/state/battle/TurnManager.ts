@@ -5,13 +5,13 @@ import { BattleManager } from './BattleManager';
 import { getEffectiveStat } from './UnitStats';
 import { getActorAnchor, getMenuPosition, MenuAnchor } from '../ui/useActorAnchors';
 import { addMenu, MenuInstance, removeMenu } from '../ui/useMenuRegistry';
-import { vec, Vector } from 'excalibur';
+import { Actor, vec, Vector } from 'excalibur';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import ActiveUnitMenu from '@/ui/components/menus/activeUnitMenu/ActiveUnitMenu.vue';
 import CrossHotbar from '@/ui/components/menus/crossHotbar/CrossHotbar.vue';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { getScale } from '@/lib/helpers/screen.helper';
-import { MenuItemHooks } from '@/ui/components/menus/MenuItem.vue';
+import { loopUntil } from '@/lib/helpers/async.helper';
 
 type CTMapping = {
     unit: BattleUnit;
@@ -114,30 +114,31 @@ export class TurnManager {
         }
     }
 
-    public moveMenus(opts: { pos: Vector; duration?: number }) {
-        this.menus.forEach((m) => {
-            this.moveMenu(m, opts);
-        });
+    public moveMenus(opts: { actor: Actor; dependentPromise: Promise<void> }) {
+        return Promise.all(this.menus.map((m) => this.moveMenu(m, opts)));
     }
 
-    private moveMenu(
+    private async moveMenu(
         menu: { instance: MenuInstance; key: 'arrow' | 'menu' | 'hotbar' },
-        opts: { pos: Vector; duration?: number },
+        opts: { actor: Actor; dependentPromise: Promise<void> },
     ) {
-        if (opts.duration) {
-            (menu.instance.hooks as MenuItemHooks)?.overrideTransitionSpeedOnce(opts.duration);
-        }
-        const offset: Vector = this[`${menu.key}Offset`].scale(getScale());
-        menu.instance.position.value = getMenuPosition(opts.pos, offset);
-
-        if (opts.duration && opts.duration > 0) {
-            setTimeout(() => {
-                this.moveMenu(menu, {
-                    ...opts,
-                    duration: opts.duration ? opts.duration - 50 : undefined,
-                });
-            }, 50);
-        }
+        const restoreTransition = menu.instance.hooks?.suppressTransition();
+        return new Promise<void>(async (resolve) => {
+            const move = () => {
+                const offset: Vector = this[`${menu.key}Offset`].scale(getScale());
+                menu.instance.position.value = getMenuPosition(opts.actor.pos, offset);
+                if (opts.actor.vel.magnitude === 0) {
+                    opts.actor.events.off('preupdate', move);
+                    restoreTransition?.();
+                    resolve();
+                }
+            };
+            await loopUntil(
+                () => opts.actor.vel.magnitude > 0,
+                () => {},
+            );
+            opts.actor.events.on('preupdate', move);
+        });
     }
 
     public suppressActiveUnitMenu() {
