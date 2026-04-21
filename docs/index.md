@@ -12,12 +12,12 @@ Each character gets:
 - Bladesealer
 - Moonfang
 - Soulsword
-- Kohr Ascetic
+- Ascetic
 - Spellblade
 - Naturalist
 - Shadeweaver
 - Lifebinder
-- Dramaturge
+- Minstrel
 - Astrologian
 
 
