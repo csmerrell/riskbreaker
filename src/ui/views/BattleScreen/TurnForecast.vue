@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { useExploration } from '@/state/useExploration';
 import { computed, ref } from 'vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import ForecastedUnit from './ForecastedUnit.vue';
 import { PartyMember } from '@/state/useParty';
-import { EnemyDef } from '@/state/battle/useBattle';
+import { EnemyDef, useBattle } from '@/state/battle/useBattle';
 
-const { headshotManager, turnManager } = useExploration().getExplorationManager().battleManager;
+const { headshotManager, turnManager } = useBattle().getBattleManager();
 const headshots = ref<typeof headshotManager.headshots.value>(headshotManager.headshots.value);
 
 headshotManager.headshots.subscribe((val) => {

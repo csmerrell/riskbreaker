@@ -86,6 +86,17 @@ function togglePause() {
     }
 }
 
+async function hitStop() {
+    const { clock } = game.value;
+    clock.stop();
+    return new Promise<void>((resolve) => {
+        setTimeout(() => {
+            clock.start();
+            resolve();
+        }, gameEnum.frameMs * 2);
+    });
+}
+
 export const gameContext = {
     activeView,
     activeScript,
@@ -96,6 +107,7 @@ export const gameContext = {
     paused,
     inputType,
     togglePause,
+    hitStop,
 };
 export type GameContext = typeof gameContext;
 

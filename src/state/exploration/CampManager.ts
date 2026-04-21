@@ -142,7 +142,7 @@ export class CampManager extends SceneManager {
         const party = useParty().partyState.value.party;
 
         party.forEach(async (member, idx) => {
-            const actor = new CompositeActor(member.appearance);
+            const actor = new CompositeActor(member);
             actor.scale = vec(idx === 0 ? 1 : -1, 1);
             actor.z = 1002;
             actor.pos = this.scene.camera.pos.add(idx === 0 ? vec(22, 27) : vec(-30, 21));

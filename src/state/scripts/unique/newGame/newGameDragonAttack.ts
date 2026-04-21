@@ -5,15 +5,18 @@ import { resources } from '@/resource';
 import { COMPOSITE_SPRITE_GRID } from '@/resource/image/units/spriteMap';
 import { gameEnum } from '@/lib/enum/game.enum';
 import { useGameContext } from '@/state/useGameContext';
-import { useBattle } from '@/state/battle/useBattle';
 import { useExploration } from '@/state/useExploration';
+import { PartyMember } from '@/state/useParty';
 
 const stonecaller = new CompositeActor({
     name: 'stonecaller',
-    hair: 'stonecallerHood',
-    armor: 'stonecallerRobe',
+    appearance: {
+        hair: 'stonecallerHood',
+        armor: 'stonecallerRobe',
+    },
+    stats: {},
     z: 9999,
-});
+} as unknown as PartyMember);
 
 const stonecallerUniqueSheet = SpriteSheet.fromImageSource({
     image: resources.image.units.unique.stonecaller,

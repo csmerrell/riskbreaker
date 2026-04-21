@@ -3,6 +3,7 @@ import { makeState } from '../Observable';
 import { LaneKey, PartyMember, useParty } from '../useParty';
 import { UnitStats } from './UnitStats';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { useExploration } from '../useExploration';
 
 export type EnemyDef = {
     id: string;
@@ -59,12 +60,17 @@ function getUnits(): BattleUnit[] {
     return [...party, ...enemies];
 }
 
+function getBattleManager() {
+    return useExploration().getExplorationManager().battleManager;
+}
+
 export function useBattle() {
     return {
         battleState,
         addEnemy,
         removeEnemy,
         clearEnemies,
+        getBattleManager,
         getUnits,
     };
 }

@@ -191,7 +191,7 @@ export const newGameOriginSelect: GameScript = {
             //add leader to exploration screen
             const leader = useParty().getLeader();
             const { mainHand, offHand, ...leaderAppearance } = leader.appearance;
-            const actor = new CompositeActor(leaderAppearance);
+            const actor = new CompositeActor({ ...leader, appearance: leaderAppearance });
             actor.unitId = leader.id;
             actor.addComponent(new LightSource({ radius: 1 }));
 

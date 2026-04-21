@@ -85,10 +85,14 @@ export class Animator<T extends Record<string, FrameMap>> extends Component {
             noReset?: boolean;
             scale?: number;
         } = {},
-    ) {
+    ): Promise<void> {
         const { strategy, next } = opts;
         if (!this.animations[key]) {
-            return Promise.resolve();
+            if (opts.next) {
+                return this.useKeyedAnimation(opts.next);
+            } else {
+                return Promise.resolve();
+            }
         }
         if (!opts.noReset) {
             this.animations[key].reset();

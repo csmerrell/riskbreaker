@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import MenuBox from '@/ui/components/MenuBox.vue';
 import TurnForecast from './TurnForecast.vue';
 import PartyStatus from './PartyStatus.vue';
 
 import { useGameContext } from '@/state/useGameContext';
 import { ref, watch } from 'vue';
-import { useExploration } from '@/state/useExploration';
+import { useBattle } from '@/state/battle/useBattle';
 
 const { activeView } = useGameContext();
 
@@ -19,7 +18,7 @@ watch(activeView, (val) => {
 
 const forecastReady = ref(false);
 function mount() {
-    const { turnManager } = useExploration().getExplorationManager().battleManager;
+    const { turnManager } = useBattle().getBattleManager();
     forecastReady.value = turnManager.forecastReady.value;
     turnManager.forecastReady.subscribe((val) => {
         forecastReady.value = !!val;

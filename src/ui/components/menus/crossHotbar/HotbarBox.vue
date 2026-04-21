@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import {
+    captureControls,
+    registerInputListener,
+    unCaptureControls,
+    unregisterInputListener,
+} from '@/game/input/useInput';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { resources } from '@/resource';
 import { SkillMetadata } from '@/state/useParty';
 import { SpriteSheet } from 'excalibur';
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { HotbarKey } from './HotbarSet.vue';
+import { useBattle } from '@/state/battle/useBattle';
 
 type Props = Partial<SkillMetadata> & {
     focused?: boolean;
@@ -45,7 +51,17 @@ function registerListener() {
         const command = hotkey.split('.')[1] as HotbarKey;
         listeners.push(
             registerInputListener(() => {
-                action.activate();
+                useBattle().getBattleManager().turnManager.removeActiveUnitMenus();
+                nextTick().then(() => {
+                    captureControls('Skill');
+                    action
+                        .activate()
+                        .then(() => {})
+                        .catch(() => {})
+                        .finally(() => {
+                            unCaptureControls();
+                        });
+                });
             }, command),
         );
     }

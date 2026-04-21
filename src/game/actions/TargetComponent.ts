@@ -9,7 +9,7 @@ import { getScale } from '@/lib/helpers/screen.helper';
 import { ref } from 'vue';
 import { addMenu, removeMenu } from '@/state/ui/useMenuRegistry';
 import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
-import { registerInputListener, unregisterInputListener } from '../input/useInput';
+import { registerInputListener, suspendInputs, unregisterInputListener } from '../input/useInput';
 
 type AreaType = 'single' | 'area_adjacent' | 'all';
 
@@ -46,7 +46,6 @@ export class TargetComponent extends Component {
     private listeners: string[] = [];
     public async promptTarget() {
         const { battleManager } = useExploration().getExplorationManager();
-        const { restoreMenus } = battleManager.turnManager.suppressActiveUnitMenu();
         await battleManager.cameraManager!.restoreCenter();
 
         const targetLanes = this.getTargetLanes();
@@ -66,31 +65,38 @@ export class TargetComponent extends Component {
             },
         });
 
-        this.listeners = [
-            registerInputListener(() => {
-                currentLaneIdx = currentLaneIdx - 1;
-                if (currentLaneIdx < 0) {
-                    currentLaneIdx = targetLanes.length - 1;
-                }
-                battleManager.setTargetedLane(targetLanes[currentLaneIdx]);
-                anchor.value = this.getIndicatorAnchor(targetLanes[currentLaneIdx]);
-            }, ['menu_left', 'movement_left']),
-            registerInputListener(() => {
-                currentLaneIdx = currentLaneIdx + 1;
-                if (currentLaneIdx >= targetLanes.length) {
-                    currentLaneIdx = 0;
-                }
-                battleManager.setTargetedLane(targetLanes[currentLaneIdx]);
-                anchor.value = this.getIndicatorAnchor(targetLanes[currentLaneIdx]);
-            }, ['menu_right', 'movement_right']),
-            registerInputListener(() => {
-                removeMenu(indicator.id);
-                battleManager.setTargetedLane(undefined);
-                battleManager.turnManager.activateUnit();
-                restoreMenus();
-                this.listeners.forEach((l) => unregisterInputListener(l));
-            }, 'cancel'),
-        ];
+        return new Promise<LaneKey>((resolve, reject) => {
+            this.listeners = [
+                registerInputListener(() => {
+                    currentLaneIdx = currentLaneIdx - 1;
+                    if (currentLaneIdx < 0) {
+                        currentLaneIdx = targetLanes.length - 1;
+                    }
+                    battleManager.setTargetedLane(targetLanes[currentLaneIdx]);
+                    anchor.value = this.getIndicatorAnchor(targetLanes[currentLaneIdx]);
+                }, ['menu_left', 'movement_left']),
+                registerInputListener(() => {
+                    currentLaneIdx = currentLaneIdx + 1;
+                    if (currentLaneIdx >= targetLanes.length) {
+                        currentLaneIdx = 0;
+                    }
+                    battleManager.setTargetedLane(targetLanes[currentLaneIdx]);
+                    anchor.value = this.getIndicatorAnchor(targetLanes[currentLaneIdx]);
+                }, ['menu_right', 'movement_right']),
+                registerInputListener(() => {
+                    this.listeners.forEach((l) => unregisterInputListener(l));
+                    removeMenu(indicator.id);
+                    battleManager.setTargetedLane(undefined);
+                    battleManager.turnManager.activateUnit();
+                    reject();
+                }, 'cancel'),
+                registerInputListener(() => {
+                    this.listeners.forEach((l) => unregisterInputListener(l));
+                    removeMenu(indicator.id);
+                    resolve(targetLanes[currentLaneIdx]);
+                }, 'confirm'),
+            ];
+        });
     }
 
     private getIndicatorAnchor(lane: LaneKey): Vector {

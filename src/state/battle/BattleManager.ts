@@ -296,7 +296,7 @@ export class BattleManager extends SceneManager {
         'right-2': [],
     } as const satisfies Record<string, Actor[]>;
     public async placePlayer(player: PartyMember, lane: LaneKey) {
-        const actor = new CompositeActor(player.appearance);
+        const actor = new CompositeActor(player);
         actor.unitId = player.id;
         const boundingBox = this.parent.cameraManager.getBoundingBox()!;
         const numInLane = useParty().partyState.value.party.filter(
@@ -311,7 +311,7 @@ export class BattleManager extends SceneManager {
         this.laneUnitMap[lane].push(actor);
         this.parent.scene.add(actor);
 
-        const portraitActor = new CompositeActor(player.appearance);
+        const portraitActor = new CompositeActor(player);
         portraitActor.unitId = player.id;
         this.headshotManager.captureHeadshot(portraitActor);
         return actor.actions

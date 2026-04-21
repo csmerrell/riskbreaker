@@ -33,7 +33,7 @@ const createWindow = () => {
 
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-        mainWindow.setPosition(0, 0);
+        mainWindow.setPosition(0, 200);
         addDevTools(mainWindow);
         mainWindow.on('close', closeDevTools);
     } else {

@@ -5,6 +5,7 @@ import { FrameMap, SpriteGridOptions } from '@/resource/image/units/spriteMap';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationActor } from '../KeyedAnimationActor';
 import { emptyStatMods, UnitStats } from '@/state/battle/UnitStats';
+import { HealthComponent } from '../Battle/Health.component';
 
 if (!resources.image.enemy.Dragon.isLoaded()) {
     resources.image.enemy.Dragon.load();
@@ -85,6 +86,12 @@ const spriteMap = {
     hurt: {
         frames: [[1, 6, 0]],
     },
+    hurtEnd: {
+        frames: [
+            [1, 6, 3],
+            [0, 3, 0],
+        ],
+    },
     knockdown: {
         frames: [
             [1, 6, 1],
@@ -103,6 +110,7 @@ const DRAGON_SPRITESHEET_GRID = {
 
 export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
     protected spriteDimensions: SpriteGridOptions = DRAGON_SPRITESHEET_GRID;
+    public hitPointOffset: Vector = vec(-24, 6);
 
     public static stats: UnitStats = {
         hp: 400,
@@ -136,6 +144,9 @@ export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
                 DRAGON_SPRITESHEET_GRID,
                 this.get(ReadyComponent),
             ),
+        );
+        this.addComponent(
+            new HealthComponent({ max: Dragon.stats.hp, offset: vec(0, -36), width: 76 }),
         );
     }
 

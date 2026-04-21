@@ -122,6 +122,12 @@ const map = {
             [6, 4, 0],
         ],
     },
+    shieldForward: {
+        frames: [[0, 4, 0]],
+    },
+    shieldSpreadForward: {
+        frames: [[6, 4, 0]],
+    },
     dive: {
         frames: [[0, 5, 0]],
     },
@@ -137,6 +143,12 @@ const map = {
     },
     dashForward: {
         frames: [[5, 5, 0]],
+    },
+    jumpBack: {
+        frames: [[10, 2, 0]],
+    },
+    wideStance: {
+        frames: [[11, 2, 0]],
     },
 } as const satisfies Record<string, FrameMap>;
 

@@ -33,6 +33,10 @@ let inputDebounceMap: Partial<Record<MappedCommand, number>> = {};
 let registrationCounter = 0;
 const currentListeners = () => listenerStack[listenerStack.length - 1];
 function notifyListeners(result: InputMap) {
+    if (inputDisabled) {
+        return;
+    }
+
     const debounceSnapshot = { ...inputDebounceMap };
     // Sort commands by most recent listener registration to handle button collisions correctly
     const sortedEntries = (
@@ -178,6 +182,16 @@ const convergedCommandMap = TypedKeys(defaultGamepadMap).reduce(
     },
     {},
 );
+
+let inputDisabled = false;
+export function suspendInputs() {
+    inputDisabled = true;
+    return {
+        restoreInput: () => {
+            inputDisabled = false;
+        },
+    };
+}
 
 export function registerInputListener(
     cb: () => boolean | void,

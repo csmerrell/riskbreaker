@@ -1,11 +1,17 @@
-import { Actor, ActorArgs, AnimationStrategy, Engine, vec } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine, vec, Vector } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
+import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import {
     COMPOSITE_SPRITE_GRID,
     SpriteGridOptions,
     type AnimationKey,
 } from '@/resource/image/units/spriteMap';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
+import { progressShader } from '@/lib/helpers/shader.helper';
+import { VFXKey, VFXLayer } from './VFXLayer';
+import { Animator } from '../Animation/Animator';
+import { PartyMember } from '@/state/useParty';
+import { HealthComponent } from '../Battle/Health.component';
 
 export type CompositeSpriteLayers =
     | 'armor'
@@ -29,6 +35,7 @@ export function isCompositeActor(a: Actor): a is CompositeActor {
 export class CompositeActor extends Actor {
     public type = 'CompositeActor';
     public unitId?: string;
+    public hitPointOffset: Vector = vec(-6, 0);
     private spriteDimensions: SpriteGridOptions = COMPOSITE_SPRITE_GRID;
     private mannequin!: CompositeLayer;
     private mainHand: CompositeLayer[] = [];
@@ -38,16 +45,17 @@ export class CompositeActor extends Actor {
     private accessory?: CompositeLayer;
     private currentAnimationKey: AnimationKey = 'static';
 
-    constructor(private opts: ActorArgs & CompositeActorConfig) {
+    constructor(private opts: ActorArgs & PartyMember) {
+        const { stats, appearance, ...excalOpts } = opts;
+        super(excalOpts);
+
         const {
             armor: armorKey,
             mainHand: mainHandKey,
             offHand: offHandKey,
             hair: hairKey,
             accessory: accessoryKey,
-            ...excalOpts
-        } = opts;
-        super(excalOpts);
+        } = appearance;
 
         this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
         if (armorKey) {
@@ -67,6 +75,8 @@ export class CompositeActor extends Actor {
         if (accessoryKey) {
             this.equipLayer({ key: accessoryKey, type: 'accessory', ...excalOpts });
         }
+
+        this.addComponent(new HealthComponent({ max: stats.hp, current: stats.currentHp }));
     }
 
     public getDimensions() {
@@ -101,7 +111,6 @@ export class CompositeActor extends Actor {
         ) {
             if (this.vel.magnitude > 0) {
                 if (this.vel.y < 0 && Math.abs(this.vel.y) > 1) {
-                    console.log(Math.abs(this.vel.y));
                     this.useAnimation('walkBack', {
                         strategy: AnimationStrategy.Loop,
                         noReset: true,
@@ -173,6 +182,14 @@ export class CompositeActor extends Actor {
     }
 
     private suppressMovementAnimation: boolean = false;
+    private flatKeys = ['mannequin', 'armor', 'hair', 'accessory'] as const;
+    private arrayKeys = ['mainHand', 'offHand'] as const;
+    private allLayers() {
+        return [
+            ...this.flatKeys.map((key) => this[key]).filter((layer) => layer !== undefined),
+            ...this.arrayKeys.flatMap((key) => this[key]).filter((layer) => layer !== undefined),
+        ];
+    }
     public useAnimation(
         key: AnimationKey,
         opts?: {
@@ -189,18 +206,15 @@ export class CompositeActor extends Actor {
             this.suppressMovementAnimation = false;
         }
         this.currentAnimationKey = key;
-        const promises: Promise<void>[] = [];
-        promises.push(this.mannequin.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(this.armor?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(...this.mainHand.map((mh) => mh.useAnimation(key, opts)));
-        promises.push(...this.offHand.map((oh) => oh.useAnimation(key, opts)));
-        promises.push(this.hair?.useAnimation(key, opts) ?? Promise.resolve());
-        promises.push(this.accessory?.useAnimation(key, opts) ?? Promise.resolve());
-        return Promise.all(promises);
+        return Promise.all(this.allLayers().map((layer) => layer.useAnimation(key, opts))).then(
+            () => {
+                if (opts?.next) {
+                    this.currentAnimationKey = opts.next;
+                }
+            },
+        );
     }
 
-    private flatKeys = ['mannequin', 'armor', 'hair', 'accessory'] as const;
-    private arrayKeys = ['mainHand', 'offHand'] as const;
     public stopAnimation() {
         this.flatKeys.forEach((key) => this[key]?.stopAnimation());
         this.arrayKeys.forEach((key) => this[key].forEach((layer) => layer.stopAnimation()));
@@ -238,5 +252,43 @@ export class CompositeActor extends Actor {
             ]);
             resolve();
         });
+    }
+
+    public async preActivateShimmer(animationKey: AnimationKey) {
+        return Promise.all(
+            this.allLayers().map((layer) => {
+                const animation = layer.useAnimation(animationKey);
+                // Add shimmer material layer
+                const layerKey = layer.addMaterialLayer({
+                    name: 'gradientShimmer',
+                    fragmentSource: GRADIENT_SHIMMER,
+                    setupUniforms: (shader) => {
+                        shader.trySetUniformInt('u_sheetFrameCt', 12);
+                        shader.trySetUniformFloat('u_progress', 0.0);
+                    },
+                });
+
+                const shimmerLayer = layer.getMaterialLayer(layerKey)!;
+                const duration = 125;
+
+                const shimmer = progressShader(shimmerLayer, duration).then(() => {
+                    layer.removeMaterialLayer(layerKey);
+                });
+
+                return Promise.all([animation, shimmer]);
+            }),
+        );
+    }
+
+    public async useVFX(
+        key: VFXKey,
+        opts: {
+            offset?: Vector;
+        } = {},
+    ) {
+        const vfxLayer = new VFXLayer(key, opts);
+        this.addChild(vfxLayer);
+        await vfxLayer.animate();
+        this.removeChild(vfxLayer);
     }
 }

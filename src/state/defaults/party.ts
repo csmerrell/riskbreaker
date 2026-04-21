@@ -56,7 +56,7 @@ export const RiskbreakerDefault: PartyMember = {
     stats: {
         hp: 125,
         currentHp: 75,
-        speed: 24,
+        speed: 125,
         strength: 6,
         dexterity: 5,
         balance: 10,

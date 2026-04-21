@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 
 import {
     registerHoldListener,
@@ -73,35 +73,38 @@ const handleMovement = (direction: 'left' | 'right') => {
     });
 };
 
-const listeners = [
-    registerHoldListener((inputs) => {
-        if (inputs.shoulder_left || inputs.shoulder_right) {
-            actPressed.value = true;
-        } else {
-            actPressed.value = false;
-        }
-    }),
-    registerInputListener(() => {
-        if (stockPressed.value) {
-            return;
-        }
-        stockPressed.value = true;
-        setTimeout(() => {
-            stockPressed.value = false;
-        }, 125);
-    }, 'context_menu_1'),
-    registerInputListener(() => {
-        if (restPressed.value) {
-            return;
-        }
-        restPressed.value = true;
-        setTimeout(() => {
-            restPressed.value = false;
-        }, 125);
-    }, 'inspect_details'),
-    registerInputListener(() => handleMovement('left'), ['menu_left', 'movement_left']),
-    registerInputListener(() => handleMovement('right'), ['menu_right', 'movement_right']),
-];
+let listeners: string[] = [];
+onMounted(async () => {
+    listeners = [
+        registerHoldListener((inputs) => {
+            if (inputs.shoulder_left || inputs.shoulder_right) {
+                actPressed.value = true;
+            } else {
+                actPressed.value = false;
+            }
+        }),
+        registerInputListener(() => {
+            if (stockPressed.value) {
+                return;
+            }
+            stockPressed.value = true;
+            setTimeout(() => {
+                stockPressed.value = false;
+            }, 125);
+        }, 'context_menu_1'),
+        registerInputListener(() => {
+            if (restPressed.value) {
+                return;
+            }
+            restPressed.value = true;
+            setTimeout(() => {
+                restPressed.value = false;
+            }, 125);
+        }, 'inspect_details'),
+        registerInputListener(() => handleMovement('left'), ['menu_left', 'movement_left']),
+        registerInputListener(() => handleMovement('right'), ['menu_right', 'movement_right']),
+    ];
+});
 
 onUnmounted(() => {
     listeners.forEach((l) => unregisterInputListener(l));

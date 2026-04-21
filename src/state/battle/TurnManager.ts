@@ -90,6 +90,14 @@ export class TurnManager {
         }
     }
 
+    public endTurn(ctCost: number) {
+        this.setUnitCT(this.activeUnit.value!, 100 - ctCost);
+        this.advanceTurn();
+        setTimeout(() => {
+            this.activateUnit();
+        }, 250);
+    }
+
     private tickCT(ctMap: typeof this.unitCTs) {
         return ctMap.map((unitMapping) => ({
             ...unitMapping,
@@ -141,22 +149,10 @@ export class TurnManager {
         });
     }
 
-    public suppressActiveUnitMenu() {
+    public removeActiveUnitMenus() {
         this.menus.forEach((m) => {
             removeMenu(m.instance.id);
         });
-        const handles = { restoreMenus: () => {}, discardMenus: () => {} };
-        const _promise = new Promise<void>((resolve, reject) => {
-            handles.restoreMenus = resolve;
-            handles.discardMenus = reject;
-        })
-            .then(() => {
-                this.activateUnit();
-            })
-            .catch(() => {
-                //do nothing
-            });
-        return handles;
     }
 
     private activateEnemy(_unit: EnemyDef) {}

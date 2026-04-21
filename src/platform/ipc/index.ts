@@ -31,7 +31,7 @@ export function initIPC() {
             window.setSize(width + frameWidth, height + frameHeight);
 
             // Set at 0,0
-            window.setPosition(0, 0);
+            window.setPosition(0, 200);
 
             // Restore the original resizable state
             if (!wasResizable) {
@@ -73,7 +73,7 @@ export function initIPC() {
                         const windowWidth = width;
                         const windowHeight = height;
                         window.setContentSize(windowWidth, windowHeight);
-                        window.setPosition(0, 0);
+                        window.setPosition(0, 200);
                         window.setResizable(false);
                         break;
 

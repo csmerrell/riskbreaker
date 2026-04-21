@@ -162,3 +162,13 @@ img {
     font-family: 'Fabled';
     src: url(/typeface/Fabled-Font-All/Fabled_Font.ttf)
 }
+
+@font-face {
+    font-family: 'Bowlby One';
+    src: url(/typeface/Bowlby-One/BowlbyOne-Regular.ttf)
+}
+
+@font-face {
+    font-family: 'Spicy Rice';
+    src: url(/typeface/Spicy-Rice/SpicyRice-Regular.ttf)
+}

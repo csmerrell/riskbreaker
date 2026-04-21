@@ -6,10 +6,21 @@ import {
     FrameMap,
     spriteMap,
 } from '@/resource/image/units/spriteMap';
-import { Actor, ActorArgs, Engine, Graphic, ImageSource, Material } from 'excalibur';
+import {
+    Actor,
+    ActorArgs,
+    Color,
+    Engine,
+    Graphic,
+    ImageSource,
+    Material,
+    Rectangle,
+    Shader,
+} from 'excalibur';
 import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
+import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import { ReadyComponent } from '../ReadyComponent';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationOptions } from '../useKeyedAnimation';
@@ -51,6 +62,8 @@ export class CompositeLayer extends Actor {
     private loaded!: Promise<void>;
     private footShadow?: Material;
     private type: CompositeSpriteLayers;
+    private materialLayers: Record<string, Actor> = {};
+    private materialLayerCounter: number = 0;
 
     constructor(opts: ActorArgs & CompositeResourceOpts) {
         const { type, key, isBack = false, ...excalOpts } = opts;
@@ -161,5 +174,45 @@ export class CompositeLayer extends Actor {
                 ? Math.max(0, this.graphics.opacity + opacityStep)
                 : Math.min(this.graphics.opacity + opacityStep, 1);
         this.graphics.opacity = nextOpacity;
+    }
+
+    public addMaterialLayer(materialConfig: {
+        name: string;
+        fragmentSource: string;
+        setupUniforms?: (shader: Shader) => void;
+    }): string {
+        const key = `${materialConfig.name}_${this.materialLayerCounter++}`;
+
+        const duplicate = new Actor({
+            pos: this.pos,
+            z: this.z + 1, // Slightly above original
+        });
+        duplicate.graphics.use(this.graphics.current!.clone());
+
+        const material = this.scene!.engine.graphicsContext.createMaterial({
+            name: materialConfig.name,
+            fragmentSource: materialConfig.fragmentSource,
+        });
+        if (materialConfig.setupUniforms) {
+            material.update(materialConfig.setupUniforms);
+        }
+        duplicate.graphics.material = material;
+
+        this.parent!.addChild(duplicate);
+        this.materialLayers[key] = duplicate;
+
+        return key;
+    }
+
+    public removeMaterialLayer(key: string): void {
+        const layer = this.materialLayers[key];
+        if (layer) {
+            layer.kill();
+            delete this.materialLayers[key];
+        }
+    }
+
+    public getMaterialLayer(key: string): Actor | undefined {
+        return this.materialLayers[key];
     }
 }

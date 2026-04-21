@@ -7,7 +7,7 @@ export function addDevTools(mainWindow: InstanceType<typeof BrowserWindow>) {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
     mainWindow.webContents.once('did-finish-load', function () {
         const windowBounds = mainWindow.getBounds();
-        devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
+        devtools.setPosition(windowBounds.x + windowBounds.width, 0);
         devtools.setSize(640, 1080);
         devtools.webContents.zoomFactor = 1.5;
     });

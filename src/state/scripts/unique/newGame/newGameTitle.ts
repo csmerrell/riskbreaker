@@ -5,7 +5,7 @@ import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 import { EasingFunctions, vec } from 'excalibur';
 import { useParty } from '@/state/useParty';
-import { captureControls } from '@/game/input/useInput';
+import { captureControls, suspendInputs } from '@/game/input/useInput';
 import { getScale } from '@/lib/helpers/screen.helper';
 
 export const newGameTitle: GameScript = {
@@ -14,6 +14,7 @@ export const newGameTitle: GameScript = {
             //mount exploration manager
             const game = useGameContext().game.value;
             const { getExplorationManager } = useExploration();
+            const { restoreInput } = suspendInputs();
             await game.goToScene('exploration');
             const explorationManager = getExplorationManager();
             await explorationManager.ready();
@@ -24,7 +25,7 @@ export const newGameTitle: GameScript = {
 
             //add default leader to exploration screen, so camera can position
             const { mainHand, offHand, ...leaderAppearance } = getLeader().appearance;
-            const leader = new CompositeActor(leaderAppearance);
+            const leader = new CompositeActor({ ...getLeader(), appearance: leaderAppearance });
             leader.addComponent(new LightSource({ radius: 1 }));
             await explorationManager.actorManager.addPlayer(leader);
 
@@ -40,6 +41,7 @@ export const newGameTitle: GameScript = {
             await explorationManager.campManager.openCamp();
             //control capture has to happen after camp open, or camp will steal controls from title menu
             captureControls('Title');
+            restoreInput();
             await new Promise<void>((resolve) => {
                 setTimeout(() => {
                     const canvas = document.getElementById('main-canvas')!;

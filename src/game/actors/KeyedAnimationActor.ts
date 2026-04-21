@@ -1,11 +1,12 @@
 import { SpriteGridOptions } from '@/resource/image/units/spriteMap';
-import { Actor, ActorArgs, Vector } from 'excalibur';
+import { Actor, ActorArgs, vec, Vector } from 'excalibur';
 import { Animator, UseKeyedAnimationOpts } from './Animation/Animator';
 
 export class KeyedAnimationActor<T extends string> extends Actor {
     protected spriteDimensions!: SpriteGridOptions;
     public battleEntryKey?: T;
     public unitId?: string;
+    public hitPointOffset: Vector = vec(0, 0);
 
     constructor(private opts: ActorArgs = {}) {
         super(opts);
