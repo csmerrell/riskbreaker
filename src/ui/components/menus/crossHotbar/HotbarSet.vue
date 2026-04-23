@@ -22,15 +22,6 @@ type Props = {
     side: 'left' | 'right';
 };
 
-// const skillMap: Record<string, SkillOpts> = {
-//     starflash: { row: 4, col: 4, name: 'Starflash' },
-//     compress: { row: 1, col: 6, name: 'Compress' },
-//     shieldBash: { row: 1, col: 4, name: 'Shield Bash' },
-//     push: { row: 4, col: 6, name: 'Push' },
-//     attack: { row: 3, col: 9, name: 'Attack' },
-//     pulse: { row: 1, col: 5, name: 'Pulse' },
-// };
-
 const { focused, side, unit } = defineProps<Props>();
 
 const unitSkills = computed(() => {
