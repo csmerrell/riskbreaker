@@ -11,6 +11,7 @@ Each character gets:
 - Riskbreaker
 - Bladesealer
 - Moonfang
+- Bear
 - Soulsword
 - Ascetic
 - Spellblade
@@ -19,12 +20,33 @@ Each character gets:
 - Lifebinder
 - Minstrel
 - Astrologian
+- Artificer
 
+### Design
+- Done
+    - Riskbreaker
+    - Spellblade
+    - Bladesealer
+    - Ascetic
+    - Lifebinder
+    - Astrologian
+    - Artificer
+        - + Deep Robe
+    - Bear
+- TODO
+    - Moonfang
+        - Wolf is done
+    - Soulsword
+    - Naturalist
+        - Stonecaller is done
+    - Shadeweaver
+    - Minstrel
 
 ## Equipment 
 
 ### Weapon Types
 - Sword
+    - Blade
     - Foil
     - Soulsword
 - Gun

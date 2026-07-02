@@ -6,6 +6,7 @@ import { ShieldChargeSkill } from '@/game/actions/Riskbreaker/ShieldCharge';
 import { vec } from 'excalibur';
 import { StaggerBashSkill } from '@/game/actions/Riskbreaker/StaggerBash';
 import { AttackSkill } from '@/game/actions/Attack';
+import { HotbarEventComponent } from '@/game/actions/HotbarEvent.component';
 
 export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
@@ -31,21 +32,36 @@ export const RiskbreakerDefault: PartyMember = {
             skillKey: 'staggerBash',
             hotkey: 'right.hotbarDLeft',
             spritePos: vec(1, 4),
-            action: new StaggerBashSkill(),
+            action: (() => {
+                const skill = new StaggerBashSkill();
+                skill.get(HotbarEventComponent).icon = { spritePos: vec(1, 4) };
+                skill.get(HotbarEventComponent).label = 'Stagger Bash';
+                return skill;
+            })(),
         },
         shieldCharge: {
             name: 'Shield Charge',
             skillKey: 'shieldCharge',
             hotkey: 'right.hotbarFLeft',
             spritePos: vec(4, 6),
-            action: new ShieldChargeSkill(),
+            action: (() => {
+                const skill = new ShieldChargeSkill();
+                skill.get(HotbarEventComponent).icon = { spritePos: vec(4, 6) };
+                skill.get(HotbarEventComponent).label = 'Shield Charge';
+                return skill;
+            })(),
         },
         attack: {
             name: 'Attack',
             skillKey: 'attack',
             hotkey: 'right.hotbarFDown',
             spritePos: vec(3, 9),
-            action: new AttackSkill(),
+            action: (() => {
+                const skill = new AttackSkill();
+                skill.get(HotbarEventComponent).icon = { spritePos: vec(3, 9) };
+                skill.get(HotbarEventComponent).label = 'Attack';
+                return skill;
+            })(),
         },
     },
     passives: {

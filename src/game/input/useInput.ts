@@ -68,6 +68,9 @@ function notifyListeners(result: InputMap) {
             const commandKey = convergedCommandMap[key]!.key;
             let idx = listeners.length - 1;
             let consumed: boolean | void = false;
+            if (key === 'movement_left' || key === 'menu_left') {
+                debugger;
+            }
             while (!consumed && idx >= 0) {
                 const listener = listeners[idx--];
                 consumed = listener.cb() ?? true;
@@ -75,6 +78,7 @@ function notifyListeners(result: InputMap) {
                     if (listener.opts.selfRemoving) {
                         unregisterInputListener(listener.id);
                     }
+
                     delete result[commandKey];
                     const collisions = consumeCollisions(result, [commandKey]);
                     // Sync debounce counters for all consumed commands

@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import {
-    captureControls,
-    registerInputListener,
-    unCaptureControls,
-    unregisterInputListener,
-} from '@/game/input/useInput';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { resources } from '@/resource';
-import { SkillMetadata } from '@/state/useParty';
-import { SpriteSheet } from 'excalibur';
-import { nextTick, onMounted, ref, watch } from 'vue';
-import { HotbarKey } from './HotbarSet.vue';
-import { useBattle } from '@/state/battle/useBattle';
+import { SpriteSheet, Vector, ImageSource } from 'excalibur';
+import { onMounted, ref } from 'vue';
 
-type Props = Partial<SkillMetadata> & {
+type HotbarIcon = { spritePos: Vector } | { imageSrc: ImageSource };
+
+type Props = {
+    icon?: HotbarIcon;
+    label?: string;
     focused?: boolean;
 };
 
-const { action, hotkey, spritePos, focused = false } = defineProps<Props>();
-if (spritePos) {
-    const { x: row, y: col } = spritePos;
+const { icon, focused = false } = defineProps<Props>();
+
+const imgContainer = ref<HTMLDivElement>();
+const size = ref((getScale() - 2) * 24);
+
+if (icon && 'spritePos' in icon) {
+    const { x: row, y: col } = icon.spritePos;
     onMounted(async () => {
-        if (row && col) {
+        if (row !== undefined && col !== undefined) {
             const imageEl = await SpriteSheet.fromImageSource({
                 image: resources.image.icons.skills,
                 grid: {
@@ -37,46 +36,6 @@ if (spritePos) {
         }
     });
 }
-
-const imgContainer = ref<HTMLDivElement>();
-const size = ref((getScale() - 2) * 24);
-
-const listeners: string[] = [];
-if (focused) {
-    registerListener();
-}
-
-function registerListener() {
-    if (hotkey && action) {
-        const command = hotkey.split('.')[1] as HotbarKey;
-        listeners.push(
-            registerInputListener(() => {
-                useBattle().getBattleManager().turnManager.removeActiveUnitMenus();
-                nextTick().then(() => {
-                    captureControls('Skill');
-                    action
-                        .activate()
-                        .then(() => {})
-                        .catch(() => {})
-                        .finally(() => {
-                            unCaptureControls();
-                        });
-                });
-            }, command),
-        );
-    }
-}
-
-watch(
-    () => focused,
-    (val) => {
-        if (val) {
-            registerListener();
-        } else {
-            listeners.forEach((l) => unregisterInputListener(l));
-        }
-    },
-);
 </script>
 
 <template>

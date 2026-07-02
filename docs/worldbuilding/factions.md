@@ -43,7 +43,7 @@ The stonecaller sits deliberately outside of any known factions. Their scaleborn
 
 The stonecaller is initially confused by Thurala's geology and flora, but in time their attunement with the earth grows and they commune their way to the Naturalists' enclave.
 
-One more than one occasion, people have mistakenly called the Stonecaller a "flameeater," wondering if their arrival in thurala implies a long-lost myth about people who wed dragons and produced bipedal dragonkin.
+One more than one occasion, people have mistakenly called the Stonecaller a "flameeater," wondering if their arrival in thurala implies a long-lost myth about people who wed dragons and birthed bipedal dragonkin.
 
 Such an evolution would be ridiculous, as the species are wholly incompatible. The stonecaller's actual ancestry dates back so far from common ancestry with dragons that even calling them even distant cousins would be a stretch.
 

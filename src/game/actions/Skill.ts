@@ -1,8 +1,29 @@
 import { BattleActor, useBattle } from '@/state/battle/useBattle';
 import { Entity, vec, Vector } from 'excalibur';
 import { TargetComponent } from './TargetComponent';
+import { HotbarEventComponent } from './HotbarEvent.component';
+import { captureControls, unCaptureControls } from '../input/useInput';
 
 export class Skill extends Entity {
+    constructor() {
+        super();
+        this.addComponent(new HotbarEventComponent());
+    }
+
+    public async activateEvent(): Promise<void> {
+        captureControls('Skill');
+        try {
+            this.preActivate();
+            await this.activate();
+        } finally {
+            unCaptureControls();
+        }
+    }
+
+    protected preActivate(): void {
+        useBattle().getBattleManager().turnManager.removeActiveUnitMenus();
+    }
+
     protected getActiveActor(): BattleActor {
         const battleManager = useBattle().getBattleManager();
         const unit = battleManager.turnManager.activeUnit.value!;
