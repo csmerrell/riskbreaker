@@ -94,4 +94,6 @@ out/
 # Local files
 .user/
 .github/
-.claude/
+
+# Temp files
+tmp/

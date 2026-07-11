@@ -49,6 +49,6 @@
         "SideBeret": "../public/image/units/hat",
         "StonecallerHood": "../public/image/units/hat",
 
-        "StonecallerPendant": "../public/image/units/accessory",
+        "StonecallerPendant": "../public/image/units/accessory"
     }
 }

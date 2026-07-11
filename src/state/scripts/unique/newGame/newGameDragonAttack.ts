@@ -11,7 +11,7 @@ import { PartyMember } from '@/state/useParty';
 const stonecaller = new CompositeActor({
     name: 'stonecaller',
     appearance: {
-        hair: 'stonecallerHood',
+        hair: 'poofyBob',
         armor: 'stonecallerRobe',
     },
     stats: {},

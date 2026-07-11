@@ -1,6 +1,7 @@
 import { ImageSource } from 'excalibur';
-import { hair } from './hair/';
 import { armor } from './armor/';
+import { hair } from './hair/';
+import { hat } from './hat';
 import { unique } from './unique';
 import { weapon } from './weapon';
 import { accessory } from './accessory';
@@ -8,6 +9,7 @@ import { accessory } from './accessory';
 export const units = {
     armor,
     hair,
+    hat,
     unique,
     weapon,
     accessory,

@@ -93,8 +93,8 @@ export const AstrologianDefault: PartyMember = {
         battlePosition: 'left-2',
     },
     appearance: {
-        armor: 'stonecallerRobe',
-        hair: 'dragonBob',
+        armor: 'astrologianCloak',
+        hair: 'tightCurls',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_tome',
