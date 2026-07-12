@@ -37,7 +37,6 @@ export const newGameFirstBattle: GameScript = {
             addEnemy(getWolfDef('mid', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
-            addEnemy(getWolfDef('right-2', 'black'));
             battleMgr.openBattle();
         },
     ],

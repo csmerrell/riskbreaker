@@ -16,51 +16,38 @@ const wolfSpriteMap = {
             [1, 0, 6],
             [2, 0, 4],
             [3, 0, 6],
+            [4, 0, 4],
         ],
     },
     forwardJump: {
-        frames: [[4, 0, 0]],
+        frames: [[3, 1, 0]],
     },
-    attack: {
+    bite: {
         frames: [
-            [5, 0, 2],
-            [0, 1, 1],
-            [1, 1, 1],
-            [2, 1, 2],
-            [3, 1, 1],
-            [4, 1, 1],
-            [5, 1, 0],
+            [0, 0, 2],
+            [4, 2, 4],
+            [5, 2, 4],
         ],
     },
     backJump: {
-        frames: [[0, 3, 0]],
-    },
-    charge: {
-        frames: [
-            [5, 2, 2],
-            [0, 3, 0],
-        ],
+        frames: [[1, 2, 0]],
     },
     preHurt: {
-        frames: [[3, 4, 0]],
+        frames: [[3, 3, 0]],
     },
     hurt: {
         frames: [
             [3, 3, 1],
             [4, 3, 1],
-            [5, 3, 0],
         ],
     },
     weak: {
-        frames: [[0, 4, 0]],
+        frames: [[1, 4, 0]],
     },
     death: {
         frames: [
-            [0, 4, 2],
-            [1, 4, 1],
-            [2, 4, 1],
-            [3, 4, 1],
-            [4, 4, 0],
+            [1, 4, 2],
+            [2, 4, 0],
         ],
     },
 } as const satisfies Record<string, FrameMap>;
@@ -68,27 +55,13 @@ const wolfSpriteMap = {
 export type WolfAnimationKey = keyof typeof wolfSpriteMap;
 
 const WOLF_SPRITESHEET_GRID = {
-    spriteHeight: 32,
+    spriteHeight: 36,
     spriteWidth: 48,
     rows: 5,
     columns: 6,
 };
 export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
-    public static stats: Record<'gray' | 'black', UnitStats> = {
-        black: {
-            hp: 160,
-            currentHp: 160,
-            speed: 14,
-            strength: 12,
-            dexterity: 12,
-            balance: 10,
-            intelligence: 8,
-            wisdom: 8,
-            lucidity: 6,
-            fortitude: 8,
-            mods: emptyStatMods(),
-            effects: {},
-        },
+    public static stats: Record<'gray', UnitStats> = {
         gray: {
             hp: 80,
             currentHp: 160,
@@ -107,7 +80,7 @@ export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
     protected spriteDimensions = WOLF_SPRITESHEET_GRID;
     public battleEntryKey: WolfAnimationKey = 'forwardJump';
 
-    constructor(opts: { palette: 'gray' | 'black' } & ActorArgs) {
+    constructor(opts: { palette: 'gray' } & ActorArgs) {
         super(opts);
         this.offset = vec(0, -4);
 

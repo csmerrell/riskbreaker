@@ -226,6 +226,7 @@ export function unregisterInputListener(id: string) {
                 ([key, val]: [keyof InputMap, InputListener[]]) => {
                     const found = val.findIndex((cb) => cb.id === id);
                     if (found >= 0) {
+                        console.log('Removed Listener with id: ', id);
                         listenerStack[i][key].splice(found, 1);
                     }
 
@@ -234,7 +235,6 @@ export function unregisterInputListener(id: string) {
                     }
                 },
             );
-            break;
         }
     }
 }

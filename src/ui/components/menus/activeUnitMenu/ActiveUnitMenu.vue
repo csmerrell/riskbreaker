@@ -75,14 +75,19 @@ const handleMovement = (direction: 'left' | 'right') => {
 
 let listeners: string[] = [];
 onMounted(async () => {
+    console.log('Should register');
     listeners = [
-        registerHoldListener((inputs) => {
-            if (inputs.shoulder_left || inputs.shoulder_right) {
-                actPressed.value = true;
-            } else {
-                actPressed.value = false;
-            }
-        }),
+        registerInputListener(() => {
+            setTimeout(() => {
+                registerHoldListener((inputs) => {
+                    if (inputs?.shoulder_left || inputs?.shoulder_right) {
+                        actPressed.value = true;
+                    } else {
+                        actPressed.value = false;
+                    }
+                });
+            }, 0);
+        }, ['shoulder_left', 'shoulder_right']),
         registerInputListener(() => {
             if (stockPressed.value) {
                 return;
@@ -107,6 +112,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+    console.log('should unmount: ', listeners);
     listeners.forEach((l) => unregisterInputListener(l));
 });
 </script>
