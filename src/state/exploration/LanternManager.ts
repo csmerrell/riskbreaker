@@ -8,20 +8,19 @@ import {
     unregisterInputListener,
 } from '@/game/input/useInput';
 import { resources } from '@/resource';
-import { Actor, Animation, SpriteSheet, vec } from 'excalibur';
+import { Actor, vec } from 'excalibur';
 import { SceneManager } from '../SceneManager';
 import type { ExplorationManager } from './ExplorationManager';
 
 const RADIAN_TRANSFORM = Math.PI / 180;
 
 export class LanternManager extends SceneManager {
-    private state: 'idle' | 'prep' | 'send' | 'snuff' | 'expire';
-    private raiseAnimation: Animation;
-    private wildcardListener: string;
+    private state: 'idle' | 'prep' | 'send' | 'snuff' | 'expire' = 'idle';
+    private wildcardListener!: string;
     private prepListeners: string[] = [];
     private lantern: Actor;
     private indicator: Actor;
-    private lanternUpdateHandler: () => void;
+    private lanternUpdateHandler!: () => void;
 
     constructor(private parent: ExplorationManager) {
         super({ scene: parent.scene });

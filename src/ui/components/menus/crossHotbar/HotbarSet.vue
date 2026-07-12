@@ -37,30 +37,17 @@ const focused = ref(false);
 const listeners: string[] = [];
 
 // Register gate button listener
-let listenerOverrides: string[] = [];
 listeners.push(
-    registerHoldListener((inputs) => {
-        focused.value = inputs[gateButton] || false;
-        if (focused.value && listenerOverrides.length === 0) {
-            console.log('Registered overrides');
-            listenerOverrides = [
-                registerInputListener(() => {
-                    console.log('doot');
-                }, ['menu_left', 'movement_left', 'menu_right', 'movement_right']),
-            ];
-        } else {
-            uncapture();
-        }
-    }),
+    registerInputListener(() => {
+        captureControls('hotbarSet');
+        registerHoldListener((inputs) => {
+            focused.value = inputs?.[gateButton] ?? false;
+            if (!focused.value) {
+                unCaptureControls();
+            }
+        });
+    }, gateButton),
 );
-
-function uncapture() {
-    console.log('Unregistered overrides');
-    listenerOverrides.forEach((id) => {
-        unregisterInputListener(id);
-    });
-    listenerOverrides = [];
-}
 
 onUnmounted(() => {
     listeners.forEach((l) => unregisterInputListener(l));
@@ -98,21 +85,9 @@ const showFace = computed(() => quads.includes('faceButton'));
             }),
         }"
     >
-        <HotbarQuad
-            v-if="showDpad"
-            :events="dpadEvents"
-            command-set="hotbarD"
-            :focused="focused"
-            @event-activated="uncapture"
-        />
+        <HotbarQuad v-if="showDpad" :events="dpadEvents" command-set="hotbarD" :focused="focused" />
         <div v-if="showDpad && showFace" class="mx-1" />
-        <HotbarQuad
-            v-if="showFace"
-            :events="faceEvents"
-            command-set="hotbarF"
-            :focused="focused"
-            @event-activated="uncapture"
-        />
+        <HotbarQuad v-if="showFace" :events="faceEvents" command-set="hotbarF" :focused="focused" />
     </div>
 </template>
 

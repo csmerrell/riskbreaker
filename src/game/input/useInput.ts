@@ -16,14 +16,9 @@ export function initControls(engine: Engine) {
     initGamepads();
 }
 
-export type InputListenerOptions = {
-    selfRemoving?: boolean;
-};
-
 export type InputListener = {
     id: string;
-    cb: (commands?: InputMap) => boolean | void;
-    opts: InputListenerOptions;
+    cb: (commands?: InputMap) => void;
     registrationOrder: number;
 };
 const stackOwners = ['root'];
@@ -59,34 +54,19 @@ function notifyListeners(result: InputMap) {
             return;
         } else if ((key as '*') === '*') {
             listeners.forEach((listener) => {
-                const shouldRemove = listener.cb(result);
-                if (listener.opts.selfRemoving && shouldRemove) {
-                    unregisterInputListener(listener.id);
-                }
+                listener.cb(result);
             });
         } else if (result[convergedCommandMap[key]!.key]) {
             const commandKey = convergedCommandMap[key]!.key;
-            let idx = listeners.length - 1;
-            let consumed: boolean | void = false;
-            if (key === 'movement_left' || key === 'menu_left') {
-                debugger;
-            }
-            while (!consumed && idx >= 0) {
-                const listener = listeners[idx--];
-                consumed = listener.cb() ?? true;
-                if (consumed) {
-                    if (listener.opts.selfRemoving) {
-                        unregisterInputListener(listener.id);
-                    }
-
-                    delete result[commandKey];
-                    const collisions = consumeCollisions(result, [commandKey]);
-                    // Sync debounce counters for all consumed commands
-                    collisions.forEach((cmd) => {
-                        inputDebounceMap[cmd] = inputDebounceMap[key];
-                    });
-                }
-            }
+            listeners.forEach((listener) => {
+                listener.cb();
+                delete result[commandKey];
+                const collisions = consumeCollisions(result, [commandKey]);
+                // Sync debounce counters for all consumed commands
+                collisions.forEach((cmd) => {
+                    inputDebounceMap[cmd] = inputDebounceMap[key];
+                });
+            });
         }
     });
 
@@ -120,10 +100,7 @@ export function consumeCollisions(inputs: InputMap, commands: MappedCommand[]): 
 
 function notifyHoldListeners(result: InputMap) {
     currentListeners()['all']?.forEach((listener) => {
-        const shouldRemove = listener.cb(result);
-        if (listener.opts.selfRemoving && shouldRemove) {
-            unregisterInputListener(listener.id);
-        }
+        listener.cb(result);
     });
 }
 
@@ -197,11 +174,7 @@ export function suspendInputs() {
     };
 }
 
-export function registerInputListener(
-    cb: () => boolean | void,
-    command: MappedCommand | MappedCommand[],
-    opts: InputListenerOptions = {},
-) {
+export function registerInputListener(cb: () => void, command: MappedCommand | MappedCommand[]) {
     const id = nanoid(16);
     const registrationOrder = ++registrationCounter;
     (Array.isArray(command) ? command : [command]).forEach((arg) => {
@@ -215,7 +188,6 @@ export function registerInputListener(
             {
                 id,
                 cb,
-                opts,
                 registrationOrder,
             },
         ];
@@ -223,10 +195,7 @@ export function registerInputListener(
     return id;
 }
 
-export function registerWildcardListener(
-    cb: (commands: InputMap) => void,
-    opts: InputListenerOptions = {},
-) {
+export function registerWildcardListener(cb: (commands: InputMap) => void) {
     const id = nanoid(16);
     const registrationOrder = ++registrationCounter;
     currentListeners()['*'] = [
@@ -234,22 +203,18 @@ export function registerWildcardListener(
         {
             id,
             cb: cb as () => boolean,
-            opts,
             registrationOrder,
         },
     ];
     return id;
 }
 
-export function registerHoldListener(
-    cb: (commands: InputMap) => void,
-    opts: InputListenerOptions = {},
-) {
+export function registerHoldListener(cb: (commands?: InputMap) => void) {
     const id = nanoid(16);
     const registrationOrder = ++registrationCounter;
     currentListeners()['all'] = [
         ...(currentListeners()['all'] ?? []),
-        { id, cb, opts, registrationOrder },
+        { id, cb, registrationOrder },
     ];
     return id;
 }
