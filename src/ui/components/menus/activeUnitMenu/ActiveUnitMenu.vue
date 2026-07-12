@@ -75,7 +75,6 @@ const handleMovement = (direction: 'left' | 'right') => {
 
 let listeners: string[] = [];
 onMounted(async () => {
-    console.log('Should register');
     listeners = [
         registerInputListener(() => {
             setTimeout(() => {
@@ -112,7 +111,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    console.log('should unmount: ', listeners);
     listeners.forEach((l) => unregisterInputListener(l));
 });
 </script>

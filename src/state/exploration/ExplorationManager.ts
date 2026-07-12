@@ -11,7 +11,7 @@ import { CameraManager } from './CameraManager';
 import { ActorManager } from './ActorManager';
 import { CampManager } from './CampManager';
 import { BattleManager } from '../battle/BattleManager';
-import { captureControls, registerInputListener } from '@/game/input/useInput';
+import { captureControls } from '@/game/input/useInput';
 
 export class ExplorationManager extends SceneManager {
     public playerTileCoord = makeState<Vector>();

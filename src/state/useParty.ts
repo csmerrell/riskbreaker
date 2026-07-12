@@ -84,7 +84,7 @@ async function loadParty() {
     try {
         const { party } = (await docManager.tryGet<PartyState>('_local/settings')) as PartyState;
         partyState.value = {
-            party: party ?? [RiskbreakerDefault, AstrologianDefault],
+            party: party ?? [AstrologianDefault, RiskbreakerDefault],
         };
     } catch (_e) {
         await saveParty();

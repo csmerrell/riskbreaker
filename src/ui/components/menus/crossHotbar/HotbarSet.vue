@@ -5,7 +5,6 @@ import { PartyMember } from '@/state/useParty';
 import { getScale } from '@/lib/helpers/screen.helper';
 import {
     captureControls,
-    getCurrentOwner,
     registerHoldListener,
     registerInputListener,
     unCaptureControls,

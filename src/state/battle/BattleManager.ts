@@ -41,9 +41,6 @@ function getPositionInLane(
         idxInLane: number;
     },
 ) {
-    console.log('numInLane', opts.numInLane);
-    console.log('idxInLane', opts.idxInLane);
-    console.log('resolved: ', LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane]);
     return LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane];
 }
 
