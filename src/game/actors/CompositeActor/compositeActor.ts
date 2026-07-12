@@ -6,10 +6,9 @@ import {
     SpriteGridOptions,
     type AnimationKey,
 } from '@/resource/image/units/spriteMap';
-import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
+import { AccessoryType, ArmorType, HairType, HatType, WeaponType } from '@/resource/image/units';
 import { progressShader } from '@/lib/helpers/shader.helper';
 import { VFXKey, VFXLayer } from './VFXLayer';
-import { Animator } from '../Animation/Animator';
 import { PartyMember } from '@/state/useParty';
 import { HealthComponent } from '../Battle/Health.component';
 
@@ -19,13 +18,15 @@ export type CompositeSpriteLayers =
     | 'mainHand'
     | 'offHand'
     | 'accessory'
-    | 'mannequin';
+    | 'mannequin'
+    | 'hat';
 export type CompositeActorConfig = {
     armor?: ArmorType;
     mainHand?: WeaponType;
     offHand?: WeaponType;
     hair?: HairType;
     accessory?: AccessoryType;
+    hat?: HatType;
 };
 
 export function isCompositeActor(a: Actor): a is CompositeActor {
@@ -41,6 +42,7 @@ export class CompositeActor extends Actor {
     private mainHand: CompositeLayer[] = [];
     private offHand: CompositeLayer[] = [];
     private armor?: CompositeLayer;
+    private hat?: CompositeLayer;
     private hair?: CompositeLayer;
     private accessory?: CompositeLayer;
     private currentAnimationKey: AnimationKey = 'static';
@@ -55,6 +57,7 @@ export class CompositeActor extends Actor {
             offHand: offHandKey,
             hair: hairKey,
             accessory: accessoryKey,
+            hat: hatKey,
         } = appearance;
 
         this.equipLayer({ key: 'mannequin', type: 'mannequin', ...excalOpts });
@@ -75,6 +78,9 @@ export class CompositeActor extends Actor {
         if (accessoryKey) {
             this.equipLayer({ key: accessoryKey, type: 'accessory', ...excalOpts });
         }
+        if (hatKey) {
+            this.equipLayer({ key: hatKey, type: 'hat', ...excalOpts });
+        }
 
         this.addComponent(new HealthComponent({ max: stats.hp, current: stats.currentHp }));
     }
@@ -94,6 +100,7 @@ export class CompositeActor extends Actor {
             ...(this.hair ? [this.hair.isLoaded()] : []),
             ...(this.armor ? [this.armor.isLoaded()] : []),
             ...(this.accessory ? [this.accessory.isLoaded()] : []),
+            ...(this.hat ? [this.hat.isLoaded()] : []),
             ...this.mainHand.map((mh) => mh.isLoaded()),
             ...this.offHand.map((oh) => oh.isLoaded()),
             ...(this.mannequin ? [this.mannequin.isLoaded()] : []),
@@ -148,6 +155,9 @@ export class CompositeActor extends Actor {
     public equipLayer(opts: ActorArgs & CompositeSpriteMapping & { isBack?: boolean }) {
         const layer = new CompositeLayer(opts);
         switch (opts.type) {
+            case 'hat':
+                layer.z = 7;
+                break;
             case 'hair':
                 layer.z = 6;
                 break;
@@ -182,7 +192,7 @@ export class CompositeActor extends Actor {
     }
 
     private suppressMovementAnimation: boolean = false;
-    private flatKeys = ['mannequin', 'armor', 'hair', 'accessory'] as const;
+    private flatKeys = ['mannequin', 'armor', 'hair', 'accessory', 'hat'] as const;
     private arrayKeys = ['mainHand', 'offHand'] as const;
     private allLayers() {
         return [

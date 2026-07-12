@@ -26,8 +26,8 @@ const activeView = useGameContext().activeView;
             class="fixed bottom-4 left-4 z-50"
             :gate-button="'shoulder_left'"
             :quads="['faceButton']"
-            side="right"
             :unit="AstrologianDefault"
+            side="right"
         />
     </div>
 </template>

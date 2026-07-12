@@ -20,4 +20,5 @@ export type AccessoryType = keyof typeof accessory;
 export type HairType = keyof typeof hair;
 export type WeaponType = keyof typeof weapon;
 export type ArmorType = keyof typeof armor;
+export type HatType = keyof typeof hat;
 export type SpriteSourceKey = 'mannequin' | ArmorType | WeaponType | AccessoryType | HairType;

@@ -18,7 +18,7 @@ import {
     Shader,
 } from 'excalibur';
 import { CompositeSpriteLayers } from './CompositeActor';
-import { AccessoryType, ArmorType, HairType, WeaponType } from '@/resource/image/units';
+import { AccessoryType, ArmorType, HairType, HatType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
 import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import { ReadyComponent } from '../ReadyComponent';
@@ -48,6 +48,10 @@ export type CompositeSpriteMapping = {
     | {
           type: 'accessory';
           key: AccessoryType;
+      }
+    | {
+          type: 'hat';
+          key: HatType;
       }
     | {
           type: 'mannequin';
@@ -88,6 +92,9 @@ export class CompositeLayer extends Actor {
                 break;
             case 'accessory':
                 src = resources.image.units.accessory[key];
+                break;
+            case 'hat':
+                src = resources.image.units.hat[key];
                 break;
             case 'mannequin':
             default:

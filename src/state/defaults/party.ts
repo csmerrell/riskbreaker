@@ -17,10 +17,11 @@ export const RiskbreakerDefault: PartyMember = {
         leader: false,
     },
     appearance: {
-        armor: 'riskbreakerLeathers',
+        armor: 'minstrelCoat',
         mainHand: 'sword',
         offHand: 'shield',
-        hair: 'shortMessy',
+        hair: 'throwback_Black',
+        hat: 'plumedHat',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_scimitar',
@@ -95,7 +96,8 @@ export const AstrologianDefault: PartyMember = {
     },
     appearance: {
         armor: 'astrologianCloak',
-        hair: 'tightCurls',
+        hair: 'moodBangs_Hat',
+        hat: 'sageHat',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_tome',

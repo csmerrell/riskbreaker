@@ -5,6 +5,7 @@ import { resources } from '@/resource';
 import { ReadyComponent } from '../ReadyComponent';
 import { Animator } from '../Animation/Animator';
 import { emptyStatMods, UnitStats } from '@/state/battle/UnitStats';
+import { HealthComponent } from '../Battle/Health.component';
 
 const wolfSpriteMap = {
     static: {
@@ -32,13 +33,13 @@ const wolfSpriteMap = {
     backJump: {
         frames: [[1, 2, 0]],
     },
-    preHurt: {
+    hurt: {
         frames: [[3, 3, 0]],
     },
-    hurt: {
+    hurtEnd: {
         frames: [
-            [3, 3, 1],
-            [4, 3, 1],
+            [4, 3, 3],
+            [0, 0, 0],
         ],
     },
     weak: {
@@ -94,6 +95,9 @@ export class Wolf extends KeyedAnimationActor<WolfAnimationKey> {
                 WOLF_SPRITESHEET_GRID,
                 this.get(ReadyComponent),
             ),
+        );
+        this.addComponent(
+            new HealthComponent({ max: Wolf.stats.gray.hp, offset: vec(0, -36), width: 76 }),
         );
     }
 
