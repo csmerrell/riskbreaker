@@ -1,14 +1,9 @@
-<script setup lang="ts">
-import { getScale } from '@/lib/helpers/screen.helper';
-import { ref } from 'vue';
-
-const width = ref((getScale() - 2) * 24);
-</script>
+<script setup lang="ts"></script>
 
 <template>
     <div
-        class="hotbar-name absolute z-10 pb-1 text-center text-sm text-white"
-        :style="{ top: 'calc(100% + 2px)', width: `${width}px` }"
+        class="hotbar-name absolute left-1/2 z-10 -translate-x-1/2 text-nowrap pb-1 text-sm text-white"
+        :style="{ top: 'calc(100% + 2px)' }"
     >
         <slot />
     </div>

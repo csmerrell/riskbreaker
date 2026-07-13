@@ -1,9 +1,9 @@
-import { Skill } from './Skill';
+import { Skill, SkillConfig } from './Skill';
 import { TargetComponent } from './TargetComponent';
 
 export class AttackSkill extends Skill {
-    constructor() {
-        super();
+    constructor(cfg: SkillConfig) {
+        super(cfg);
         this.addComponent(
             new TargetComponent({
                 targetTypes: ['enemy', 'ally'],

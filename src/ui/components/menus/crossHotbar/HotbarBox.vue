@@ -1,39 +1,34 @@
 <script setup lang="ts">
 import { getScale } from '@/lib/helpers/screen.helper';
-import { resources } from '@/resource';
-import { SpriteSheet, Vector, ImageSource } from 'excalibur';
 import { onMounted, ref } from 'vue';
-
-type HotbarIcon = { spritePos: Vector } | { imageSrc: ImageSource };
+import { useIcons } from './useIcons';
 
 type Props = {
-    icon?: HotbarIcon;
-    label?: string;
-    focused?: boolean;
+    type: 'skill' | 'menu';
+    col?: number;
+    row?: number;
 };
 
-const { icon, focused = false } = defineProps<Props>();
+const { type, col, row } = defineProps<Props>();
 
 const imgContainer = ref<HTMLDivElement>();
-const size = ref((getScale() - 2) * 24);
+const size = ref((getScale() - 2) * (type === 'skill' ? 24 : 32));
 
-if (icon && 'spritePos' in icon) {
-    const { x: row, y: col } = icon.spritePos;
+if (col !== undefined && row !== undefined) {
     onMounted(async () => {
-        if (row !== undefined && col !== undefined) {
-            const imageEl = await SpriteSheet.fromImageSource({
-                image: resources.image.icons.skills,
-                grid: {
-                    spriteHeight: 24,
-                    spriteWidth: 24,
-                    rows: 6,
-                    columns: 10,
-                },
-            }).getSpriteAsImage(col, row);
-            imageEl.style.setProperty('width', `${size.value}px`);
-            imageEl.style.setProperty('height', `${size.value}px`);
-            imgContainer.value?.appendChild(imageEl);
+        let imageEl: HTMLImageElement;
+        switch (type) {
+            case 'skill':
+                imageEl = await useIcons().getSkillIcon(col, row);
+                break;
+            case 'menu':
+            default:
+                imageEl = await useIcons().getMenuIcon(col, row);
+                break;
         }
+        imageEl.style.setProperty('width', `${size.value}px`);
+        imageEl.style.setProperty('height', `${size.value}px`);
+        imgContainer.value?.appendChild(imageEl);
     });
 }
 </script>

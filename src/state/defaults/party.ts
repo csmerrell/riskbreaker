@@ -1,13 +1,57 @@
 import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
-import { PartyMember } from '../useParty';
+import { PartyMember, SkillMetadata } from '../useParty';
 import { nanoid } from 'nanoid';
 import { emptyStatMods } from '../battle/UnitStats';
 import { ShieldChargeSkill } from '@/game/actions/Riskbreaker/ShieldCharge';
 import { vec } from 'excalibur';
 import { StaggerBashSkill } from '@/game/actions/Riskbreaker/StaggerBash';
 import { AttackSkill } from '@/game/actions/Attack';
-import { HotbarEventComponent } from '@/game/actions/HotbarEvent.component';
+import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 
+const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
+    staggerBash: {
+        name: 'Stagger Bash',
+        skillKey: 'staggerBash',
+        spritePos: vec(1, 4),
+        action: (() => {
+            const skill = new StaggerBashSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconPos: vec(1, 4),
+                    label: 'Stagger Bash',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    shieldCharge: {
+        name: 'Shield Charge',
+        skillKey: 'shieldCharge',
+        spritePos: vec(4, 6),
+        action: (() => {
+            const skill = new ShieldChargeSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconPos: vec(4, 6),
+                    label: 'Shield Charge',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    attack: {
+        name: 'Attack',
+        skillKey: 'attack',
+        spritePos: vec(3, 9),
+        action: (() => {
+            const skill = new AttackSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconPos: vec(3, 9),
+                    label: 'Attack',
+                }),
+            });
+            return skill;
+        })(),
+    },
+};
 export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
     alignment: 'ally',
@@ -17,57 +61,23 @@ export const RiskbreakerDefault: PartyMember = {
         leader: false,
     },
     appearance: {
-        armor: 'minstrelCoat',
+        armor: 'riskbreakerLeathers',
         mainHand: 'sword',
         offHand: 'shield',
-        hair: 'throwback_Black',
-        hat: 'plumedHat',
+        hair: 'shortMessy',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_scimitar',
         offHand: 'worn_buckler',
     },
-    abilities: {
-        staggerBash: {
-            name: 'Stagger Bash',
-            skillKey: 'staggerBash',
-            hotkey: 'right.hotbarDLeft',
-            spritePos: vec(1, 4),
-            action: (() => {
-                const skill = new StaggerBashSkill();
-                skill.get(HotbarEventComponent).icon = { spritePos: vec(1, 4) };
-                skill.get(HotbarEventComponent).label = 'Stagger Bash';
-                return skill;
-            })(),
+    abilities: RiskbreakerDefaultAbilities,
+    equippedAbilities: {
+        dPad: {
+            up: RiskbreakerDefaultAbilities.staggerBash.action,
         },
-        shieldCharge: {
-            name: 'Shield Charge',
-            skillKey: 'shieldCharge',
-            hotkey: 'right.hotbarFLeft',
-            spritePos: vec(4, 6),
-            action: (() => {
-                const skill = new ShieldChargeSkill();
-                skill.get(HotbarEventComponent).icon = { spritePos: vec(4, 6) };
-                skill.get(HotbarEventComponent).label = 'Shield Charge';
-                return skill;
-            })(),
-        },
-        attack: {
-            name: 'Attack',
-            skillKey: 'attack',
-            hotkey: 'right.hotbarFDown',
-            spritePos: vec(3, 9),
-            action: (() => {
-                const skill = new AttackSkill();
-                skill.get(HotbarEventComponent).icon = { spritePos: vec(3, 9) };
-                skill.get(HotbarEventComponent).label = 'Attack';
-                return skill;
-            })(),
-        },
-    },
-    passives: {
-        challengeTheOdds: {
-            name: 'Challenge the Odds',
+        faceButton: {
+            down: RiskbreakerDefaultAbilities.attack.action,
+            left: RiskbreakerDefaultAbilities.shieldCharge.action,
         },
     },
     stats: {
@@ -83,6 +93,21 @@ export const RiskbreakerDefault: PartyMember = {
         fortitude: 8,
         mods: emptyStatMods(),
         effects: {},
+    },
+};
+
+const AstrologianDefaultAbilities: Record<string, SkillMetadata> = {
+    starflash: {
+        name: 'Starflash',
+        skillKey: 'starflash',
+    },
+    compress: {
+        name: 'Compress',
+        skillKey: 'compress',
+    },
+    pulse: {
+        name: 'Pulse',
+        skillKey: 'pulse',
     },
 };
 
@@ -102,26 +127,14 @@ export const AstrologianDefault: PartyMember = {
     equipment: {
         mainHand: 'worn_tome',
     },
-    abilities: {
-        starflash: {
-            name: 'Starflash',
-            skillKey: 'starflash',
-            hotkey: 'right.hotbarDLeft',
+    abilities: AstrologianDefaultAbilities,
+    equippedAbilities: {
+        dPad: {
+            down: AstrologianDefaultAbilities.starflash.action,
         },
-        compress: {
-            name: 'Compress',
-            skillKey: 'compress',
-            hotkey: 'right.hotbarFDown',
-        },
-        pulse: {
-            name: 'Pulse',
-            skillKey: 'pulse',
-            hotkey: 'right.hotbarFRight',
-        },
-    },
-    passives: {
-        distillLight: {
-            name: 'Distill Light',
+        faceButton: {
+            down: AstrologianDefaultAbilities.pulse.action,
+            left: AstrologianDefaultAbilities.compress.action,
         },
     },
     stats: {

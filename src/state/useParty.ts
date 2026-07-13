@@ -6,18 +6,18 @@ import { AstrologianDefault, RiskbreakerDefault } from './defaults/party';
 import { UnitStats } from './battle/UnitStats';
 import { HotbarKey } from '@/ui/components/menus/crossHotbar/HotbarSet.vue';
 import { Entity, Vector } from 'excalibur';
+import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
-export type HotkeyString = `${'right' | 'left'}.${HotbarKey}`;
+export type HotkeyString = `${HotbarKey}`;
 
 export type SkillMetadata = {
     name: string;
     skillKey: string;
-    hotkey?: HotkeyString;
     spritePos?: Vector;
     action?: Entity & {
-        activate: () => Promise<void>;
+        activate: () => Promise<unknown>;
     };
 };
 export type PartyMember = {
@@ -31,7 +31,10 @@ export type PartyMember = {
     appearance: CompositeActorConfig;
     equipment: Partial<Record<EquipmentSlotKey, StaticEquipmentKey>>;
     abilities: Record<string, SkillMetadata>;
-    passives: Record<string, unknown>;
+    equippedAbilities: {
+        dPad: QuadEvents;
+        faceButton: QuadEvents;
+    };
     stats: UnitStats;
 };
 
@@ -84,7 +87,7 @@ async function loadParty() {
     try {
         const { party } = (await docManager.tryGet<PartyState>('_local/settings')) as PartyState;
         partyState.value = {
-            party: party ?? [AstrologianDefault, RiskbreakerDefault],
+            party: party ?? [RiskbreakerDefault, AstrologianDefault],
         };
     } catch (_e) {
         await saveParty();

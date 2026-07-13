@@ -1,13 +1,18 @@
 import { BattleActor, useBattle } from '@/state/battle/useBattle';
 import { Entity, vec, Vector } from 'excalibur';
 import { TargetComponent } from './TargetComponent';
-import { HotbarEventComponent } from './HotbarEvent.component';
 import { captureControls, unCaptureControls } from '../input/useInput';
+import type { HotbarActionComponent } from './HotbarAction.component';
+
+export type SkillConfig = {
+    hotbarActionComponent: HotbarActionComponent;
+};
 
 export class Skill extends Entity {
-    constructor() {
+    constructor(cfg: SkillConfig) {
         super();
-        this.addComponent(new HotbarEventComponent());
+
+        this.addComponent(cfg.hotbarActionComponent);
     }
 
     public async activateEvent(): Promise<void> {
@@ -60,7 +65,6 @@ export class Skill extends Entity {
             z = Math.max(z, t.z + 1);
         });
 
-        //get midpoint
         return {
             targets,
             midPoint,
@@ -69,7 +73,7 @@ export class Skill extends Entity {
         };
     }
 
-    public async activate(): Promise<void> {
+    public async activate(): Promise<unknown> {
         throw new Error(
             'Generic skill.activate was called. It must be implemented by the inheriting class.',
         );

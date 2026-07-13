@@ -1,5 +1,5 @@
 import { TargetComponent } from '../TargetComponent';
-import { Skill } from '../Skill';
+import { Skill, SkillConfig } from '../Skill';
 import { Actor, EasingFunctions, vec } from 'excalibur';
 import { useGameContext } from '@/state/useGameContext';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
@@ -13,8 +13,8 @@ export class ShieldChargeSkill extends Skill {
     private ctCost: number = 80;
     private potency: number = 10;
 
-    constructor() {
-        super();
+    constructor(cfg: SkillConfig) {
+        super(cfg);
         this.addComponent(
             new TargetComponent({
                 targetPriority: 'enemy',

@@ -32,8 +32,11 @@ defineOptions({ inheritAttrs: false });
         class="cross-hotbar left-[4.5rem] flex -translate-y-full flex-row items-end justify-end gap-4 self-center rounded-lg p-4"
         :style="computedStyles"
     >
-        <HotbarSet side="left" gate-button="shoulder_left" :unit />
-        <div class="h-16 border-l border-bg-alt" />
-        <HotbarSet side="right" gate-button="shoulder_right" :unit />
+        <HotbarSet
+            icon-type="skill"
+            gate-button="shoulder_right"
+            captures-controls
+            :actions="unit.equippedAbilities"
+        />
     </div>
 </template>

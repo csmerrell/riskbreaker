@@ -6,7 +6,7 @@ import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { nanoid } from 'nanoid';
 import { LaneKey } from '@/state/useParty';
 
-function getWolfDef(position: LaneKey, palette: 'gray' | 'black'): EnemyDef {
+function getWolfDef(position: LaneKey, palette: 'gray'): EnemyDef {
     return {
         id: nanoid(16),
         name: 'Wolf',

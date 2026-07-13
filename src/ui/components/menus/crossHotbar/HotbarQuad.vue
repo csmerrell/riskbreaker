@@ -4,10 +4,11 @@ import { Entity } from 'excalibur';
 import HotbarBox from './HotbarBox.vue';
 import HotbarName from './HotbarName.vue';
 import StyledGamepadIcon from './StyledGamepadIcon.vue';
-import { HotbarEventComponent } from '@/game/actions/HotbarEvent.component';
+import { HotbarActionComponent } from '@/game/actions/HotbarAction.component.js';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import { IconType } from './HotbarSet.vue';
 
-type QuadEvents = {
+export type QuadEvents = {
     up?: Entity;
     down?: Entity;
     left?: Entity;
@@ -17,13 +18,13 @@ type QuadEvents = {
 type CommandSet = 'hotbarD' | 'hotbarF';
 
 type Props = {
+    iconType: IconType;
     events: QuadEvents;
     commandSet: CommandSet;
     focused: boolean;
-    isLightweight?: boolean;
 };
 
-const { events, commandSet, focused } = defineProps<Props>();
+const { iconType, events, commandSet, focused } = defineProps<Props>();
 
 const centerIcon = computed<'dpad' | 'faceButtons'>(() =>
     commandSet === 'hotbarD' ? 'dpad' : 'faceButtons',
@@ -31,10 +32,10 @@ const centerIcon = computed<'dpad' | 'faceButtons'>(() =>
 
 // Extract event data for boxes
 const boxes = computed(() => ({
-    up: events.up?.get(HotbarEventComponent),
-    down: events.down?.get(HotbarEventComponent),
-    left: events.left?.get(HotbarEventComponent),
-    right: events.right?.get(HotbarEventComponent),
+    up: events.up?.get(HotbarActionComponent),
+    down: events.down?.get(HotbarActionComponent),
+    left: events.left?.get(HotbarActionComponent),
+    right: events.right?.get(HotbarActionComponent),
 }));
 
 // Input management
@@ -59,7 +60,7 @@ function registerListeners() {
                 | 'hotbarFRight';
             listeners.push(
                 registerInputListener(() => {
-                    const component = event.get(HotbarEventComponent);
+                    const component = event.get(HotbarActionComponent);
                     emit('eventActivated');
                     component.activateEvent();
                 }, command),
@@ -95,28 +96,36 @@ onUnmounted(() => {
 <template>
     <div class="hotbar-quad flex flex-row items-center gap-1">
         <div class="relative">
-            <HotbarBox :icon="boxes.left?.icon" :label="boxes.left?.label" :focused />
+            <HotbarBox :type="iconType" :row="boxes.left?.iconPos.y" :col="boxes.left?.iconPos.x" />
             <HotbarName v-if="boxes.left && focused">
                 {{ boxes.left.label }}
             </HotbarName>
         </div>
         <div class="flex flex-col items-center gap-2">
             <div class="relative">
-                <HotbarBox :icon="boxes.up?.icon" :label="boxes.up?.label" :focused />
+                <HotbarBox :type="iconType" :row="boxes.up?.iconPos.y" :col="boxes.up?.iconPos.x" />
                 <HotbarName v-if="boxes.up && focused">
                     {{ boxes.up.label }}
                 </HotbarName>
             </div>
             <StyledGamepadIcon v-if="focused" :icon="centerIcon" />
             <div class="relative">
-                <HotbarBox :icon="boxes.down?.icon" :label="boxes.down?.label" :focused />
+                <HotbarBox
+                    :type="iconType"
+                    :row="boxes.down?.iconPos.y"
+                    :col="boxes.down?.iconPos.x"
+                />
                 <HotbarName v-if="boxes.down && focused">
                     {{ boxes.down.label }}
                 </HotbarName>
             </div>
         </div>
         <div class="relative">
-            <HotbarBox :icon="boxes.right?.icon" :label="boxes.right?.label" :focused />
+            <HotbarBox
+                :type="iconType"
+                :row="boxes.right?.iconPos.y"
+                :col="boxes.right?.iconPos.x"
+            />
             <HotbarName v-if="boxes.right && focused">
                 {{ boxes.right.label }}
             </HotbarName>
