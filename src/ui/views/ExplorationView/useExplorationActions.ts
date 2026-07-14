@@ -1,5 +1,6 @@
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 import { resources } from '@/resource';
+import { useExploration } from '@/state/useExploration';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
 import { Entity, vec, type Vector } from 'excalibur';
 import { ref } from 'vue';
@@ -29,7 +30,7 @@ export function useExplorationActions() {
                 iconPos: vec(1, 0),
                 label: 'Floating Lantern',
                 action: async () => {
-                    console.log('PAPER LANTERN');
+                    useExploration().getExplorationManager().lanternManager.prepLantern();
                 },
             }),
         );
@@ -66,12 +67,10 @@ export function useExplorationActions() {
         resources.image.icons.menu.load().then(() => {
             bindActions();
             ready.value = true;
-            console.log('is ready');
         });
     } else {
         bindActions();
         ready.value = true;
-        console.log('was already ready');
     }
 
     const setDynamicAction = (

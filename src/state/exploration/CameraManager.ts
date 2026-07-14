@@ -33,13 +33,28 @@ export class CameraManager extends SceneManager {
         this.lockToActor(actor);
     }
 
-    public lockToActor(actor: Actor): void {
+    private setTarget(actor: Actor) {
         this.currentTarget = actor;
 
         // If camera position is NaN, manually initialize it to the actor's position
         // This happens during scene initialization before ExcaliburJS has run its first update
         if (actor && (isNaN(this.scene.camera.x) || isNaN(this.scene.camera.y))) {
             this.scene.camera.pos = actor.pos.clone();
+        }
+    }
+
+    public async moveToActor(actor: Actor, duration: number) {
+        if (this.lockStrategy) {
+            this.scene.camera.removeStrategy(this.lockStrategy);
+        }
+        this.setTarget(actor);
+        return this.scene.camera.move(actor.pos, duration);
+    }
+
+    public lockToActor(actor: Actor): void {
+        this.setTarget(actor);
+        if (this.lockStrategy) {
+            this.scene.camera.removeStrategy(this.lockStrategy);
         }
 
         this.lockStrategy = new LockCameraToActorStrategy(actor);
