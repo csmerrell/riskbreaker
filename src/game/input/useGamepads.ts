@@ -29,11 +29,24 @@ export const axisMap: Record<
     (polledAxisValue: number, siblingAxisValue: number) => MappedCommand[]
 > = {
     [Axes.LeftStickX]: (polledAxisValue: number, siblingAxisValue: number) => {
-        if (polledAxisValue > 0.3) {
+        if (polledAxisValue > 0.5) {
+            /** TODO:
+             * Right now, analog stick movement is mutually exclusive. An angle is either right OR down OR up.
+             * Ideally, we'd have a primary direction and a secondary direction, that way map movement can say
+             * if(primaryDirectionValid) movePrimaryDirection
+             * else if (secondaryDirection && secondaryDirectionValid) moveSecondaryDirection
+             *
+             * Currently, 0.5 value threshold produces four 90degree quadrants.
+             * Example, assuming [45,-45] is the correct orientation for the right quadrant:
+             *  [45, -45] > Right,
+             *  [-45, -135] > Down,
+             *  [45, 135] > Up,
+             *  [135, -135] > Left
+             * */
             return Math.abs(polledAxisValue) < Math.abs(siblingAxisValue)
                 ? ['movement_right']
                 : ['menu_right', 'movement_right'];
-        } else if (polledAxisValue < -0.3) {
+        } else if (polledAxisValue < -0.5) {
             return Math.abs(polledAxisValue) < Math.abs(siblingAxisValue)
                 ? ['movement_left']
                 : ['menu_left', 'movement_left'];
@@ -42,11 +55,11 @@ export const axisMap: Record<
         }
     },
     [Axes.LeftStickY]: (polledAxisValue: number, siblingAxisValue: number) => {
-        if (polledAxisValue > 0.3) {
+        if (polledAxisValue > 0.5) {
             return Math.abs(polledAxisValue) < Math.abs(siblingAxisValue)
                 ? ['movement_down']
                 : ['menu_down', 'movement_down'];
-        } else if (polledAxisValue < -0.3) {
+        } else if (polledAxisValue < -0.5) {
             return Math.abs(polledAxisValue) < Math.abs(siblingAxisValue)
                 ? ['movement_up']
                 : ['menu_up', 'movement_up'];
