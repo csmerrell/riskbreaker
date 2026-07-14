@@ -8,11 +8,9 @@ import { useInput } from '@/game/input/useInput';
 import { useGameContext } from '@/state/useGameContext.js';
 import { useExplorationActions } from './useExplorationActions.js';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
-import { resources } from '@/resource/index.js';
-import { useIcons } from '@/ui/components/menus/crossHotbar/useIcons.js';
 import ExplorationAction from './ExplorationAction.vue';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
-import MenuBox from '@/ui/components/MenuBox.vue';
+import PartyMenuView from '../PartyMenu/PartyMenuView.vue';
 
 const { stackOwner } = useInput();
 
@@ -78,5 +76,6 @@ watch(activeView, () => {
             </div>
             <ExplorationAction :action="getInventoryAction()" command="context_menu_1" />
         </div>
+        <PartyMenuView v-if="activeView === 'party-menu'" />
     </div>
 </template>

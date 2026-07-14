@@ -1,6 +1,7 @@
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 import { resources } from '@/resource';
 import { useExploration } from '@/state/useExploration';
+import { useGameContext } from '@/state/useGameContext';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
 import { Entity, vec, type Vector } from 'excalibur';
 import { ref } from 'vue';
@@ -20,7 +21,7 @@ export function useExplorationActions() {
                 iconPos: vec(7, 0),
                 label: '',
                 action: async () => {
-                    console.log('INVENTORY');
+                    useExploration().getExplorationManager().partyMenuManager.open();
                 },
             }),
         );

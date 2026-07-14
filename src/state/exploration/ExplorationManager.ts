@@ -10,6 +10,7 @@ import { MapManager } from './MapManager';
 import { CameraManager } from './CameraManager';
 import { ActorManager } from './ActorManager';
 import { CampManager } from './CampManager';
+import { PartyMenuManager } from './PartyMenuManager';
 import { BattleManager } from '../battle/BattleManager';
 import { captureControls } from '@/game/input/useInput';
 
@@ -23,6 +24,7 @@ export class ExplorationManager extends SceneManager {
     public campManager: CampManager;
     public lanternManager: LanternManager;
     public bonfireManager: BonfireManager;
+    public partyMenuManager: PartyMenuManager;
 
     constructor(opts: SceneManagerOpts) {
         super(opts);
@@ -35,6 +37,7 @@ export class ExplorationManager extends SceneManager {
         this.lanternManager = new LanternManager(this);
         this.bonfireManager = new BonfireManager(this);
         this.battleManager = new BattleManager(this);
+        this.partyMenuManager = new PartyMenuManager(this);
     }
 
     public initialize() {
