@@ -78,7 +78,7 @@ export class LanternManager extends SceneManager {
     private async returnCameraToPlayer() {
         const leader = this.parent.actorManager.getLeader();
         const distance = this.lantern.pos.distance(leader.pos);
-        const duration = (distance / 300) * 1000; // 1s per 300 pixels
+        const duration = (distance / 500) * 1000; // 1s per 500 pixels
 
         return this.parent.cameraManager.moveToActor(leader, duration).then(() => {
             this.parent.cameraManager.lockToActor(leader);

@@ -14,12 +14,17 @@ export function useExplorationActions() {
     const ready = ref(false);
 
     const getInventoryAction = () => {
-        return {
-            iconPos: vec(7, 0),
-            action: async () => {
-                console.log('INVENTORY');
-            },
-        };
+        const action = new Entity();
+        action.addComponent(
+            new HotbarActionComponent({
+                iconPos: vec(7, 0),
+                label: '',
+                action: async () => {
+                    console.log('INVENTORY');
+                },
+            }),
+        );
+        return action;
     };
 
     const dynamicActions = ref<QuadEvents>({});

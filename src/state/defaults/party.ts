@@ -12,11 +12,10 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     staggerBash: {
         name: 'Stagger Bash',
         skillKey: 'staggerBash',
-        spritePos: vec(1, 4),
         action: (() => {
             const skill = new StaggerBashSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(1, 4),
+                    iconPos: vec(4, 1),
                     label: 'Stagger Bash',
                 }),
             });
@@ -26,11 +25,10 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     shieldCharge: {
         name: 'Shield Charge',
         skillKey: 'shieldCharge',
-        spritePos: vec(4, 6),
         action: (() => {
             const skill = new ShieldChargeSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(4, 6),
+                    iconPos: vec(6, 4),
                     label: 'Shield Charge',
                 }),
             });
@@ -40,11 +38,10 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     attack: {
         name: 'Attack',
         skillKey: 'attack',
-        spritePos: vec(3, 9),
         action: (() => {
             const skill = new AttackSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(3, 9),
+                    iconPos: vec(9, 3),
                     label: 'Attack',
                 }),
             });

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HotbarQuad, { type QuadEvents } from './HotbarQuad.vue';
-import { computed, onUnmounted, ref } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import {
     captureControls,
@@ -55,6 +55,15 @@ function onHold(inputs?: InputMap) {
         unCaptureControls();
     }
 }
+const container = ref<HTMLDivElement>();
+const emit = defineEmits(['transition-end']);
+function transitionEnd() {
+    emit('transition-end');
+    container.value?.removeEventListener('transitionend', transitionEnd);
+}
+watch(focused, () => {
+    container.value?.addEventListener('transitionend', transitionEnd);
+});
 if (capturesControls) {
     listeners.push(
         registerInputListener(() => {
@@ -76,7 +85,6 @@ const dpadEvents = computed(() => actions.dPad ?? {});
 const faceEvents = computed(() => actions.faceButton ?? {});
 
 const focusScale = ref(1 + 1 / getScale());
-const focusTranslate = ref(1 / getScale() / 2);
 
 const showDpad = computed(() => quads.includes('dpad'));
 const showFace = computed(() => quads.includes('faceButton'));
@@ -84,11 +92,13 @@ const showFace = computed(() => quads.includes('faceButton'));
 
 <template>
     <div
+        ref="container"
         class="hotbar-set flex flex-row items-center gap-1"
         :class="!focused ? 'text-[.75em]' : ''"
         :style="{
+            transformOrigin: 'center left',
             ...(focused && {
-                transform: `scale(${focusScale}) translate(${focusTranslate * (scaleDirection === 'left' ? -100 : 100)}%, -${focusTranslate * 100}%)`,
+                transform: `scale(${focusScale})`,
             }),
         }"
     >
