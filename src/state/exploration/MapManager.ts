@@ -359,8 +359,8 @@ export class MapManager extends SceneManager {
                 if (Math.abs(camOffset.x) === 24) playerScreenPos.x -= camOffset.x;
                 if (Math.abs(camOffset.y) === 24) playerScreenPos.y -= camOffset.y;
 
-                const normalizedX = playerScreenPos.x / engine.drawWidth;
-                const normalizedY = playerScreenPos.y / engine.drawHeight;
+                const normalizedX = playerScreenPos.x / engine.drawWidth / this.scene.camera.zoom;
+                const normalizedY = playerScreenPos.y / engine.drawHeight / this.scene.camera.zoom;
                 const { tilewidth } = buffered.tiledResource.map;
                 const normalizedRadius =
                     (player.get(LightSource).radius * tilewidth * getScale()) /
@@ -378,8 +378,8 @@ export class MapManager extends SceneManager {
                     if (kp.offset) {
                         coord = coord.add(kp.offset);
                     }
-                    const normalizedX = coord.x / engine.drawWidth;
-                    const normalizedY = coord.y / engine.drawHeight;
+                    const normalizedX = coord.x / engine.drawWidth / this.scene.camera.zoom;
+                    const normalizedY = coord.y / engine.drawHeight / this.scene.camera.zoom;
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
                         (kp.radius * tilewidth * getScale()) / visualViewport!.width;
@@ -393,8 +393,8 @@ export class MapManager extends SceneManager {
                     const { x, y } = actor.pos;
                     const coord = engine.worldToScreenCoordinates(vec(x, y));
 
-                    const normalizedX = coord.x / engine.drawWidth;
-                    const normalizedY = coord.y / engine.drawHeight;
+                    const normalizedX = coord.x / engine.drawWidth / this.scene.camera.zoom;
+                    const normalizedY = coord.y / engine.drawHeight / this.scene.camera.zoom;
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
                         (actor.get(LightSource).radius * tilewidth * getScale()) /
@@ -407,8 +407,8 @@ export class MapManager extends SceneManager {
                     const intensity = this.parent.bonfireManager.getBonfireIntensity(key);
 
                     const coord = getTileCenter(key);
-                    const normalizedX = coord.x / engine.drawWidth;
-                    const normalizedY = coord.y / engine.drawHeight;
+                    const normalizedX = coord.x / engine.drawWidth / this.scene.camera.zoom;
+                    const normalizedY = coord.y / engine.drawHeight / this.scene.camera.zoom;
                     const { tilewidth } = buffered.tiledResource.map;
                     const normalizedRadius =
                         (intensity * tilewidth * getScale()) / visualViewport!.width;

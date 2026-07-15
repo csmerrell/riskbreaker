@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HotbarQuad, { type QuadEvents } from './HotbarQuad.vue';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { getScale } from '@/lib/helpers/screen.helper';
 import {
     captureControls,
@@ -64,16 +64,19 @@ function transitionEnd() {
 watch(focused, () => {
     container.value?.addEventListener('transitionend', transitionEnd);
 });
-if (capturesControls) {
-    listeners.push(
-        registerInputListener(() => {
-            captureControls('hotbarSet');
-            registerHoldListener((inputs) => onHold(inputs));
-        }, gateButton),
-    );
-} else {
-    registerHoldListener((inputs) => onHold(inputs));
-}
+
+onMounted(() => {
+    if (capturesControls) {
+        listeners.push(
+            registerInputListener(() => {
+                captureControls('hotbarSet');
+                registerHoldListener((inputs) => onHold(inputs));
+            }, gateButton),
+        );
+    } else {
+        registerHoldListener((inputs) => onHold(inputs));
+    }
+});
 
 onUnmounted(() => {
     listeners.forEach((l) => unregisterInputListener(l));
