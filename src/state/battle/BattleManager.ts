@@ -33,6 +33,7 @@ import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { HeadshotManager } from './HeadshotManager';
 import { TurnManager } from './TurnManager';
 import { BattleCameraManager } from './BattleCameraManager';
+import { MaskingManager } from '../MaskingManager';
 
 function getPositionInLane(
     lane: LaneKey,
@@ -44,8 +45,7 @@ function getPositionInLane(
     return LANE_POSITIONS[lane][opts.numInLane][opts.idxInLane];
 }
 
-export class BattleManager extends SceneManager {
-    private mask!: Actor;
+export class BattleManager extends MaskingManager {
     private terrain: Actor[] = [];
     public static laneKeys: LaneKey[] = ['left-2', 'left-1', 'mid', 'right-1', 'right-2'];
     public headshotManager: HeadshotManager;
@@ -55,11 +55,10 @@ export class BattleManager extends SceneManager {
     public battleCameraReady!: Promise<void>;
     public cameraManager?: BattleCameraManager;
 
-    constructor(private parent: ExplorationManager) {
-        super({ scene: parent.scene });
+    constructor(protected parent: ExplorationManager) {
+        super(parent);
         this.headshotManager = new HeadshotManager(this);
         this.turnManager = new TurnManager(this);
-        this.createMask();
         this.setTerrain('grass');
         this.resetCameraReadiness();
         this.setReady();
@@ -69,23 +68,6 @@ export class BattleManager extends SceneManager {
         this.battleCameraReady = new Promise<void>((resolve) => {
             this.setCameraReady = resolve;
         });
-    }
-
-    private createMask() {
-        const graphic = new Rectangle({
-            width: gameEnum.nativeWidth,
-            height: gameEnum.nativeHeight,
-            color: Color.fromHex(colors.bg),
-        });
-
-        this.mask = new Actor({
-            name: 'mask',
-            width: gameEnum.nativeWidth,
-            height: gameEnum.nativeHeight,
-            z: 1000,
-        });
-        this.mask.graphics.add(graphic);
-        this.mask.graphics.use(graphic);
     }
 
     public laneActors = {} as Record<LaneKey, Actor>;
@@ -142,20 +124,6 @@ export class BattleManager extends SceneManager {
         }
     }
 
-    private scaleMask() {
-        const explorationManager = useExploration().getExplorationManager();
-        const { map } = explorationManager.mapManager.currentMap.value;
-        const { width, tilewidth, height, tileheight } = map.map;
-        const boundingBox = new BoundingBox(0, 0, width * tilewidth, height * tileheight);
-        const scale = vec(
-            boundingBox.width / this.mask.width,
-            boundingBox.height / this.mask.height,
-        );
-        this.mask.graphics.current!.width = boundingBox.width;
-        this.mask.graphics.current!.height = boundingBox.height;
-        this.mask.scale = scale;
-    }
-
     private terrainMaterial!: Material;
     private terrainShaderProgress = 1;
     private previousView: string = '';
@@ -171,11 +139,7 @@ export class BattleManager extends SceneManager {
             await useExploration().getExplorationManager().ready();
 
             //add mask over whole screen
-            this.scaleMask();
             activeView.value = 'battle';
-            this.mask.graphics.opacity = 0;
-            this.mask.pos = this.scene.camera.pos;
-            this.scene.add(this.mask);
 
             //add terrain actor. It has a fade-in-out material.
             //terrainShaderProgress controls how much bg color is blended to the terrain during fade.
@@ -193,6 +157,7 @@ export class BattleManager extends SceneManager {
             const numSteps = duration / step;
             const opacityStep = 1 / numSteps;
             await Promise.all([
+                this.applyMask(),
                 this.parent.mapManager.explorationTarget?.fadeOut() ?? Promise.resolve(),
                 loopUntil(
                     () => this.terrain[0].graphics.opacity === 1,
@@ -234,6 +199,7 @@ export class BattleManager extends SceneManager {
         const numSteps = duration / step;
         const opacityStep = -1 / numSteps;
         await Promise.all([
+            this.removeMask(),
             leader.fadeIn(),
             this.getAllActors().map(
                 (a) => (a as unknown as CompositeActor).fadeOut?.(duration) ?? Promise.resolve(),
@@ -259,7 +225,6 @@ export class BattleManager extends SceneManager {
             layer.graphics.material = null;
             this.scene.remove(layer);
         });
-        this.scene.remove(this.mask);
 
         activeView.value = this.previousView;
         this.previousView = '';
@@ -281,11 +246,6 @@ export class BattleManager extends SceneManager {
             }),
         );
         this.terrainShaderProgress -= opacityStep;
-
-        this.mask.graphics.opacity =
-            opacityStep < 0
-                ? Math.max(0, this.mask.graphics.opacity + opacityStep)
-                : Math.min(this.mask.graphics.opacity + opacityStep, 0.8);
     }
 
     public laneUnitMap: Record<LaneKey, (KeyedAnimationActor<string> | CompositeActor)[]> = {

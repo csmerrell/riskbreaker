@@ -73,7 +73,6 @@ export class MaskingManager extends SceneManager {
                     step,
                 ),
             ]);
-            console.log('should resolve');
             resolve();
         });
     }
@@ -91,6 +90,7 @@ export class MaskingManager extends SceneManager {
                 step,
             ),
         ]);
+        this.scene.remove(this.mask);
     }
 
     private stepMaskOpacity(opacityStep: number) {

@@ -24,6 +24,7 @@ import { useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { MaskingManager } from '../MaskingManager';
+import { useGameContext } from '../useGameContext';
 
 class FirelightPostProcessor implements PostProcessor {
     private _shader: ScreenShader;
@@ -179,6 +180,11 @@ export class CampManager extends MaskingManager {
 
     public async openCamp(): Promise<void> {
         captureControls('camp');
+        const { activeView } = useGameContext();
+        if (activeView.value !== 'title') {
+            activeView.value = 'camp';
+        }
+
         this.parent.cameraManager.unlock();
 
         return new Promise<void>(async (resolve) => {
@@ -219,6 +225,9 @@ export class CampManager extends MaskingManager {
 
             registerInputListener(() => {
                 this.closeCamp();
+                if (activeView.value !== 'title') {
+                    activeView.value = 'exploration';
+                }
             }, 'cancel');
 
             resolve();
