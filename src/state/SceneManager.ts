@@ -1,5 +1,6 @@
-import { Engine, Scene } from 'excalibur';
+import { Actor, Engine, Scene } from 'excalibur';
 import { useGameContext } from './useGameContext';
+import { useExploration } from './useExploration';
 
 export type SceneManagerOpts = {
     scene: Scene;

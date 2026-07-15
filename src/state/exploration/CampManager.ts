@@ -23,6 +23,7 @@ import { loopUntil } from '@/lib/helpers/async.helper';
 import { useParty } from '../useParty';
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { getScale } from '@/lib/helpers/screen.helper';
+import { MaskingManager } from '../MaskingManager';
 
 class FirelightPostProcessor implements PostProcessor {
     private _shader: ScreenShader;
@@ -67,37 +68,18 @@ class FirelightPostProcessor implements PostProcessor {
     }
 }
 
-export class CampManager extends SceneManager {
-    private mask!: Actor;
+export class CampManager extends MaskingManager {
     private bgActor!: Actor;
     private fire!: Actor;
     private shadow1Actor?: Actor;
     private shadow2Actor?: Actor;
     private firePostProcessor: FirelightPostProcessor;
 
-    constructor(private parent: ExplorationManager) {
-        super({ scene: parent.scene });
+    constructor(protected parent: ExplorationManager) {
+        super(parent);
         this.firePostProcessor = new FirelightPostProcessor();
-        this.createMask();
         this.createCamp();
         this.setReady();
-    }
-
-    private createMask(): void {
-        const graphic = new Rectangle({
-            width: gameEnum.nativeWidth,
-            height: gameEnum.nativeHeight,
-            color: Color.fromHex(colors.bg),
-        });
-
-        this.mask = new Actor({
-            name: 'camp-mask',
-            width: gameEnum.nativeWidth,
-            height: gameEnum.nativeHeight,
-            z: 1000,
-        });
-        this.mask.graphics.add(graphic);
-        this.mask.graphics.use(graphic);
     }
 
     private createCamp(): void {
@@ -195,19 +177,6 @@ export class CampManager extends SceneManager {
         this.firePostProcessor.setFireOrigin(vec(normalizedX, normalizedY));
     }
 
-    private scaleMask(): void {
-        const bounds = this.parent.mapManager.getBounds();
-        if (!bounds) {
-            console.warn('Cannot scale camp mask: no map bounds available');
-            return;
-        }
-
-        const scale = vec(bounds.width / this.mask.width, bounds.height / this.mask.height);
-        this.mask.graphics.current!.width = bounds.width;
-        this.mask.graphics.current!.height = bounds.height;
-        this.mask.scale = scale;
-    }
-
     public async openCamp(): Promise<void> {
         captureControls('camp');
         this.parent.cameraManager.unlock();
@@ -215,18 +184,14 @@ export class CampManager extends SceneManager {
         return new Promise<void>(async (resolve) => {
             await useExploration().getExplorationManager().ready();
             // Scale mask to cover entire map (like BattleManager)
-            this.scaleMask();
 
             // Position mask and camp at camera position
-            this.mask.pos = this.scene.camera.pos;
             this.bgActor.pos = this.scene.camera.pos.add(vec(0, -4));
             this.fire.pos = this.scene.camera.pos.add(vec(0, 32));
-            this.mask.graphics.opacity = 0;
             this.bgActor.graphics.opacity = 0;
             this.fire.graphics.opacity = 0;
 
             // Add actors to scene
-            this.scene.add(this.mask);
             this.scene.add(this.bgActor);
             this.scene.add(this.fire);
             await this.addPlayers();
@@ -242,13 +207,14 @@ export class CampManager extends SceneManager {
             const numSteps = openDuration / step;
             const opacityStep = 1 / numSteps;
             await Promise.all([
+                this.applyMask(),
                 this.scene.camera.zoomOverTime(1 + 2 / getScale(), 250, EasingFunctions.Linear),
                 loopUntil(
                     () => this.bgActor.graphics.opacity === 1,
                     () => this.stepOpacity(opacityStep),
                     step,
                 ),
-                this.actors.map((a) => a.fadeIn),
+                ...this.actors.map((a) => a.fadeIn),
             ]);
 
             registerInputListener(() => {
@@ -267,6 +233,7 @@ export class CampManager extends SceneManager {
         const numSteps = duration / step;
         const opacityStep = -1 / numSteps;
         await Promise.all([
+            this.removeMask(),
             this.scene.camera.zoomOverTime(1, duration, EasingFunctions.Linear),
             loopUntil(
                 () => this.bgActor.graphics.opacity === 0,
@@ -300,11 +267,5 @@ export class CampManager extends SceneManager {
         if (this.parent.mapManager.explorationTarget) {
             this.parent.mapManager.explorationTarget.graphics.opacity = 1 - nextOpacity;
         }
-
-        //mask stops at .6 opacity
-        this.mask.graphics.opacity =
-            opacityStep < 0
-                ? Math.max(0, this.mask.graphics.opacity + opacityStep)
-                : Math.min(this.mask.graphics.opacity + opacityStep, 0.6);
     }
 }

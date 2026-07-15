@@ -162,9 +162,6 @@ export class CompositeLayer extends Actor {
     }
 
     public fadeIn(duration: number = 250) {
-        if (this.type === 'mannequin') {
-            this.graphics.material = this.footShadow!;
-        }
         const step = 25;
         const numSteps = duration / step;
         const opacityStep = 1 / numSteps;
@@ -172,7 +169,11 @@ export class CompositeLayer extends Actor {
             () => this.graphics.opacity === 1,
             () => this.stepOpacity(opacityStep),
             step,
-        );
+        ).then(() => {
+            if (this.type === 'mannequin') {
+                this.graphics.material = this.footShadow!;
+            }
+        });
     }
 
     private stepOpacity(opacityStep: number) {

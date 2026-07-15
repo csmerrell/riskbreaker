@@ -30,7 +30,7 @@ type Props = {
         dPad?: QuadEvents;
         faceButton?: QuadEvents;
     };
-    scaleDirection?: 'left' | 'right';
+    scaleAnchor?: 'left' | 'right';
     gateButton: 'shoulder_left' | 'shoulder_right';
     quads?: QuadType[];
     capturesControls?: boolean;
@@ -39,7 +39,7 @@ type Props = {
 const {
     iconType,
     actions,
-    scaleDirection = 'right',
+    scaleAnchor = 'left',
     gateButton,
     quads = ['dpad', 'faceButton'],
     capturesControls = false,
@@ -99,7 +99,7 @@ const showFace = computed(() => quads.includes('faceButton'));
         class="hotbar-set flex flex-row items-center gap-1"
         :class="!focused ? 'text-[.75em]' : ''"
         :style="{
-            transformOrigin: 'center left',
+            transformOrigin: `center ${scaleAnchor}`,
             ...(focused && {
                 transform: `scale(${focusScale})`,
             }),
