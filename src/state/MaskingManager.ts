@@ -45,16 +45,12 @@ export class MaskingManager extends SceneManager {
         this.mask.scale = scale;
     }
 
-    protected async applyMask(
-        opts: {
-            leaderFadeOut: boolean;
-        } = {
-            leaderFadeOut: true,
-        },
-    ) {
-        const { leaderFadeOut } = opts;
+    private activeOpacity = 0.6;
+    protected async applyMask(opts: { leaderFadeOut?: boolean; opacity?: number } = {}) {
+        const { leaderFadeOut = true, opacity = 0.6 } = opts;
+        this.activeOpacity = opacity;
         return new Promise<void>(async (resolve) => {
-            await useExploration().getExplorationManager().ready();
+            await this.parent.ready();
             // Scale mask to cover entire screen
             this.scaleMask();
             // Position mask and camp at camera position
@@ -68,7 +64,7 @@ export class MaskingManager extends SceneManager {
             await Promise.all([
                 ...(leaderFadeOut ? [this.parent.actorManager.getLeader().fadeOut()] : []),
                 loopUntil(
-                    () => this.mask.graphics.opacity === 0.6,
+                    () => this.mask.graphics.opacity === this.activeOpacity,
                     () => this.stepMaskOpacity(opacityStep),
                     step,
                 ),
@@ -94,10 +90,9 @@ export class MaskingManager extends SceneManager {
     }
 
     private stepMaskOpacity(opacityStep: number) {
-        //mask stops at .6 opacity
         this.mask.graphics.opacity =
             opacityStep < 0
                 ? Math.max(0, this.mask.graphics.opacity + opacityStep)
-                : Math.min(this.mask.graphics.opacity + opacityStep, 0.6);
+                : Math.min(this.mask.graphics.opacity + opacityStep, this.activeOpacity);
     }
 }

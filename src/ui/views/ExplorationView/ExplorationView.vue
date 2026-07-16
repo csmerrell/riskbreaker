@@ -8,7 +8,7 @@ import { useInput } from '@/game/input/useInput';
 import { useGameContext } from '@/state/useGameContext.js';
 import { useExplorationActions } from './useExplorationActions.js';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
-import ExplorationAction from './ExplorationAction.vue';
+import PartyMenuAction from './PartyMenuAction.vue';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import PartyMenuView from '../PartyMenu/PartyMenuView.vue';
 
@@ -22,11 +22,7 @@ stackOwner.subscribe(() => {
 const hasControl = computed(() => inputOwner.value === inputKey.value);
 
 const activeView = useGameContext().activeView;
-const {
-    ready: explorationActionsReady,
-    dynamicActions,
-    getInventoryAction,
-} = useExplorationActions();
+const { ready: explorationActionsReady, dynamicActions } = useExplorationActions();
 
 const dynamicActionEl = ref<InstanceType<typeof HotbarSet>>();
 const dynamicActionSize = ref({ x: '0px', y: '0px' });
@@ -52,7 +48,7 @@ watch(activeView, () => {
         <TilePrompts v-if="hasControl" />
         <div
             v-if="activeView === 'exploration' && explorationActionsReady"
-            class="fixed bottom-4 left-4 z-50 flex flex-row items-end gap-4"
+            class="fixed bottom-4 left-4 z-50 flex flex-row items-end gap-8"
         >
             <div
                 class="relative"
@@ -74,7 +70,7 @@ watch(activeView, () => {
                     size="sm"
                 />
             </div>
-            <ExplorationAction :action="getInventoryAction()" command="context_menu_1" />
+            <PartyMenuAction />
         </div>
         <PartyMenuView v-if="activeView === 'party-menu'" />
     </div>

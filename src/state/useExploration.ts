@@ -4,6 +4,7 @@ import { maps } from '@/resource/maps';
 import { makeState } from '@/state/Observable';
 import { Scene, Vector } from 'excalibur';
 import { ExplorationManager } from './exploration/ExplorationManager';
+import { ref } from 'vue';
 
 const sceneReady = makeState<boolean>(false);
 
@@ -24,6 +25,9 @@ export type TileControlPrompt = {
 };
 const tileControlPrompts = makeState<TileControlPrompt | null>();
 const loaded = makeState<boolean>(false);
+
+export type PartyMenuTab = 'inventory' | 'equipment' | 'skill';
+const activePartyMemberTab = ref<PartyMenuTab>('skill');
 
 function awaitScene() {
     if (sceneReady.value) {
@@ -64,6 +68,7 @@ async function saveExplorationState() {
 
 export function useExploration() {
     return {
+        activePartyMemberTab,
         sceneReady,
         playerPos,
         tileControlPrompts,

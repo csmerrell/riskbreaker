@@ -1,7 +1,6 @@
 import { EasingFunctions } from 'excalibur';
 import { ExplorationManager } from './ExplorationManager';
 import { captureControls, registerInputListener, unCaptureControls } from '@/game/input/useInput';
-import { loopUntil } from '@/lib/helpers/async.helper';
 import { useGameContext } from '../useGameContext';
 import { MaskingManager } from '../MaskingManager';
 import { useExploration } from '../useExploration';
@@ -14,23 +13,24 @@ export class PartyMenuManager extends MaskingManager {
     }
 
     public async open(): Promise<void> {
+        this.parent.movementManager.disableMovement();
+        await this.parent.movementManager.movementReleased;
+        await this.parent.cameraManager.awaitCameraSettle();
+
         captureControls('partyMenu');
-        const { activeView } = useGameContext();
-        activeView.value = 'party-menu';
+        useGameContext().activeView.value = 'party-menu';
 
         this.parent.cameraManager.unlock();
 
         return new Promise<void>(async (resolve) => {
             await useExploration().getExplorationManager().ready();
             await Promise.all([
-                this.applyMask(),
+                this.applyMask({ opacity: 0.9 }),
                 this.parent.actorManager.getLeader().fadeOut(),
                 this.scene.camera.zoomOverTime(1 + 2 / getScale(), 250, EasingFunctions.Linear),
             ]);
             registerInputListener(() => {
-                unCaptureControls();
                 this.close();
-                activeView.value = 'exploration';
             }, 'cancel');
             resolve();
         });
@@ -44,5 +44,9 @@ export class PartyMenuManager extends MaskingManager {
         ]);
         this.parent.actorManager.getLeader().graphics.opacity = 1;
         this.parent.cameraManager.lockToActor(this.parent.actorManager.getLeader());
+        setTimeout(() => {
+            unCaptureControls();
+            useGameContext().activeView.value = 'exploration';
+        }, 25);
     }
 }

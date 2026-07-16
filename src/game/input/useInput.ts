@@ -109,6 +109,7 @@ export function getCurrentOwner() {
 }
 
 export function captureControls(key?: string) {
+    console.log('Captured by:', key);
     const ownerKey = key ?? nanoid(16);
     listenerStack.push({});
     stackOwners.push(ownerKey);
@@ -117,6 +118,7 @@ export function captureControls(key?: string) {
 }
 
 export function unCaptureControls() {
+    console.log('Released by:', stackOwner.value);
     if (listenerStack.length === 1) {
         throw new Error(
             'Tried to pop the root listenerStack. Someone called unCaptureControls without a preceding call to captureControls',

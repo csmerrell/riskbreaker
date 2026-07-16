@@ -14,20 +14,6 @@ export type ExplorationActionMetadata = {
 export function useExplorationActions() {
     const ready = ref(false);
 
-    const getInventoryAction = () => {
-        const action = new Entity();
-        action.addComponent(
-            new HotbarActionComponent({
-                iconPos: vec(7, 0),
-                label: '',
-                action: async () => {
-                    useExploration().getExplorationManager().partyMenuManager.open();
-                },
-            }),
-        );
-        return action;
-    };
-
     const dynamicActions = ref<QuadEvents>({});
     function bindActions() {
         const upAction = new Entity();
@@ -97,6 +83,5 @@ export function useExplorationActions() {
         ready,
         dynamicActions,
         setDynamicAction,
-        getInventoryAction,
     };
 }

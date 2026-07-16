@@ -47,8 +47,12 @@ export class ExplorationMovementManager extends SceneManager {
 
     private listener?: string;
     public enableMovement() {
-        this.listener = registerHoldListener((commands: InputMap) => {
-            if (this.bufferedInput || Date.now() - this.debounceTime < this.movementSpeed - 20) {
+        this.listener = registerHoldListener((commands?: InputMap) => {
+            if (
+                !commands ||
+                this.bufferedInput ||
+                Date.now() - this.debounceTime < this.movementSpeed - 20
+            ) {
                 return;
             }
 
@@ -86,6 +90,7 @@ export class ExplorationMovementManager extends SceneManager {
         }
     }
 
+    public movementReleased: Promise<void> = Promise.resolve();
     private move(direction: Vector) {
         if (this.movementDisabled) return;
 
@@ -108,15 +113,21 @@ export class ExplorationMovementManager extends SceneManager {
         }
         this.debounceTime = Date.now();
         const prevOffset = this.getTileOffset().scale(-1);
-        this.setPlayerTileCoord(currentCoord.add(direction));
-        const duration = this.movementSpeed;
-        player.actions.moveBy({
-            offset: vec(24, 24).scale(direction).add(this.getTileOffset()).add(prevOffset),
-            duration,
+
+        this.movementReleased = new Promise<void>((resolve) => {
+            this.setPlayerTileCoord(currentCoord.add(direction));
+            const duration = this.movementSpeed;
+            player.actions.moveBy({
+                offset: vec(24, 24).scale(direction).add(this.getTileOffset()).add(prevOffset),
+                duration,
+            });
+
+            setTimeout(() => {
+                this.movementAfterEffects().then(() => {
+                    resolve();
+                });
+            }, duration - 10);
         });
-        setTimeout(() => {
-            this.movementAfterEffects();
-        }, duration - 10);
     }
 
     private getTileOffset() {
@@ -145,9 +156,14 @@ export class ExplorationMovementManager extends SceneManager {
         const { x, y } = this.getPlayerTileCoord();
         const keyPoint = this.parent.mapManager.currentMap.value.keyPoints[`${x}_${y}`];
 
-        if (this.bufferedInput && !(keyPoint && isHaltingKeypoint(keyPoint))) {
+        if (
+            !this.movementDisabled &&
+            this.bufferedInput &&
+            !(keyPoint && isHaltingKeypoint(keyPoint))
+        ) {
             this.move(this.bufferedInput);
         } else if (keyPoint && isHaltingKeypoint(keyPoint)) {
+            delete this.bufferedInput;
             this.disableMovement();
         }
         delete this.bufferedInput;
@@ -162,7 +178,10 @@ export class ExplorationMovementManager extends SceneManager {
                             keypoint: keyPoint,
                         });
                     } else if (isBonfire(keyPoint)) {
-                        this.scene.events.emit('keypoint:bonfire', { coord, keypoint: keyPoint });
+                        this.scene.events.emit('keypoint:bonfire', {
+                            coord,
+                            keypoint: keyPoint,
+                        });
                         saveExplorationState();
                     } else if (isScriptTriggerKeypoint(keyPoint)) {
                         useScript().runScript(keyPoint.scriptName);
