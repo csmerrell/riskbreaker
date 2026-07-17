@@ -54,4 +54,12 @@ export class ExplorationManager extends SceneManager {
             this.mapManager.placePlayerAtTile(vec(playerCoord.x, playerCoord.y));
         }
     }
+
+    public async safeHaltMovement() {
+        this.movementManager.disableMovement();
+        return Promise.all([
+            this.cameraManager.awaitCameraSettle(),
+            this.movementManager.movementReleased,
+        ]);
+    }
 }

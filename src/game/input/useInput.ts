@@ -42,7 +42,10 @@ function notifyListeners(result: InputMap) {
         return maxOrderB - maxOrderA; // Most recent first
     });
 
+    let done = false;
     sortedEntries.forEach(([key, listeners]: [MappedCommand, InputListener[]]) => {
+        if (done) return;
+
         if (!key.match(/\*|all/) && result[convergedCommandMap[key]!.key]) {
             inputDebounceMap[key] = (inputDebounceMap[key] ?? 0) + 1;
             if (inputDebounceMap[key] > 1 && inputDebounceMap[key] < 6) {
@@ -53,13 +56,15 @@ function notifyListeners(result: InputMap) {
         if ((key as 'all') === 'all') {
             return;
         } else if ((key as '*') === '*') {
-            listeners.forEach((listener) => {
+            listeners.find((listener) => {
                 listener.cb(result);
+                done = true;
             });
         } else if (result[convergedCommandMap[key]!.key]) {
             const commandKey = convergedCommandMap[key]!.key;
-            listeners.forEach((listener) => {
+            listeners.find((listener) => {
                 listener.cb();
+                done = true;
                 delete result[commandKey];
                 const collisions = consumeCollisions(result, [commandKey]);
                 // Sync debounce counters for all consumed commands

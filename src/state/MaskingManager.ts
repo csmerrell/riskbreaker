@@ -46,8 +46,10 @@ export class MaskingManager extends SceneManager {
     }
 
     private activeOpacity = 0.6;
-    protected async applyMask(opts: { leaderFadeOut?: boolean; opacity?: number } = {}) {
-        const { leaderFadeOut = true, opacity = 0.6 } = opts;
+    protected async applyMask(
+        opts: { leaderFadeOut?: boolean; opacity?: number; duration?: number } = {},
+    ) {
+        const { leaderFadeOut = true, opacity = 0.6, duration = 250 } = opts;
         this.activeOpacity = opacity;
         return new Promise<void>(async (resolve) => {
             await this.parent.ready();
@@ -57,9 +59,8 @@ export class MaskingManager extends SceneManager {
             this.mask.pos = this.scene.camera.pos;
             this.mask.graphics.opacity = 0;
             this.scene.add(this.mask);
-            const openDuration = 250;
-            const step = 25;
-            const numSteps = openDuration / step;
+            const numSteps = 10;
+            const step = duration / numSteps;
             const opacityStep = 1 / numSteps;
             await Promise.all([
                 ...(leaderFadeOut ? [this.parent.actorManager.getLeader().fadeOut()] : []),
@@ -73,10 +74,10 @@ export class MaskingManager extends SceneManager {
         });
     }
 
-    protected async removeMask() {
-        const duration = 250;
-        const step = 25;
-        const numSteps = duration / step;
+    protected async removeMask(opts: { duration?: number } = {}) {
+        const { duration = 250 } = opts;
+        const numSteps = 10;
+        const step = duration / numSteps;
         const opacityStep = -1 / numSteps;
         await Promise.all([
             this.parent.actorManager.getLeader().fadeIn(),

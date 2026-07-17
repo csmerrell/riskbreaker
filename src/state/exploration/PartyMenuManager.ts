@@ -25,7 +25,7 @@ export class PartyMenuManager extends MaskingManager {
         return new Promise<void>(async (resolve) => {
             await useExploration().getExplorationManager().ready();
             await Promise.all([
-                this.applyMask({ opacity: 0.9 }),
+                this.applyMask({ opacity: 0.9, duration: 50 }),
                 this.parent.actorManager.getLeader().fadeOut(),
                 this.scene.camera.zoomOverTime(1 + 2 / getScale(), 250, EasingFunctions.Linear),
             ]);
@@ -38,7 +38,7 @@ export class PartyMenuManager extends MaskingManager {
 
     public async close(): Promise<void> {
         await Promise.all([
-            this.removeMask(),
+            this.removeMask({ duration: 50 }),
             this.parent.actorManager.getLeader().fadeIn(),
             this.scene.camera.zoomOverTime(1, 250, EasingFunctions.Linear),
         ]);
@@ -46,6 +46,7 @@ export class PartyMenuManager extends MaskingManager {
         this.parent.cameraManager.lockToActor(this.parent.actorManager.getLeader());
         setTimeout(() => {
             unCaptureControls();
+            this.parent.movementManager.enableMovement();
             useGameContext().activeView.value = 'exploration';
         }, 25);
     }

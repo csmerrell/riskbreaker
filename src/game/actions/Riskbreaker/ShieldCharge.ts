@@ -48,7 +48,7 @@ export class ShieldChargeSkill extends Skill {
         const movementDuration = 250;
         await actor.actions
             .moveTo({
-                pos: midPoint,
+                pos: midPoint.sub(vec(16, 0)),
                 duration: movementDuration,
                 easing: EasingFunctions.EaseInCubic,
             })
@@ -56,7 +56,7 @@ export class ShieldChargeSkill extends Skill {
 
         //impact, screenshake, hitstop, apply damage
         const VFXImpact = new VFXLayer('forwardImpact', {
-            offset: vec(maxDimensions.x * 0.8, maxDimensions.y * -0.2),
+            offset: vec(24, -24),
         });
         focusActor.addChild(VFXImpact);
         const impactPromises = Promise.all([

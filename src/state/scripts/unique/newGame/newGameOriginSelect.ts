@@ -211,8 +211,9 @@ export const newGameOriginSelect: GameScript = {
             //enable movement
             explorationMgr.movementManager.enableMovement();
 
-            registerInputListener(() => {
+            registerInputListener(async () => {
                 const { addEnemy, clearEnemies } = useBattle();
+                await explorationMgr.safeHaltMovement();
                 clearEnemies();
                 addEnemy({
                     id: nanoid(16),

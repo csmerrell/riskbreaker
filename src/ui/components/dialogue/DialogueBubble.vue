@@ -137,7 +137,7 @@ watch(boundingRef, () => {
 const listeners: string[] = [];
 const emit = defineEmits(['done']);
 function registerInputListeners() {
-    captureControls();
+    captureControls('dialogue');
     listeners.push(
         registerInputListener(() => {
             if (letterProgress.value < message.value.text.length) {

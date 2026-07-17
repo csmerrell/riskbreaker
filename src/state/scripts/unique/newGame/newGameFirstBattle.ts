@@ -5,6 +5,7 @@ import { Wolf } from '@/game/actors/Monsters/Wolf.actor';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { nanoid } from 'nanoid';
 import { LaneKey } from '@/state/useParty';
+import { captureControls, unCaptureControls } from '@/game/input/useInput';
 
 function getWolfDef(position: LaneKey, palette: 'gray'): EnemyDef {
     return {
@@ -30,14 +31,17 @@ export const newGameFirstBattle: GameScript = {
         },
         async () => {
             const explorationMgr = useExploration().getExplorationManager();
-            await explorationMgr.awaitCameraSettle();
-            const battleMgr = explorationMgr.battleManager;
+            const { battleManager, movementManager } = explorationMgr;
+            captureControls('battlePrep');
+            await explorationMgr.safeHaltMovement();
             const { addEnemy, clearEnemies } = useBattle();
             clearEnemies();
             addEnemy(getWolfDef('mid', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
-            battleMgr.openBattle();
+            unCaptureControls();
+            await battleManager.openBattle();
+            movementManager.enableMovement();
         },
     ],
 };

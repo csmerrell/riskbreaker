@@ -58,10 +58,11 @@ export const RiskbreakerDefault: PartyMember = {
         leader: false,
     },
     appearance: {
-        armor: 'riskbreakerLeathers',
+        armor: 'bladesealerYoroi',
         mainHand: 'sword',
         offHand: 'shield',
-        hair: 'shortMessy',
+        hair: 'sideSweep',
+        hat: 'kitsune',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_scimitar',
@@ -80,7 +81,7 @@ export const RiskbreakerDefault: PartyMember = {
     stats: {
         hp: 125,
         currentHp: 75,
-        speed: 125,
+        speed: 22,
         strength: 6,
         dexterity: 5,
         balance: 10,
@@ -117,9 +118,8 @@ export const AstrologianDefault: PartyMember = {
         leader: true,
     },
     appearance: {
-        armor: 'astrologianCloak',
-        hair: 'moodBangs_Hat',
-        hat: 'sageHat',
+        armor: 'moonfangAttire',
+        hair: 'tightCurls',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_tome',

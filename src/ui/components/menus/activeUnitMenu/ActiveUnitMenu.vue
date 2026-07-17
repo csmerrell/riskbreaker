@@ -124,16 +124,16 @@ onUnmounted(() => {
             class="text-standard-md relative left-8"
         />
         <ActionItem
-            label="Stock"
+            label="Defend"
+            :active="restPressed"
+            command="hotbarFLeft"
+            class="text-standard-md relative left-14"
+        />
+        <ActionItem
+            label="Burn"
             :active="stockPressed"
             command="hotbarFUp"
             class="text-standard-md relative left-12"
-        />
-        <ActionItem
-            label="Rest"
-            :active="restPressed"
-            command="hotbarFLeft"
-            class="text-standard-md relative left-16"
         />
     </div>
 </template>

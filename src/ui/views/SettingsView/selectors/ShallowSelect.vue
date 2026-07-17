@@ -35,7 +35,7 @@ defineExpose({
     },
     focus: () => {
         focused.value = true;
-        captureControls();
+        captureControls('shallowSelect');
         registerInputListeners();
     },
     blur: () => {

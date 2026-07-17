@@ -68,7 +68,7 @@ let selectMenuItemId: string;
 let menuDownId: string;
 let menuUpId: string;
 onMounted(async () => {
-    captureControls();
+    captureControls('pauseMenu');
     cancelPause = registerInputListener(() => {
         togglePause();
     }, ['cancel', 'pause_menu']);

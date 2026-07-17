@@ -9,6 +9,7 @@ import { resources } from '@/resource';
 import { Actor, vec } from 'excalibur';
 import { SceneManager } from '../SceneManager';
 import type { ExplorationManager } from './ExplorationManager';
+import { useExploration } from '../useExploration';
 
 const RADIAN_TRANSFORM = Math.PI / 180;
 
@@ -84,11 +85,13 @@ export class LanternManager extends SceneManager {
             this.parent.cameraManager.lockToActor(leader);
             this.idle();
             unCaptureControls();
+            this.parent.movementManager.enableMovement();
         });
     }
 
-    public prepLantern() {
-        captureControls();
+    public async prepLantern() {
+        captureControls('lantern');
+        await useExploration().getExplorationManager().safeHaltMovement();
         this.indicator.pos = this.parent.actorManager.getLeader().pos;
         this.scene.add(this.indicator);
 

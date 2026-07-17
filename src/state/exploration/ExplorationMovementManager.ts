@@ -47,46 +47,50 @@ export class ExplorationMovementManager extends SceneManager {
 
     private listener?: string;
     public enableMovement() {
-        this.listener = registerHoldListener((commands?: InputMap) => {
-            if (
-                !commands ||
-                this.bufferedInput ||
-                Date.now() - this.debounceTime < this.movementSpeed - 20
-            ) {
-                return;
-            }
+        if (!this.listener) {
+            this.listener = registerHoldListener((commands?: InputMap) => {
+                if (this.movementDisabled) return;
 
-            const mapGround = this.parent.mapManager.getMapGround();
-            if (!mapGround) return;
+                if (
+                    !commands ||
+                    this.bufferedInput ||
+                    Date.now() - this.debounceTime < this.movementSpeed - 20
+                ) {
+                    return;
+                }
 
-            let direction: Vector;
-            if (commands.menu_down || commands.movement_down) {
-                direction = vec(0, 1);
-            } else if (commands.menu_up || commands.movement_up) {
-                direction = vec(0, -1);
-            } else if (commands.menu_right || commands.movement_right) {
-                direction = vec(1, 0);
-            } else if (commands.menu_left || commands.movement_left) {
-                direction = vec(-1, 0);
-            } else {
-                return;
-            }
+                const mapGround = this.parent.mapManager.getMapGround();
+                if (!mapGround) return;
 
-            const currentCoord = this.getPlayerTileCoord();
-            if (!this.bufferedInput) {
-                this.move(direction);
-            } else if (canMoveBetween(currentCoord, currentCoord.add(direction), mapGround)) {
-                this.bufferedInput = direction;
-            }
-        });
+                let direction: Vector;
+                if (commands.menu_down || commands.movement_down) {
+                    direction = vec(0, 1);
+                } else if (commands.menu_up || commands.movement_up) {
+                    direction = vec(0, -1);
+                } else if (commands.menu_right || commands.movement_right) {
+                    direction = vec(1, 0);
+                } else if (commands.menu_left || commands.movement_left) {
+                    direction = vec(-1, 0);
+                } else {
+                    return;
+                }
+
+                const currentCoord = this.getPlayerTileCoord();
+                if (!this.bufferedInput) {
+                    this.move(direction);
+                } else if (canMoveBetween(currentCoord, currentCoord.add(direction), mapGround)) {
+                    this.bufferedInput = direction;
+                }
+            });
+        }
         this.movementDisabled = false;
     }
 
     private movementDisabled: boolean = false;
     public disableMovement() {
         this.movementDisabled = true;
-        if (this.listener) {
-            unregisterInputListener(this.listener);
+        if (this.bufferedInput) {
+            delete this.bufferedInput;
         }
     }
 
@@ -156,55 +160,49 @@ export class ExplorationMovementManager extends SceneManager {
         const { x, y } = this.getPlayerTileCoord();
         const keyPoint = this.parent.mapManager.currentMap.value.keyPoints[`${x}_${y}`];
 
-        if (
-            !this.movementDisabled &&
-            this.bufferedInput &&
-            !(keyPoint && isHaltingKeypoint(keyPoint))
-        ) {
-            this.move(this.bufferedInput);
-        } else if (keyPoint && isHaltingKeypoint(keyPoint)) {
-            delete this.bufferedInput;
-            this.disableMovement();
-        }
-        delete this.bufferedInput;
-
         return new Promise<void>((resolve) => {
-            setTimeout(() => {
-                const coord = `${x}_${y}`;
-                if (keyPoint) {
-                    if (isZoneChangePoint(keyPoint)) {
-                        this.scene.events.emit('keypoint:zoneChange', {
-                            coord,
-                            keypoint: keyPoint,
-                        });
-                    } else if (isBonfire(keyPoint)) {
-                        this.scene.events.emit('keypoint:bonfire', {
-                            coord,
-                            keypoint: keyPoint,
-                        });
-                        saveExplorationState();
-                    } else if (isScriptTriggerKeypoint(keyPoint)) {
-                        useScript().runScript(keyPoint.scriptName);
-                    } else {
-                        saveExplorationState();
-                        if (keyPoint.type === 'interactable') {
-                            this.scene.events.emit('keypoint:interactable', {
-                                coord,
-                                keypoint: keyPoint,
-                            });
-                        }
-                    }
+            const coord = `${x}_${y}`;
+            if (keyPoint) {
+                if (isZoneChangePoint(keyPoint)) {
+                    this.scene.events.emit('keypoint:zoneChange', {
+                        coord,
+                        keypoint: keyPoint,
+                    });
+                } else if (isBonfire(keyPoint)) {
+                    this.scene.events.emit('keypoint:bonfire', {
+                        coord,
+                        keypoint: keyPoint,
+                    });
+                    saveExplorationState();
+                } else if (isScriptTriggerKeypoint(keyPoint)) {
+                    useScript().runScript(keyPoint.scriptName);
                 } else {
                     saveExplorationState();
+                    if (keyPoint.type === 'interactable') {
+                        this.scene.events.emit('keypoint:interactable', {
+                            coord,
+                            keypoint: keyPoint,
+                        });
+                    }
                 }
-                this.scene.events.emit('moved', {
-                    newPos: this.getPlayerTileCoord(),
-                });
-                if (this.movementDisabled) {
-                    this.enableMovement();
-                }
-                resolve();
-            }, 75);
+            } else {
+                saveExplorationState();
+            }
+
+            if (
+                !this.movementDisabled &&
+                this.bufferedInput &&
+                !(keyPoint && isHaltingKeypoint(keyPoint))
+            ) {
+                this.move(this.bufferedInput);
+            }
+            delete this.bufferedInput;
+
+            this.scene.events.emit('moved', {
+                newPos: this.getPlayerTileCoord(),
+            });
+
+            resolve();
         });
     }
 }
