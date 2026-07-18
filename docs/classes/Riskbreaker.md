@@ -1,28 +1,38 @@
 # Riskbreaker
 
 ## Skills
-- Break
+- (Basic) Break
     - Has a small chance of chaining to a 2nd attack.
     - Chance on hit of polarizing % chances remainder of battle 
         - eg. - +1-5% positive chances. -1-5% negative chances.
+    - [Passive] when a % chance rolls > 100%, the excess is banked.
+        - Negative excess is also banked.
+- Challenge the Odds
+    - [Free] All % chance events are x% higher, including negative chance.
+- All-in Breaker
+    - Expend all banked risk for a scaled attack. 
+- All-in Bolster
+    - Expend all banked risk for full party % damage mit (remainder of battle).
 - Shield Charge
 - Stagger Bash
 - Chain Strike
-- Challenge the Odds
-    - [Free] All % chance events are x% higher, including negative chance.
+- Link Strike
+    - Follow all allied attacks with a small attack until next turn.
+    - [Passive] Chance to follow crits even if skill is not active. 
 - Press the Line
     - Presses back 1 space, occupies the space, executes a small follow-up attack.
 - Temper Stance
-    - [Stance] (Self) All attacks store range % of dmg for follow-up atk 
+    - [Stance] (Self) All attacks store small range % of dmg for follow-up atk 
     - Stacks with self.
+    - Scales with banked risk.
 - Rally Stance
     - [Stance] (All allies) All attacks give range % of dmg to empower ally's next atk.
     - Higher base %, but doesn't stack multiplicatively
+    - Scales with banked risk.
 - Interceptor Stance
     - [Stance] Every successfully chance-mitigated attack increases evasion and defense.
     - Breaks if a direct attack is used. 
     - Both full deflect & partial mitigations trigger it.
 - Intercept
-    - % chance of drawing attacks from an ally until next turn.
+    - % chance of drawing & deflecting attacks from an ally until next turn.
     - Pushes back successful interceptions.
-- 
