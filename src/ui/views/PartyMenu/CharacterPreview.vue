@@ -108,7 +108,7 @@ watch([showCaseRdy, mounted, maskReady], () => {
         :style="{ height: `${size.h}px`, width: `${size.w}px` }"
     >
         <template v-if="ready">
-            <div class="absolute -inset-4 z-[1000]">
+            <div class="absolute -inset-4 z-10">
                 <div
                     class="absolute h-full bg-bg opacity-80"
                     :style="{ right: 'calc(100% - 2rem)', width: '100vw' }"
@@ -124,7 +124,7 @@ watch([showCaseRdy, mounted, maskReady], () => {
                 <MenuBox :poles="{}" class="bottom-4 left-8 right-4 border-2 border-t-0" />
             </div>
             <MenuBox
-                class="left-1/2 z-[1001] h-6 w-11/12 translate-x-[-48%] bg-bg-dark"
+                class="left-1/2 z-20 h-6 w-11/12 translate-x-[-48%] bg-bg-dark"
                 :style="{ top: 'calc(100% - 0.75rem)' }"
                 :poles="{ NW: true, SW: true, SE: true, NE: true }"
             >
