@@ -71,7 +71,7 @@ function removePartyMember(id: string) {
 }
 
 function updatePartyMember(member: PartyMember) {
-    const idx = partyState.value.party.findIndex((m) => m.id === member.id);
+    const idx = getMemberIdx(member);
     if (idx === -1) throw new Error('party member not found in call to [updatePartyMember]');
     partyState.set({
         ...partyState.value,
@@ -81,6 +81,14 @@ function updatePartyMember(member: PartyMember) {
             ...partyState.value.party.slice(idx + 1),
         ],
     });
+}
+
+function getParty() {
+    return partyState.value.party;
+}
+
+function getMemberIdx(member: PartyMember) {
+    return partyState.value.party.findIndex((m) => m.id === member.id);
 }
 
 async function loadParty() {
@@ -111,6 +119,8 @@ export function useParty() {
         loaded,
         partyState,
         getLeader,
+        getParty,
+        getMemberIdx,
         loadParty,
         addPartyMember,
         removePartyMember,

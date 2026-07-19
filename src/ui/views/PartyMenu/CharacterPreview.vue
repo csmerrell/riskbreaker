@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { getScale, getWorldCoords } from '@/lib/helpers/screen.helper';
 import { useExploration } from '@/state/useExploration';
-import { useGameContext } from '@/state/useGameContext';
+import { PartyMember, useParty } from '@/state/useParty';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
-import { Actor, Graphic, ImageSource, Sprite, vec } from 'excalibur';
+import { Actor, ImageSource, Sprite, vec } from 'excalibur';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 type Props = {
-    character: CompositeActor;
+    character: PartyMember;
 };
 const { character } = defineProps<Props>();
+
 const root = ref<HTMLDivElement>();
 
 const showCaseSrc = new ImageSource('/image/misc/GrassShowcase.png');
@@ -32,7 +34,7 @@ if (showCaseSrc.isLoaded()) {
 
 const mounted = ref(false);
 
-function getCoordinates() {
+function getPreviewCenter() {
     const { left, top } = root.value!.getBoundingClientRect();
     const xMid = left + size.value.w / 2;
     const yMid = top + size.value.h / 4;
@@ -42,32 +44,73 @@ function getCoordinates() {
 const scene = useExploration().getExplorationManager().scene;
 const bgActor = new Actor();
 const ready = ref(false);
-function addCharacterToScene() {
-    const center = getCoordinates();
+function addBgToScene() {
+    const center = getPreviewCenter();
     bgActor.pos = center;
     bgActor.z = 1000;
     bgActor.scale = vec(1, 1).scale(1 - 1 / getScale());
     bgActor.graphics.add(showCaseSprite.value!);
     scene.add(bgActor);
+}
+
+let player = new CompositeActor(character);
+function addPlayerToScene() {
+    player.z = 1001;
+    player.scale = vec(-1, 1);
+    player.pos = getPreviewCenter().add(vec(-2, 8));
+    scene.add(player);
+}
+
+function changePlayer(idx: number) {
+    const member = useParty().getParty()[idx];
+    scene.remove(player);
+    player = new CompositeActor(member);
+    addPlayerToScene();
+}
+
+function hydrateScene() {
+    addBgToScene();
+    addPlayerToScene();
     ready.value = true;
 }
 
 function cleanup() {
     scene.remove(bgActor);
+    scene.remove(player);
     ready.value = false;
 }
+
+const emit = defineEmits(['player-changed']);
+let listeners: string[] = [];
 onMounted(() => {
+    listeners = [
+        registerInputListener(() => {
+            let idx = useParty().getMemberIdx(character) - 1;
+            if (idx < 0) idx = useParty().getParty().length - 1;
+            changePlayer(idx);
+            emit('player-changed', idx);
+        }, 'tab_left'),
+        registerInputListener(() => {
+            let idx = useParty().getMemberIdx(character) + 1;
+            if (idx >= useParty().getParty().length) idx = 0;
+            changePlayer(idx);
+            emit('player-changed', idx);
+        }, 'tab_right'),
+    ];
     mounted.value = true;
 });
 
 onBeforeUnmount(() => {
     cleanup();
     mounted.value = false;
+    listeners.forEach((l) => {
+        unregisterInputListener(l);
+    });
 });
 
 const { maskReady } = useExploration().getExplorationManager().partyMenuManager;
 watch([showCaseRdy, mounted, maskReady], () => {
-    if (showCaseRdy.value && mounted.value && maskReady.value) addCharacterToScene();
+    if (showCaseRdy.value && mounted.value && maskReady.value) hydrateScene();
     else if (!maskReady.value) cleanup();
 });
 </script>

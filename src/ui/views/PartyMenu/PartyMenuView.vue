@@ -11,6 +11,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import SpecializationView from './SpecializationView.vue';
 import LoadoutView from './LoadoutView.vue';
 import InventoryView from './InventoryView.vue';
+import { useParty } from '@/state/useParty.js';
 
 const { activePartyMemberTab } = useExploration();
 const tabs = ref<{ key: PartyMenuTab; label: string }[]>([
@@ -64,6 +65,16 @@ onBeforeUnmount(() => {
         unregisterInputListener(l);
     });
 });
+
+const party = useParty().getParty();
+const selectedPlayerIdx = ref(0);
+const selectedPlayer = computed(() => {
+    return party[selectedPlayerIdx.value];
+});
+
+function changeSelectedPlayer(idx: number = 0) {
+    selectedPlayerIdx.value = idx;
+}
 </script>
 
 <template>
@@ -100,8 +111,16 @@ onBeforeUnmount(() => {
             </menu-box>
         </div>
         <div class="w-11/12 grow self-center">
-            <loadout-view v-if="activeTabName === 'loadout'" />
-            <specialization-view v-else-if="activeTabName === 'skill'" />
+            <loadout-view
+                v-if="activeTabName === 'loadout'"
+                :player="selectedPlayer"
+                @player-changed="changeSelectedPlayer"
+            />
+            <specialization-view
+                v-else-if="activeTabName === 'skill'"
+                :player="selectedPlayer"
+                @player-changed="changeSelectedPlayer"
+            />
             <inventory-view v-else-if="activeTabName === 'inventory'" />
         </div>
     </div>
