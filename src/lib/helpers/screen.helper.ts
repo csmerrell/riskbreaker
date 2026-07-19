@@ -12,3 +12,7 @@ export function getScale() {
 export function getScreenCoords(coordinates: Vector) {
     return useGameContext().game.value.worldToScreenCoordinates(coordinates).scale(getScale());
 }
+
+export function getWorldCoords(coordinates: Vector) {
+    return useGameContext().game.value.screenToWorldCoordinates(coordinates.scale(1 / getScale()));
+}

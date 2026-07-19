@@ -10,7 +10,7 @@ import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import { useIcons } from '@/ui/components/menus/crossHotbar/useIcons';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
-const allIcons = ref<{ key: 'inventory' | 'equipment' | 'skill'; icon: HTMLImageElement }[]>([]);
+const allIcons = ref<{ key: 'inventory' | 'loadout' | 'skill'; icon: HTMLImageElement }[]>([]);
 const focused = computed(() => {
     return allIcons.value.find((i) => i.key === useExploration().activePartyMemberTab.value);
 });
@@ -34,7 +34,7 @@ onMounted(async () => {
             icon: skillIcon,
         },
         {
-            key: 'equipment',
+            key: 'loadout',
             icon: equipIcon,
         },
     ];

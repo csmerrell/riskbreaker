@@ -5,6 +5,7 @@ import { useGameContext } from '../useGameContext';
 import { MaskingManager } from '../MaskingManager';
 import { useExploration } from '../useExploration';
 import { getScale } from '@/lib/helpers/screen.helper';
+import { ref } from 'vue';
 
 export class PartyMenuManager extends MaskingManager {
     constructor(protected parent: ExplorationManager) {
@@ -12,6 +13,7 @@ export class PartyMenuManager extends MaskingManager {
         this.setReady();
     }
 
+    public maskReady = ref(false);
     public async open(): Promise<void> {
         this.parent.movementManager.disableMovement();
         await this.parent.movementManager.movementReleased;
@@ -29,6 +31,7 @@ export class PartyMenuManager extends MaskingManager {
                 this.parent.actorManager.getLeader().fadeOut(),
                 this.scene.camera.zoomOverTime(1 + 2 / getScale(), 250, EasingFunctions.Linear),
             ]);
+            this.maskReady.value = true;
             registerInputListener(() => {
                 this.close();
             }, 'cancel');
@@ -37,6 +40,7 @@ export class PartyMenuManager extends MaskingManager {
     }
 
     public async close(): Promise<void> {
+        this.maskReady.value = false;
         await Promise.all([
             this.removeMask({ duration: 50 }),
             this.parent.actorManager.getLeader().fadeIn(),

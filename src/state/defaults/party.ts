@@ -55,7 +55,7 @@ export const RiskbreakerDefault: PartyMember = {
     name: 'Riskbreaker',
     config: {
         battlePosition: 'left-1',
-        leader: false,
+        leader: true,
     },
     appearance: {
         armor: 'bladesealerYoroi',
@@ -115,7 +115,6 @@ export const AstrologianDefault: PartyMember = {
     alignment: 'ally',
     config: {
         battlePosition: 'left-2',
-        leader: true,
     },
     appearance: {
         armor: 'moonfangAttire',

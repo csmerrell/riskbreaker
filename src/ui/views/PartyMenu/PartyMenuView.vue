@@ -70,27 +70,32 @@ onBeforeUnmount(() => {
     <div class="fixed inset-0 z-[1000] flex size-full flex-col justify-start gap-4">
         <div class="relative mx-auto mt-12 h-8 w-11/12 basis-8">
             <menu-box class="text-standard-md h-full skew-x-12 text-white">
-                <div class="relative flex h-full -skew-x-12 flex-row items-center justify-center">
+                <div class="relative size-full">
+                    <div class="absolute inset-x-4 inset-y-0 bg-bg opacity-90" />
                     <div
-                        v-for="(tab, idx) in tabs"
-                        :key="tab.label + (selectedTab === idx)"
-                        class="mr-4 flex h-full min-w-64 skew-x-12 flex-row items-center py-0.5 pl-8 pr-12"
-                        :class="selectedTab === idx && 'bg-rose-700'"
+                        class="absolute inset-0 flex -skew-x-12 flex-row items-center justify-center"
                     >
-                        <span class="-skew-x-12 whitespace-nowrap">
-                            {{ tab.label }}
-                        </span>
+                        <div
+                            v-for="(tab, idx) in tabs"
+                            :key="tab.label + (selectedTab === idx)"
+                            class="mr-4 flex h-full min-w-64 skew-x-12 flex-row items-center py-0.5 pl-8 pr-12"
+                            :class="selectedTab === idx && 'bg-rose-700'"
+                        >
+                            <span class="-skew-x-12 whitespace-nowrap">
+                                {{ tab.label }}
+                            </span>
+                        </div>
+                        <control-icon-sprite
+                            command="shoulder_left"
+                            class="absolute -left-6 top-[-1.575rem]"
+                            size="sm"
+                        />
+                        <control-icon-sprite
+                            command="shoulder_right"
+                            class="absolute -right-5 top-[-1.575rem]"
+                            size="sm"
+                        />
                     </div>
-                    <control-icon-sprite
-                        command="shoulder_left"
-                        class="absolute -left-6 top-[-1.575rem]"
-                        size="sm"
-                    />
-                    <control-icon-sprite
-                        command="shoulder_right"
-                        class="absolute -right-5 top-[-1.575rem]"
-                        size="sm"
-                    />
                 </div>
             </menu-box>
         </div>
