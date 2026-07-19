@@ -31,7 +31,7 @@ type Props = {
         faceButton?: QuadEvents;
     };
     scaleAnchor?: 'left' | 'right';
-    gateButton: 'shoulder_left' | 'shoulder_right';
+    gateButton?: 'shoulder_left' | 'shoulder_right';
     quads?: QuadType[];
     capturesControls?: boolean;
 };
@@ -50,7 +50,7 @@ const listeners: string[] = [];
 
 // Register gate button listener
 function onHold(inputs?: InputMap) {
-    focused.value = inputs?.[gateButton] ?? false;
+    focused.value = inputs?.[gateButton!] ?? false;
     if (!focused.value && capturesControls) {
         unCaptureControls();
     }
@@ -65,18 +65,28 @@ watch(focused, () => {
     container.value?.addEventListener('transitionend', transitionEnd);
 });
 
-onMounted(() => {
-    if (capturesControls) {
+watch(
+    () => gateButton,
+    () => {
+        if (gateButton) {
+            registerGates();
+        }
+    },
+);
+
+function registerGates() {
+    if (capturesControls && gateButton) {
         listeners.push(
             registerInputListener(() => {
                 captureControls('hotbarSet');
                 registerHoldListener((inputs) => onHold(inputs));
             }, gateButton),
         );
-    } else {
+    } else if (gateButton) {
         registerHoldListener((inputs) => onHold(inputs));
     }
-});
+}
+onMounted(() => registerGates);
 
 onUnmounted(() => {
     listeners.forEach((l) => unregisterInputListener(l));

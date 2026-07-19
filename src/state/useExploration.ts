@@ -26,8 +26,8 @@ export type TileControlPrompt = {
 const tileControlPrompts = makeState<TileControlPrompt | null>();
 const loaded = makeState<boolean>(false);
 
-export type PartyMenuTab = 'inventory' | 'equipment' | 'skill';
-const activePartyMemberTab = ref<PartyMenuTab>('skill');
+export type PartyMenuTab = 'inventory' | 'loadout' | 'skill';
+const activePartyMemberTab = ref<PartyMenuTab>('loadout');
 
 function awaitScene() {
     if (sceneReady.value) {
