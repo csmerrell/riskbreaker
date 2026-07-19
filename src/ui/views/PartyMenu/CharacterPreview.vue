@@ -3,16 +3,11 @@ import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { getScale, getWorldCoords } from '@/lib/helpers/screen.helper';
 import { useExploration } from '@/state/useExploration';
-import { PartyMember, useParty } from '@/state/useParty';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
 import { Actor, ImageSource, Sprite, vec } from 'excalibur';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-
-type Props = {
-    character: PartyMember;
-};
-const { character } = defineProps<Props>();
+import { useSelectedCharacter } from './useSelectedCharacter';
 
 const root = ref<HTMLDivElement>();
 
@@ -53,7 +48,8 @@ function addBgToScene() {
     scene.add(bgActor);
 }
 
-let player = new CompositeActor(character);
+const { selectedMember, changeSelectedMember } = useSelectedCharacter();
+let player = new CompositeActor(selectedMember.value);
 function addPlayerToScene() {
     player.z = 1001;
     player.scale = vec(-1, 1);
@@ -61,12 +57,12 @@ function addPlayerToScene() {
     scene.add(player);
 }
 
-function changePlayer(idx: number) {
-    const member = useParty().getParty()[idx];
+function changePlayer() {
     scene.remove(player);
-    player = new CompositeActor(member);
+    player = new CompositeActor(selectedMember.value);
     addPlayerToScene();
 }
+watch(selectedMember, changePlayer);
 
 function hydrateScene() {
     addBgToScene();
@@ -80,22 +76,11 @@ function cleanup() {
     ready.value = false;
 }
 
-const emit = defineEmits(['player-changed']);
 let listeners: string[] = [];
 onMounted(() => {
     listeners = [
-        registerInputListener(() => {
-            let idx = useParty().getMemberIdx(character) - 1;
-            if (idx < 0) idx = useParty().getParty().length - 1;
-            changePlayer(idx);
-            emit('player-changed', idx);
-        }, 'tab_left'),
-        registerInputListener(() => {
-            let idx = useParty().getMemberIdx(character) + 1;
-            if (idx >= useParty().getParty().length) idx = 0;
-            changePlayer(idx);
-            emit('player-changed', idx);
-        }, 'tab_right'),
+        registerInputListener(() => changeSelectedMember('left'), 'tab_left'),
+        registerInputListener(() => changeSelectedMember('right'), 'tab_right'),
     ];
     mounted.value = true;
 });
@@ -147,7 +132,7 @@ watch([showCaseRdy, mounted, maskReady], () => {
                     class="text-standard-md my-auto flex h-full flex-row items-center justify-around gap-8 text-white"
                 >
                     <ControlIconSprite command="tab_left" size="xs" class="relative top-1" />
-                    <span class="relative top-0.5">{{ character.name }}</span>
+                    <span class="relative top-0.5">{{ selectedMember.name }}</span>
                     <ControlIconSprite command="tab_right" size="xs" class="relative top-1" />
                 </div>
             </MenuBox>

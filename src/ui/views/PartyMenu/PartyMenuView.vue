@@ -1,17 +1,17 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
     getCurrentOwner,
     registerInputListener,
     unregisterInputListener,
 } from '@/game/input/useInput';
 import { PartyMenuTab, useExploration } from '@/state/useExploration';
+
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import SpecializationView from './SpecializationView.vue';
 import LoadoutView from './LoadoutView.vue';
 import InventoryView from './InventoryView.vue';
-import { useParty } from '@/state/useParty.js';
 
 const { activePartyMemberTab } = useExploration();
 const tabs = ref<{ key: PartyMenuTab; label: string }[]>([
@@ -65,16 +65,6 @@ onBeforeUnmount(() => {
         unregisterInputListener(l);
     });
 });
-
-const party = useParty().getParty();
-const selectedPlayerIdx = ref(0);
-const selectedPlayer = computed(() => {
-    return party[selectedPlayerIdx.value];
-});
-
-function changeSelectedPlayer(idx: number = 0) {
-    selectedPlayerIdx.value = idx;
-}
 </script>
 
 <template>
@@ -111,16 +101,8 @@ function changeSelectedPlayer(idx: number = 0) {
             </menu-box>
         </div>
         <div class="w-11/12 grow self-center">
-            <loadout-view
-                v-if="activeTabName === 'loadout'"
-                :player="selectedPlayer"
-                @player-changed="changeSelectedPlayer"
-            />
-            <specialization-view
-                v-else-if="activeTabName === 'skill'"
-                :player="selectedPlayer"
-                @player-changed="changeSelectedPlayer"
-            />
+            <loadout-view v-if="activeTabName === 'loadout'" />
+            <specialization-view v-else-if="activeTabName === 'skill'" />
             <inventory-view v-else-if="activeTabName === 'inventory'" />
         </div>
     </div>
