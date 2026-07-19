@@ -9,18 +9,20 @@
         - Negative excess is also banked.
 - Challenge the Odds
     - [Free] All % chance events are x% higher, including negative chance.
-- All-in Breaker
-    - Expend all banked risk for a scaled attack. 
-- All-in Bolster
+- Risk Break
+    - Expend all banked risk for a scaled attack.
+    - Full party dmg buff to allies.
+- Risk Bolster
     - Expend all banked risk for full party % damage mit (remainder of battle).
 - Shield Charge
+    - Medium Stagger. Small damage. If a unit staggers, they fall back 1 space.
 - Stagger Bash
+    - High stagger gauge power.
 - Chain Strike
-- Link Strike
-    - Follow all allied attacks with a small attack until next turn.
-    - [Passive] Chance to follow crits even if skill is not active. 
+    - 1-3 attack strike. 2nd hit is 90% chance. 3rd hit is 50%
+    - Repeat attack % chance up with higher banked risk.
 - Press the Line
-    - Presses back 1 space, occupies the space, executes a small follow-up attack.
+    - Presses back 1 space, occupies the space.
 - Temper Stance
     - [Stance] (Self) All attacks store small range % of dmg for follow-up atk 
     - Stacks with self.
@@ -34,5 +36,10 @@
     - Breaks if a direct attack is used. 
     - Both full deflect & partial mitigations trigger it.
 - Intercept
-    - % chance of drawing & deflecting attacks from an ally until next turn.
+    - % chance of deflecting attacks from self and allies until next turn.
     - Pushes back successful interceptions.
+
+Move to another class
+- Link Strike
+    - Follow all allied attacks with a small attack until next turn.
+    - [Passive] Chance to follow crits even if skill is not active. 
