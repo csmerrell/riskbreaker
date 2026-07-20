@@ -9,4 +9,5 @@ export const misc = {
     bonfire: new ImageSource('image/misc/Bonfire.png'),
     bonfireMap: new ImageSource('image/misc/BonfireMap.png'),
     dialogueMarkers: new ImageSource('image/misc/DialogueMarkers.png'),
+    forestShowcase: new ImageSource('image/misc/GrassShowcase.png'),
 };

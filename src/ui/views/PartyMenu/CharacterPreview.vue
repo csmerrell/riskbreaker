@@ -8,10 +8,11 @@ import MenuBox from '@/ui/components/MenuBox.vue';
 import { Actor, ImageSource, Sprite, vec } from 'excalibur';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useSelectedCharacter } from './useSelectedCharacter';
+import { resources } from '@/resource';
 
 const root = ref<HTMLDivElement>();
 
-const showCaseSrc = new ImageSource('/image/misc/GrassShowcase.png');
+const showCaseSrc = resources.image.misc.forestShowcase;
 const showCaseRdy = ref(false);
 const showCaseSprite = ref<Sprite>();
 const size = ref<{ w: number; h: number }>({ w: 0, h: 0 });

@@ -5,10 +5,10 @@ import { computed } from 'vue';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 
 type Props = {
-    selected: boolean;
+    focused?: boolean;
 };
 
-const { selected = false } = defineProps<Props>();
+const { focused = false } = defineProps<Props>();
 
 const { selectedMember } = useSelectedCharacter();
 const hatLabel = computed(() => {
@@ -36,15 +36,17 @@ const armorLabel = computed(() => {
 
 <template>
     <div class="flex grow flex-col gap-2 px-4 text-black">
-        <div class="text-standard-xl text-white">Fashion</div>
+        <div class="text-white" :class="focused ? 'text-standard-xl' : 'text-standard-lg py-1.5'">
+            Fashion
+        </div>
         <div
-            class="relative -left-16 skew-x-[42deg] border-yellow-700 py-2"
-            :class="selected ? 'border-4 bg-yellow-500' : 'border-2 bg-bg-dark text-white'"
-            :style="{ width: 'calc(100% + 6rem)' }"
+            class="relative -left-12 skew-x-[42deg] border-yellow-700 py-2"
+            :class="focused ? 'border-4 bg-yellow-500' : 'border-2 bg-bg-dark text-white'"
+            :style="{ width: 'calc(100% + 2rem)' }"
         >
-            <div class="skew-x-[-42deg] pl-12">
+            <div class="skew-x-[-42deg] pl-10">
                 <div
-                    v-if="selected"
+                    v-if="focused"
                     class="absolute -top-7 right-32 flex flex-row items-start gap-2"
                 >
                     <ControlIconSprite command="confirm" size="sm" />
@@ -55,19 +57,19 @@ const armorLabel = computed(() => {
                     </div>
                 </div>
                 <div class="flex flex-row gap-6 py-1.5">
-                    <div class="font-bold" :class="!selected && 'text-rose-700'">Hat:</div>
+                    <div class="font-bold" :class="!focused && 'text-rose-700'">Hat:</div>
                     <div class="font-bold">
                         {{ hatLabel }}
                     </div>
                 </div>
                 <div class="flex flex-row gap-6 py-1.5 pl-8">
-                    <div class="font-bold" :class="!selected && 'text-rose-700'">Hair:</div>
+                    <div class="font-bold" :class="!focused && 'text-rose-700'">Hair:</div>
                     <div class="font-bold">
                         {{ hairLabel }}
                     </div>
                 </div>
                 <div class="flex flex-row gap-6 py-1.5 pl-16">
-                    <div class="font-bold" :class="!selected && 'text-rose-700'">Armor:</div>
+                    <div class="font-bold" :class="!focused && 'text-rose-700'">Armor:</div>
                     <div class="font-bold">
                         {{ armorLabel }}
                     </div>
