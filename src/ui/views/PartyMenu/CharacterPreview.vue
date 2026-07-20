@@ -64,16 +64,19 @@ function changePlayer() {
 }
 watch(selectedMember, changePlayer);
 
+const emit = defineEmits(['ready']);
 function hydrateScene() {
     addBgToScene();
     addPlayerToScene();
     ready.value = true;
+    emit('ready', ready.value);
 }
 
 function cleanup() {
     scene.remove(bgActor);
     scene.remove(player);
     ready.value = false;
+    emit('ready', ready.value);
 }
 
 let listeners: string[] = [];

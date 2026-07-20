@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import AppearanceSettings from './AppearanceSettings.vue';
+import { ref } from 'vue';
 import CharacterPreview from './CharacterPreview.vue';
+import FashionSettings from './FashionSettings.vue';
+
+const ready = ref(false);
 </script>
 
 <template>
     <div class="flex flex-col">
-        <div class="flex flex-row gap-4">
-            <CharacterPreview />
-            <div class="text-standard-md relative text-white">
-                <div class="absolute z-20">
-                    <AppearanceSettings />
+        <div class="flex flex-row items-stretch gap-4">
+            <CharacterPreview @ready="(val) => (ready = val)" />
+            <div v-if="ready" class="relative grow">
+                <div class="absolute inset-0 z-20">
+                    <FashionSettings />
                 </div>
             </div>
         </div>

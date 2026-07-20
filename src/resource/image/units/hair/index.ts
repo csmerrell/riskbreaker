@@ -15,3 +15,19 @@ export const hair = {
     throwback_Brown: new ImageSource('/image/units/hair/Throwback_Brown.png'),
     tightCurls: new ImageSource('/image/units/hair/TightCurls.png'),
 };
+
+export const hairLabels = {
+    bun: 'Bun',
+    featherTail_Black: 'Feather Tail (Black)',
+    featherTail_White: 'Feather Tail (White)',
+    locs: 'Locs',
+    moodBangs: 'Mood Bangs',
+    moodBangs_Hat: '',
+    poofyBob: 'Volume Bob',
+    shortMessy: 'Messy Cut',
+    sideSweep: 'Side Sweep',
+    throwback_Black: 'Throwback (Black)',
+    throwback_Brown: 'Throwback (Brown)',
+    tightCurls: 'Tight Curls',
+    dragonBob: "Dragonkin's Bob",
+};

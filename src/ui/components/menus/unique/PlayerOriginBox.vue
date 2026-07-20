@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import MenuBox from '../../MenuBox.vue';
-import KeySprite from '../../KeySprite.vue';
 import ControlIconSprite from '../../ControlIconSprite.vue';
 type PlayerOriginBoxProps = {
     origin: 'astrologian' | 'riskbreaker';

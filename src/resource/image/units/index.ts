@@ -1,7 +1,7 @@
 import { ImageSource } from 'excalibur';
-import { armor } from './armor/';
-import { hair } from './hair/';
-import { hat } from './hat';
+import { armor, armorLabels } from './armor/';
+import { hair, hairLabels } from './hair/';
+import { hat, hatLabels } from './hat';
 import { unique } from './unique';
 import { weapon } from './weapon';
 import { accessory } from './accessory';
@@ -14,6 +14,12 @@ export const units = {
     weapon,
     accessory,
     mannequin: new ImageSource('/image/units/Mannequin.png'),
+};
+
+export const fashionLabels = {
+    hair: hairLabels,
+    hat: hatLabels,
+    armor: armorLabels,
 };
 
 export type AccessoryType = keyof typeof accessory;

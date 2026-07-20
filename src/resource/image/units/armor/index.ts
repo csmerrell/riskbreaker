@@ -16,3 +16,20 @@ export const armor = {
     stonecallerRobe: new ImageSource('/image/units/armor/StonecallerRobe.png'),
     spellbladeTabard: new ImageSource('/image/units/armor/SpellbladeTabard.png'),
 };
+
+export const armorLabels = {
+    artificerCoveralls: "Worker's Coveralls",
+    asceticGi: "Ascetic's Gi",
+    astrologianCloak: 'Astral Cloak',
+    bladesealerYoroi: 'Sakura Domaru',
+    lifebinderKimono: 'Slit Dress',
+    minstrelCoat: "Captain's Coat",
+    moonfangAttire: "Hunter's Garb",
+    naturalistGarb: 'Earthen Attire',
+    riskbreakerLeathers: 'Leather Gear',
+    shadeweaverCloak: 'Shadow Cloak',
+    shadeweaverRobe: 'Robe of Darkness',
+    soulswordGi: "Soulsword's Gi",
+    spellbladeTabard: 'Ruby Tabard',
+    stonecallerRobe: "Stonecaller's Cloak",
+};
