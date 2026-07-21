@@ -2,14 +2,17 @@
 import { getScale } from '@/lib/helpers/screen.helper';
 import { onMounted, ref } from 'vue';
 import { useIcons } from './useIcons';
+import { ImageSource } from 'excalibur';
+import { resources } from '@/resource';
 
 type Props = {
     type: 'skill' | 'menu';
     col?: number;
     row?: number;
+    src?: ImageSource;
 };
 
-const { type, col, row } = defineProps<Props>();
+const { type, col, row, src = resources.image.icons.skills.default } = defineProps<Props>();
 
 const imgContainer = ref<HTMLDivElement>();
 const size = ref((getScale() - 2) * (type === 'skill' ? 24 : 32));
@@ -19,7 +22,7 @@ if (col !== undefined && row !== undefined) {
         let imageEl: HTMLImageElement;
         switch (type) {
             case 'skill':
-                imageEl = await useIcons().getSkillIcon(col, row);
+                imageEl = await useIcons().getSkillIcon(col, row, src);
                 break;
             case 'menu':
             default:

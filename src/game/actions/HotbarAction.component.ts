@@ -1,12 +1,19 @@
-import { Component, Vector } from 'excalibur';
+import { Component, ImageSource, Vector } from 'excalibur';
 
 export class HotbarActionComponent extends Component {
+    public iconSrc: ImageSource;
     public iconPos: Vector;
     public label: string;
     private action: undefined | (() => Promise<unknown>);
 
-    constructor(config: { iconPos: Vector; label: string; action?: () => Promise<unknown> }) {
+    constructor(config: {
+        iconSrc: ImageSource;
+        iconPos: Vector;
+        label: string;
+        action?: () => Promise<unknown>;
+    }) {
         super();
+        this.iconSrc = config.iconSrc;
         this.iconPos = config.iconPos;
         this.label = config.label;
         this.action = config.action;

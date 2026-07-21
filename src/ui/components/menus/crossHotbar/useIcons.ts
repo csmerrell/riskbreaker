@@ -1,10 +1,10 @@
 import { resources } from '@/resource';
-import { SpriteSheet } from 'excalibur';
+import { ImageSource, SpriteSheet } from 'excalibur';
 
 export function useIcons() {
-    const getSkillIcon = async (col: number, row: number) => {
+    const getSkillIcon = async (col: number, row: number, src: ImageSource) => {
         return await SpriteSheet.fromImageSource({
-            image: resources.image.icons.skills,
+            image: src,
             grid: {
                 spriteHeight: 24,
                 spriteWidth: 24,

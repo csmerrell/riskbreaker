@@ -5,8 +5,9 @@ import { emptyStatMods } from '../battle/UnitStats';
 import { ShieldChargeSkill } from '@/game/actions/Riskbreaker/ShieldCharge';
 import { vec } from 'excalibur';
 import { StaggerBashSkill } from '@/game/actions/Riskbreaker/StaggerBash';
-import { AttackSkill } from '@/game/actions/Attack';
+import { BreakSkill } from '@/game/actions/Riskbreaker/Break';
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
+import { resources } from '@/resource';
 
 const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     staggerBash: {
@@ -15,7 +16,8 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
         action: (() => {
             const skill = new StaggerBashSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(4, 1),
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(5, 0),
                     label: 'Stagger Bash',
                 }),
             });
@@ -28,21 +30,92 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
         action: (() => {
             const skill = new ShieldChargeSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(6, 4),
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(4, 0),
                     label: 'Shield Charge',
                 }),
             });
             return skill;
         })(),
     },
-    attack: {
-        name: 'Attack',
-        skillKey: 'attack',
+    temperStance: {
+        name: 'Temper Stance',
+        skillKey: 'temperStance',
         action: (() => {
-            const skill = new AttackSkill({
+            const skill = new BreakSkill({
                 hotbarActionComponent: new HotbarActionComponent({
-                    iconPos: vec(9, 3),
-                    label: 'Attack',
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(0, 1),
+                    label: 'Temper Stance',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    challengeTheOdds: {
+        name: 'Challenge the Odds',
+        skillKey: 'challengeTheOdds',
+        action: (() => {
+            return new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(1, 0),
+                    label: 'Challenge the Odds',
+                }),
+            });
+        })(),
+    },
+    chainStrike: {
+        name: 'Chain Strike',
+        skillKey: 'chainStrike',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(6, 0),
+                    label: 'Chain Strike',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    break: {
+        name: 'Break',
+        skillKey: 'break',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(0, 0),
+                    label: 'Break',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    siphonBit: {
+        name: 'Siphon Bit',
+        skillKey: 'siphonBit',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(5, 0),
+                    label: 'Siphon Bit',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    infuseAir: {
+        name: 'Infuse Air',
+        skillKey: 'infuseAir',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(8, 0),
+                    label: 'Infuse Air',
                 }),
             });
             return skill;
@@ -76,10 +149,15 @@ export const RiskbreakerDefault: PartyMember = {
     equippedAbilities: {
         dPad: {
             up: RiskbreakerDefaultAbilities.staggerBash.action,
+            down: RiskbreakerDefaultAbilities.temperStance.action,
+            left: RiskbreakerDefaultAbilities.challengeTheOdds.action,
+            right: RiskbreakerDefaultAbilities.infuseAir.action,
         },
         faceButton: {
-            down: RiskbreakerDefaultAbilities.attack.action,
+            down: RiskbreakerDefaultAbilities.break.action,
+            right: RiskbreakerDefaultAbilities.chainStrike.action,
             left: RiskbreakerDefaultAbilities.shieldCharge.action,
+            up: RiskbreakerDefaultAbilities.siphonBit.action,
         },
     },
     stats: {

@@ -1,6 +1,7 @@
 import { ImageSource } from 'excalibur';
+import { skills } from './skills';
 
 export const icons = {
-    skills: new ImageSource('/image/icon/skills.png'),
+    skills,
     menu: new ImageSource('/image/icon/MenuIcons.png'),
 };
