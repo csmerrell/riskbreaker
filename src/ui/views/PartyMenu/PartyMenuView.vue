@@ -12,6 +12,7 @@ import MenuBox from '@/ui/components/MenuBox.vue';
 import SpecializationView from './SpecializationView.vue';
 import LoadoutView from './LoadoutView.vue';
 import InventoryView from './InventoryView.vue';
+import NightSkyRender from './NightSkyRender.vue';
 
 const { activePartyMemberTab } = useExploration();
 const tabs = ref<{ key: PartyMenuTab; label: string }[]>([
@@ -105,5 +106,7 @@ onBeforeUnmount(() => {
             <specialization-view v-else-if="activeTabName === 'skill'" />
             <inventory-view v-else-if="activeTabName === 'inventory'" />
         </div>
+
+        <night-sky-render :active-tab-name />
     </div>
 </template>

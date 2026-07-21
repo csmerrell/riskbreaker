@@ -1,6 +1,12 @@
 import { equipment } from '../equipment';
 
-export type EquipmentSlotKey = 'mainHand' | 'offHand' | 'body' | 'head' | 'accessory';
+export type EquipmentSlotKey =
+    | 'mainHand'
+    | 'offHand'
+    | 'body'
+    | 'head'
+    | 'accessory1'
+    | 'accessory2';
 export type StatMap = Partial<{
     hp: number;
     mp: number;

@@ -67,6 +67,10 @@ export const RiskbreakerDefault: PartyMember = {
     equipment: {
         mainHand: 'worn_scimitar',
         offHand: 'worn_buckler',
+        head: undefined,
+        body: 'worn_leather_garb',
+        accessory1: undefined,
+        accessory2: undefined,
     },
     abilities: RiskbreakerDefaultAbilities,
     equippedAbilities: {
