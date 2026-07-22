@@ -66,6 +66,8 @@ onBeforeUnmount(() => {
         unregisterInputListener(l);
     });
 });
+
+const ready = ref(false);
 </script>
 
 <template>
@@ -102,11 +104,11 @@ onBeforeUnmount(() => {
             </menu-box>
         </div>
         <div class="w-11/12 grow self-center">
-            <loadout-view v-if="activeTabName === 'loadout'" />
+            <loadout-view v-if="activeTabName === 'loadout'" @ready="(val) => (ready = val)" />
             <specialization-view v-else-if="activeTabName === 'skill'" />
             <inventory-view v-else-if="activeTabName === 'inventory'" />
         </div>
 
-        <night-sky-render :active-tab-name />
+        <night-sky-render v-if="ready" :active-tab-name />
     </div>
 </template>

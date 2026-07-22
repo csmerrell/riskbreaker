@@ -1,26 +1,13 @@
-import { gameEnum } from '@/lib/enum/game.enum';
 import { resources } from '@/resource';
 import {
     type AnimationKey,
     COMPOSITE_SPRITE_GRID,
-    FrameMap,
     spriteMap,
 } from '@/resource/image/units/spriteMap';
-import {
-    Actor,
-    ActorArgs,
-    Color,
-    Engine,
-    Graphic,
-    ImageSource,
-    Material,
-    Rectangle,
-    Shader,
-} from 'excalibur';
+import { Actor, ActorArgs, Engine, ImageSource, Material, Shader } from 'excalibur';
 import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, HatType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
-import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import { ReadyComponent } from '../ReadyComponent';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationOptions } from '../useKeyedAnimation';

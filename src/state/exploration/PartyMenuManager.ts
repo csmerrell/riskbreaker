@@ -6,11 +6,15 @@ import { MaskingManager } from '../MaskingManager';
 import { useExploration } from '../useExploration';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { ref } from 'vue';
+import { HeadshotManager } from '../battle/HeadshotManager';
 
 export class PartyMenuManager extends MaskingManager {
+    public headshotManager;
+
     constructor(protected parent: ExplorationManager) {
         super(parent);
         this.setReady();
+        this.headshotManager = new HeadshotManager(this);
     }
 
     public maskReady = ref(false);

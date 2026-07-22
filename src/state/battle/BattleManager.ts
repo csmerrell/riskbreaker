@@ -19,7 +19,6 @@ import {
     unCaptureControls,
     unregisterInputListener,
 } from '@/game/input/useInput';
-import { gameEnum } from '@/lib/enum/game.enum';
 import { useExploration } from '../useExploration';
 import { loopUntil } from '@/lib/helpers/async.helper';
 import { ExplorationManager } from '../exploration/ExplorationManager';

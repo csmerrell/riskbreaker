@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import CharacterPreview from './CharacterPreview.vue';
 import FashionSettings from './FashionSettings.vue';
 import EquipmentSettings from './EquipmentSettings.vue';
@@ -8,6 +8,7 @@ import { useNightSky } from './useNightSky.js';
 import { vec } from 'excalibur';
 
 const ready = ref(false);
+const emit = defineEmits(['ready']);
 const starOffsets = ref<[number, number, string][]>([
     [-1, -0.25, 'sm'],
     [-0.75, 1, 'md'],
@@ -44,7 +45,14 @@ watch([ready, skyAnchor], () => {
 <template>
     <div class="flex h-full flex-col gap-12">
         <div class="flex flex-row items-stretch gap-4">
-            <CharacterPreview @ready="(val) => (ready = val)" />
+            <CharacterPreview
+                @ready="
+                    (val) => {
+                        ready = val;
+                        emit('ready', val);
+                    }
+                "
+            />
             <div v-if="ready" class="relative grow">
                 <div class="absolute inset-0 z-20">
                     <div ref="skyAnchor" class="absolute -right-8 top-4" />

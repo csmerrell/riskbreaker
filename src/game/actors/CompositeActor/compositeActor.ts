@@ -1,6 +1,7 @@
 import { Actor, ActorArgs, AnimationStrategy, Engine, vec, Vector } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
+import SILHOUETTE from '@/shader/silhouette.glsl?raw';
 import {
     COMPOSITE_SPRITE_GRID,
     SpriteGridOptions,
@@ -210,8 +211,14 @@ export class CompositeActor extends Actor {
             noSuppress?: boolean;
         },
     ) {
+        this.showLayer('mainHand');
+        this.showLayer('offHand');
+
         if (!opts?.noSuppress && !key.match(/static|staticBack/)) {
             this.suppressMovementAnimation = true;
+        } else if (key.match(/static|staticBack/)) {
+            this.hideLayer('mainHand');
+            this.hideLayer('offHand');
         } else {
             this.suppressMovementAnimation = false;
         }
@@ -238,6 +245,40 @@ export class CompositeActor extends Actor {
     public show() {
         this.flatKeys.forEach((key) => this[key]?.show());
         this.arrayKeys.forEach((key) => this[key].forEach((layer) => layer.show()));
+    }
+
+    public hideLayer(key: CompositeSpriteLayers) {
+        if (Array.isArray(this[key])) {
+            this[key].forEach((layer) => layer.hide());
+        } else {
+            this[key]?.hide();
+        }
+    }
+    public showLayer(key: CompositeSpriteLayers) {
+        if (Array.isArray(this[key])) {
+            this[key].forEach((layer) => layer.show());
+        } else {
+            this[key]?.show();
+        }
+    }
+
+    public makeSilhouette() {
+        this.flatKeys.forEach((key) => {
+            this[key]?.addMaterialLayer({
+                name: 'silhouette',
+                fragmentSource: SILHOUETTE,
+                setupUniforms: () => {},
+            });
+        });
+        this.arrayKeys.forEach((key) =>
+            this[key].forEach((layer) =>
+                layer.addMaterialLayer({
+                    name: 'silhouette',
+                    fragmentSource: SILHOUETTE,
+                    setupUniforms: () => {},
+                }),
+            ),
+        );
     }
 
     public fadeOut(duration: number = 250) {
