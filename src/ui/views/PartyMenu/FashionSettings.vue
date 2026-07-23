@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { fashionLabels } from '@/resource/image/units';
-import { useSelectedCharacter } from './useSelectedCharacter';
-import { computed } from 'vue';
+import { usePartyMenu } from './usePartyMenu';
+import { computed, ComputedRef, ref, watch } from 'vue';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
+import { useMenuEdit } from './useMenuEdit';
+import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
+import FashionItem from './FashionItem.vue';
 
 type Props = {
     focused?: boolean;
@@ -10,26 +13,68 @@ type Props = {
 
 const { focused = false } = defineProps<Props>();
 
-const { selectedMember } = useSelectedCharacter();
-const hatLabel = computed(() => {
-    if (selectedMember.value.appearance.hat) {
-        return fashionLabels.hat[selectedMember.value.appearance.hat];
-    } else {
-        return '[None - Show Equipped]';
-    }
-});
-const hairLabel = computed(() => {
-    if (selectedMember.value.appearance.hair) {
-        return fashionLabels.hair[selectedMember.value.appearance.hair];
-    } else {
-        return '[None - Show Equipped]';
-    }
-});
-const armorLabel = computed(() => {
-    if (selectedMember.value.appearance.armor) {
-        return fashionLabels.armor[selectedMember.value.appearance.armor];
-    } else {
-        return '[None - Show Equipped]';
+const { selectedMember } = usePartyMenu();
+
+const isFocused = computed(() => focused);
+const { editing, addCleanupCb } = useMenuEdit(isFocused);
+type FashionItemKey = 'hat' | 'head' | 'body';
+export type FashionMenuItem = { key: FashionItemKey; label: string; value: ComputedRef<string> };
+const editTarget = ref(0);
+const fashionItems: FashionMenuItem[] = [
+    {
+        key: 'hat',
+        label: 'Hat',
+        value: computed(() => {
+            if (selectedMember.value.appearance.hat) {
+                return fashionLabels.hat[selectedMember.value.appearance.hat];
+            } else {
+                return '[None - Show Equipped]';
+            }
+        }),
+    },
+    {
+        key: 'head',
+        label: 'Head',
+        value: computed(() => {
+            if (selectedMember.value.appearance.hair) {
+                return fashionLabels.hair[selectedMember.value.appearance.hair];
+            } else {
+                return '[None - Show Equipped]';
+            }
+        }),
+    },
+    {
+        key: 'body',
+        label: 'Body',
+        value: computed(() => {
+            if (selectedMember.value.appearance.armor) {
+                return fashionLabels.armor[selectedMember.value.appearance.armor];
+            } else {
+                return '[None - Show Equipped]';
+            }
+        }),
+    },
+];
+watch(editing, () => {
+    if (editing.value) {
+        const listeners = [
+            registerInputListener(() => {
+                editTarget.value += 1;
+                if (editTarget.value >= fashionItems.length) {
+                    editTarget.value = 0;
+                }
+            }, ['movement_down', 'menu_down']),
+            registerInputListener(() => {
+                editTarget.value -= 1;
+                if (editTarget.value < 0) {
+                    editTarget.value = fashionItems.length - 1;
+                }
+            }, ['movement_up', 'menu_up']),
+        ];
+
+        addCleanupCb(() => {
+            listeners.forEach((l) => unregisterInputListener(l));
+        });
     }
 });
 </script>
@@ -40,7 +85,7 @@ const armorLabel = computed(() => {
             <div class="relative inline-block">
                 Fashion
                 <div
-                    v-if="focused"
+                    v-if="focused && !editing"
                     class="absolute left-full top-0 flex flex-row items-center gap-2 pl-4"
                 >
                     <ControlIconSprite command="confirm" size="xs" />
@@ -59,24 +104,17 @@ const armorLabel = computed(() => {
                 ...(focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }),
             }"
         >
-            <div class="skew-x-[-42deg] pl-10">
-                <div class="flex flex-row gap-6 py-1.5">
-                    <div class="font-bold text-rose-700">Hat:</div>
-                    <div class="font-bold">
-                        {{ hatLabel }}
-                    </div>
-                </div>
-                <div class="flex flex-row gap-6 py-1.5 pl-8">
-                    <div class="font-bold text-rose-700">Hair:</div>
-                    <div class="font-bold">
-                        {{ hairLabel }}
-                    </div>
-                </div>
-                <div class="flex flex-row gap-6 py-1.5 pl-16">
-                    <div class="font-bold text-rose-700">Armor:</div>
-                    <div class="font-bold">
-                        {{ armorLabel }}
-                    </div>
+            <div class="skew-x-[-42deg] pl-4">
+                <div
+                    v-for="(item, idx) in fashionItems"
+                    :key="item.key"
+                    class="flex flex-col items-start py-1.5"
+                    :style="{ paddingLeft: `${idx * 2}rem` }"
+                >
+                    <FashionItem
+                        :item
+                        :focused="editing && fashionItems[editTarget].key === item.key"
+                    />
                 </div>
             </div>
         </div>

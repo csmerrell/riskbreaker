@@ -94,7 +94,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="hotbar-quad flex flex-row items-center gap-1">
+    <div class="hotbar-quad flex flex-row items-center" :class="focused ? 'gap-2' : 'gap-1'">
         <div class="relative">
             <HotbarBox
                 :type="iconType"
@@ -106,8 +106,8 @@ onUnmounted(() => {
                 {{ boxes.left.label }}
             </HotbarName>
         </div>
-        <div class="flex flex-col items-center gap-2">
-            <div class="relative">
+        <div class="flex flex-col items-center gap-1">
+            <div class="relative mb-2">
                 <HotbarBox
                     :type="iconType"
                     :row="boxes.up?.iconPos.y"

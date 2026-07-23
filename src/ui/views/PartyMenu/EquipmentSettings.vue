@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { vec } from 'excalibur';
 import MenuBox from '@/ui/components/MenuBox.vue';
 import { resources } from '@/resource';
 import { getScale } from '@/lib/helpers/screen.helper';
-import { useSelectedCharacter } from './useSelectedCharacter';
+import { usePartyMenu } from './usePartyMenu';
 import { equipment as equipmentDb } from '@/db/static/equipment';
 import { EquipmentMeta } from '@/db/static/types/Equipment';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
+import {
+    captureControls,
+    registerInputListener,
+    unCaptureControls,
+    unregisterInputListener,
+} from '@/game/input/useInput';
+import { useMenuEdit } from './useMenuEdit';
 
 type Props = {
     focused?: boolean;
@@ -16,7 +23,7 @@ type Props = {
 const { focused = false } = defineProps<Props>();
 const size = ref(vec(resources.image.misc.forestShowcase.width * getScale(), 0));
 
-const { selectedMember } = useSelectedCharacter();
+const { selectedMember } = usePartyMenu();
 
 const emptyEquip: EquipmentMeta = {
     name: '[None]',
@@ -34,6 +41,9 @@ const equipment = computed(() => {
         accessory2: eqKeys.accessory2 ? equipmentDb[eqKeys.accessory2] : { ...emptyEquip },
     };
 });
+
+const isFocused = computed(() => focused);
+const { editing } = useMenuEdit(isFocused);
 </script>
 
 <template>
@@ -62,7 +72,7 @@ const equipment = computed(() => {
                     :style="focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }"
                 >
                     <div
-                        v-if="focused"
+                        v-if="focused && !editing"
                         class="absolute -top-1 right-6 flex flex-row items-start gap-2"
                     >
                         <ControlIconSprite command="confirm" size="xs" />

@@ -21,7 +21,7 @@ function changeSelectedMember(direction: 'left' | 'right') {
             break;
     }
 }
-export function useSelectedCharacter() {
+export function usePartyMenu() {
     return {
         selectedMember,
         changeSelectedMember,

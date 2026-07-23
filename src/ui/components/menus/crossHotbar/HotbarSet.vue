@@ -30,7 +30,7 @@ type Props = {
         dPad?: QuadEvents;
         faceButton?: QuadEvents;
     };
-    scaleAnchor?: 'left' | 'right';
+    scaleAnchor?: 'left' | 'right' | 'center';
     gateButton?: 'shoulder_left' | 'shoulder_right';
     quads?: QuadType[];
     capturesControls?: boolean;
@@ -64,6 +64,10 @@ function transitionEnd() {
 watch(focused, () => {
     container.value?.addEventListener('transitionend', transitionEnd);
 });
+
+if (gateButton) {
+    registerGates();
+}
 
 watch(
     () => gateButton,
@@ -122,7 +126,7 @@ const showFace = computed(() => quads.includes('faceButton'));
             :focused="focused"
             :icon-type
         />
-        <div v-if="showDpad && showFace" class="mx-1" />
+        <div v-if="showDpad && showFace" :class="focused && 'mx-3'" />
         <HotbarQuad
             v-if="showFace"
             :events="faceEvents"

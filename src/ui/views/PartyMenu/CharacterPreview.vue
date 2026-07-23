@@ -5,9 +5,9 @@ import { getScale, getWorldCoords } from '@/lib/helpers/screen.helper';
 import { useExploration } from '@/state/useExploration';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 import MenuBox from '@/ui/components/MenuBox.vue';
-import { Actor, ImageSource, Sprite, vec } from 'excalibur';
+import { Actor, Sprite, vec } from 'excalibur';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useSelectedCharacter } from './useSelectedCharacter';
+import { usePartyMenu } from './usePartyMenu';
 import { resources } from '@/resource';
 
 const root = ref<HTMLDivElement>();
@@ -49,7 +49,7 @@ function addBgToScene() {
     scene.add(bgActor);
 }
 
-const { selectedMember, changeSelectedMember } = useSelectedCharacter();
+const { selectedMember, changeSelectedMember } = usePartyMenu();
 let player = new CompositeActor(selectedMember.value);
 function addPlayerToScene() {
     player.z = 1001;

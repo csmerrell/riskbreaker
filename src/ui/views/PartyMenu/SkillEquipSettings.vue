@@ -5,7 +5,7 @@ import HotbarBox from '@/ui/components/menus/crossHotbar/HotbarBox.vue';
 import HotbarName from '@/ui/components/menus/crossHotbar/HotbarName.vue';
 import StyledGamepadIcon from '@/ui/components/menus/crossHotbar/StyledGamepadIcon.vue';
 import { computed } from 'vue';
-import { useSelectedCharacter } from './useSelectedCharacter';
+import { usePartyMenu } from './usePartyMenu';
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
 import { Entity, ImageSource } from 'excalibur';
@@ -17,7 +17,7 @@ type Props = {
 
 const { focused = false } = defineProps<Props>();
 
-const { selectedMember } = useSelectedCharacter();
+const { selectedMember } = usePartyMenu();
 const skillBindings = computed(() => {
     const dPad: Partial<
         Record<keyof QuadEvents, { label: string; row: number; col: number; src: ImageSource }>
