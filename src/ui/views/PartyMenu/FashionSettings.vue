@@ -37,39 +37,43 @@ const armorLabel = computed(() => {
 <template>
     <div class="flex grow flex-col gap-2 px-4 text-black">
         <div class="text-white" :class="focused ? 'text-standard-xl' : 'text-standard-lg py-1.5'">
-            Fashion
-        </div>
-        <div
-            class="relative -left-12 skew-x-[42deg] border-yellow-700 py-2"
-            :class="focused ? 'border-4 bg-yellow-500' : 'border-2 bg-bg-dark text-white'"
-            :style="{ width: 'calc(100% + 2rem)' }"
-        >
-            <div class="skew-x-[-42deg] pl-10">
+            <div class="relative inline-block">
+                Fashion
                 <div
                     v-if="focused"
-                    class="absolute -top-7 right-32 flex flex-row items-start gap-2"
+                    class="absolute left-full top-0 flex flex-row items-center gap-2 pl-4"
                 >
-                    <ControlIconSprite command="confirm" size="sm" />
+                    <ControlIconSprite command="confirm" size="xs" />
                     <div
-                        class="text-standard-lg relative bottom-2 h-auto bg-bg pt-1 font-bold leading-5 text-white"
+                        class="text-standard-md relative bottom-1 h-auto bg-bg pt-1 font-bold leading-5 text-white"
                     >
                         Edit
                     </div>
                 </div>
+            </div>
+        </div>
+        <div
+            class="relative -left-12 skew-x-[42deg] border-2 border-yellow-700 bg-bg-dark py-2 text-white"
+            :style="{
+                width: 'calc(100% + 2rem)',
+                ...(focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }),
+            }"
+        >
+            <div class="skew-x-[-42deg] pl-10">
                 <div class="flex flex-row gap-6 py-1.5">
-                    <div class="font-bold" :class="!focused && 'text-rose-700'">Hat:</div>
+                    <div class="font-bold text-rose-700">Hat:</div>
                     <div class="font-bold">
                         {{ hatLabel }}
                     </div>
                 </div>
                 <div class="flex flex-row gap-6 py-1.5 pl-8">
-                    <div class="font-bold" :class="!focused && 'text-rose-700'">Hair:</div>
+                    <div class="font-bold text-rose-700">Hair:</div>
                     <div class="font-bold">
                         {{ hairLabel }}
                     </div>
                 </div>
                 <div class="flex flex-row gap-6 py-1.5 pl-16">
-                    <div class="font-bold" :class="!focused && 'text-rose-700'">Armor:</div>
+                    <div class="font-bold text-rose-700">Armor:</div>
                     <div class="font-bold">
                         {{ armorLabel }}
                     </div>

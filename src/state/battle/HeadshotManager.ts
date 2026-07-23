@@ -2,7 +2,7 @@ import { vec, Vector } from 'excalibur';
 import { BattleManager } from './BattleManager';
 import { useGameContext } from '../useGameContext';
 import { getScale } from '@/lib/helpers/screen.helper';
-import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
+import { CompositeActor, isCompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
 import { makeState } from '../Observable';
 import { ReadyComponent } from '@/game/actors/ReadyComponent';
@@ -95,7 +95,7 @@ export class HeadshotManager {
 
     async captureTemporalSnapshot(
         actor: CompositeActor | KeyedAnimationActor<string>,
-        opts: { scale?: Vector; animation?: AnimationKey } = {},
+        opts: { scale?: Vector; animation?: AnimationKey; isSilhouette?: boolean } = {},
     ) {
         const scene = useGameContext().headshotEngine.value.currentScene;
         scene.actors.forEach((a) => {
@@ -115,9 +115,8 @@ export class HeadshotManager {
             }, 0);
         });
         actor.useAnimation(opts.animation ?? 'static');
-        if ((actor as CompositeActor).makeSilhouette) {
+        if (opts.isSilhouette && isCompositeActor(actor)) {
             actor.makeSilhouette();
-            console.log('?>????');
         }
 
         // Wait for one frame to render

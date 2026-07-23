@@ -102,7 +102,7 @@ export class CompositeLayer extends Actor {
     }
 
     onInitialize(engine: Engine): void {
-        if (this.type === 'mannequin') {
+        if (this.type === 'mannequin' && !this.isSilhouette) {
             this.footShadow = engine.graphicsContext.createMaterial({
                 name: 'footShadow',
                 fragmentSource: FOOT_SHADOW,
@@ -117,7 +117,15 @@ export class CompositeLayer extends Actor {
     }
 
     public useAnimation(key: AnimationKey, opts: KeyedAnimationOptions<typeof spriteMap> = {}) {
-        return this.get(Animator).useKeyedAnimation(key, opts);
+        if (key === 'static' && this.type.match(/mainHand|offHand/)) {
+            if (this.graphics) {
+                this.graphics.material = null;
+                this.graphics.opacity = 0;
+            }
+            return Promise.resolve();
+        } else {
+            return this.get(Animator).useKeyedAnimation(key, opts);
+        }
     }
 
     public stopAnimation() {
@@ -130,7 +138,7 @@ export class CompositeLayer extends Actor {
     }
 
     public show() {
-        if (this.type === 'mannequin') {
+        if (this.type === 'mannequin' && !this.isSilhouette) {
             this.graphics.material = this.footShadow!;
         }
         this.graphics.opacity = 1;
@@ -157,7 +165,7 @@ export class CompositeLayer extends Actor {
             () => this.stepOpacity(opacityStep),
             step,
         ).then(() => {
-            if (this.type === 'mannequin') {
+            if (this.type === 'mannequin' && !this.isSilhouette) {
                 this.graphics.material = this.footShadow!;
             }
         });
@@ -171,18 +179,28 @@ export class CompositeLayer extends Actor {
         this.graphics.opacity = nextOpacity;
     }
 
+    private isSilhouette = false;
     public addMaterialLayer(materialConfig: {
         name: string;
         fragmentSource: string;
         setupUniforms?: (shader: Shader) => void;
     }): string {
+        if (materialConfig.name === 'silhouette') {
+            delete this.footShadow;
+            this.graphics.material = null;
+            this.isSilhouette = true;
+        }
+        if (!this.graphics.current) {
+            return '';
+        }
+
         const key = `${materialConfig.name}_${this.materialLayerCounter++}`;
 
         const duplicate = new Actor({
             pos: this.pos,
-            z: this.z + 1, // Slightly above original
+            z: this.z + 1,
         });
-        duplicate.graphics.use(this.graphics.current!.clone());
+        duplicate.graphics.use(this.graphics.current.clone());
 
         const material = this.scene!.engine.graphicsContext.createMaterial({
             name: materialConfig.name,

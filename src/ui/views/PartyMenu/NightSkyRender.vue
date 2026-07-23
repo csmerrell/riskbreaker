@@ -93,7 +93,7 @@ partyState.subscribe((val) => {
                 v-for="(silhouette, idx) in partySilhouettes"
                 :key="silhouette"
                 :src="silhouette"
-                class="absolute bottom-0.5 left-1/2 -translate-x-4"
+                class="absolute bottom-0 left-1/2 -translate-x-4"
                 :style="{ paddingLeft: `${idx * 2.5}rem` }"
             />
         </div>

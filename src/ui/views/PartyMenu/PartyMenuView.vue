@@ -57,7 +57,6 @@ const registerShoulders = () => {
 };
 
 onMounted(() => {
-    console.log(`Registered shoulders under ${getCurrentOwner()}`);
     listeners = [...registerShoulders()];
 });
 

@@ -39,7 +39,6 @@ onMounted(async () => {
         },
     ];
 
-    console.log('registered listener under: ', getCurrentOwner());
     listeners = [
         registerInputListener(() => {
             useExploration().getExplorationManager().partyMenuManager.open();

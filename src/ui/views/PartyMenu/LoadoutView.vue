@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
 import CharacterPreview from './CharacterPreview.vue';
 import FashionSettings from './FashionSettings.vue';
 import EquipmentSettings from './EquipmentSettings.vue';
 import SkillEquipSettings from './SkillEquipSettings.vue';
 import { useNightSky } from './useNightSky.js';
 import { vec } from 'excalibur';
+import { registerInputListener, unregisterInputListener } from '@/game/input/useInput.js';
 
 const ready = ref(false);
 const emit = defineEmits(['ready']);
@@ -40,6 +41,62 @@ watch([ready, skyAnchor], () => {
         });
     }
 });
+
+let listeners: string[] = [];
+type LoadoutMenuKey = 'fashion' | 'equipment' | 'skills';
+const menuMap: Record<
+    LoadoutMenuKey,
+    {
+        up?: LoadoutMenuKey;
+        down?: LoadoutMenuKey;
+        left?: LoadoutMenuKey;
+        right?: LoadoutMenuKey;
+    }
+> = {
+    fashion: {
+        left: 'equipment',
+        down: 'skills',
+    },
+    equipment: {
+        up: 'fashion',
+        right: 'skills',
+    },
+    skills: {
+        left: 'equipment',
+        up: 'fashion',
+    },
+};
+const focused = ref<LoadoutMenuKey>('equipment');
+onMounted(() => {
+    listeners = [
+        registerInputListener(() => {
+            const target = menuMap[focused.value].up;
+            if (target) {
+                focused.value = target;
+            }
+        }, ['menu_up', 'movement_up']),
+        registerInputListener(() => {
+            const target = menuMap[focused.value].down;
+            if (target) {
+                focused.value = target;
+            }
+        }, ['menu_down', 'movement_down']),
+        registerInputListener(() => {
+            const target = menuMap[focused.value].left;
+            if (target) {
+                focused.value = target;
+            }
+        }, ['menu_left', 'movement_left']),
+        registerInputListener(() => {
+            const target = menuMap[focused.value].right;
+            if (target) {
+                focused.value = target;
+            }
+        }, ['menu_right', 'movement_right']),
+    ];
+});
+
+onBeforeUnmount(() => listeners.forEach((l) => unregisterInputListener(l)));
 </script>
 
 <template>
@@ -65,14 +122,14 @@ watch([ready, skyAnchor], () => {
                             :class="`text-${star[2]}`"
                         />
                     </div>
-                    <FashionSettings />
+                    <FashionSettings :focused="focused === 'fashion'" />
                 </div>
             </div>
         </div>
         <div v-if="ready" class="relative grow">
             <div class="absolute inset-0 z-20 flex flex-row gap-8">
-                <EquipmentSettings />
-                <SkillEquipSettings />
+                <EquipmentSettings :focused="focused === 'equipment'" />
+                <SkillEquipSettings :focused="focused === 'skills'" />
             </div>
         </div>
     </div>

@@ -8,6 +8,7 @@ import { StaggerBashSkill } from '@/game/actions/Riskbreaker/StaggerBash';
 import { BreakSkill } from '@/game/actions/Riskbreaker/Break';
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 import { resources } from '@/resource';
+import { CompressSkill } from '@/game/actions/Astrologian/Compress';
 
 const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     staggerBash: {
@@ -180,14 +181,44 @@ const AstrologianDefaultAbilities: Record<string, SkillMetadata> = {
     starflash: {
         name: 'Starflash',
         skillKey: 'starflash',
+        action: (() => {
+            const skill = new CompressSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.default,
+                    iconPos: vec(4, 4),
+                    label: 'Starflash',
+                }),
+            });
+            return skill;
+        })(),
     },
     compress: {
         name: 'Compress',
         skillKey: 'compress',
+        action: (() => {
+            const skill = new CompressSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.default,
+                    iconPos: vec(6, 1),
+                    label: 'Compress',
+                }),
+            });
+            return skill;
+        })(),
     },
     pulse: {
         name: 'Pulse',
         skillKey: 'pulse',
+        action: (() => {
+            const skill = new CompressSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.default,
+                    iconPos: vec(5, 0),
+                    label: 'Pulse',
+                }),
+            });
+            return skill;
+        })(),
     },
 };
 

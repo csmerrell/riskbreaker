@@ -7,6 +7,7 @@ import { getScale } from '@/lib/helpers/screen.helper';
 import { useSelectedCharacter } from './useSelectedCharacter';
 import { equipment as equipmentDb } from '@/db/static/equipment';
 import { EquipmentMeta } from '@/db/static/types/Equipment';
+import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
 
 type Props = {
     focused?: boolean;
@@ -40,15 +41,41 @@ const equipment = computed(() => {
         <div class="flex flex-col gap-2">
             <div class="relative h-full" :style="{ width: `${size.x}px` }">
                 <div
-                    class="absolute left-12 z-20 -translate-y-1/3 bg-bg px-2 leading-[1px] text-white"
-                    :class="focused ? 'text-standard-xl' : 'text-standard-lg'"
+                    class="absolute left-14 z-20 leading-[1px] text-white"
+                    :class="
+                        focused
+                            ? 'text-standard-xl translate-y-1'
+                            : 'text-standard-lg translate-y-0.5'
+                    "
                 >
-                    Equipment
+                    <div class="relative size-full">
+                        <div
+                            class="absolute inset-x-0 top-1/2 z-10 -ml-3 -mr-2 h-5 -translate-y-1/2 bg-bg-dark opacity-70"
+                        />
+                        <div class="invisible">Equipment</div>
+                        <div class="absolute left-0 top-0 z-20">Equipment</div>
+                    </div>
                 </div>
                 <MenuBox
                     :poles="{ NW: true, NE: true, SW: true, SE: true }"
-                    class="left-4 z-10 bg-bg-dark"
+                    class="ml-4 border-2 bg-bg-dark text-white"
+                    :style="focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }"
                 >
+                    <div
+                        v-if="focused"
+                        class="absolute -top-1 right-6 flex flex-row items-start gap-2"
+                    >
+                        <ControlIconSprite command="confirm" size="xs" />
+                        <div
+                            class="text-standard-md relative bottom-1 h-auto bg-bg-dark font-bold leading-5 text-white"
+                        >
+                            <div
+                                class="absolute inset-0 z-10 -mb-2 -mr-2 ml-[-0.67rem] bg-bg opacity-70"
+                            />
+                            <div class="invisible">Edit</div>
+                            <div class="absolute left-0 top-0 z-20">Edit</div>
+                        </div>
+                    </div>
                     <table class="border-separate border-spacing-x-4 border-spacing-y-2 p-4">
                         <tbody>
                             <tr>
@@ -56,7 +83,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Main Hand:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.mainHand.name }}
                                     </div>
                                 </td>
@@ -66,7 +93,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Off Hand:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.offHand.name }}
                                     </div>
                                 </td>
@@ -76,7 +103,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Head:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.head.name }}
                                     </div>
                                 </td>
@@ -86,7 +113,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Body:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.body.name }}
                                     </div>
                                 </td>
@@ -96,7 +123,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Accessory:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.accessory1.name }}
                                     </div>
                                 </td>
@@ -106,7 +133,7 @@ const equipment = computed(() => {
                                     <div class="pr-2 font-bold text-rose-700">Accessory:</div>
                                 </td>
                                 <td>
-                                    <div class="font-bold text-white">
+                                    <div class="font-bold">
                                         {{ equipment.accessory2.name }}
                                     </div>
                                 </td>
