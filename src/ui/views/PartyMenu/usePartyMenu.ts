@@ -32,7 +32,7 @@ function changeMemberAppearance<T extends keyof CompositeActorConfig>(
         ...selectedMember.value,
         appearance: {
             ...selectedMember.value.appearance,
-            [layerKey]: valueKey === 'inherit' ? undefined : valueKey,
+            [layerKey]: valueKey?.match(/inherit|hide/) ? undefined : valueKey,
         },
     };
     useParty().updatePartyMember(selectedMember.value as PartyMember);

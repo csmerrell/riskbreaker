@@ -1,7 +1,8 @@
-import { Actor, ActorArgs, AnimationStrategy, Engine, vec, Vector } from 'excalibur';
+import { Actor, ActorArgs, AnimationStrategy, Engine, Material, vec, Vector } from 'excalibur';
 import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
 import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import SILHOUETTE from '@/shader/silhouette.glsl?raw';
+import HAT_MASK from '@/shader/hatMask.glsl?raw';
 import {
     COMPOSITE_SPRITE_GRID,
     SpriteGridOptions,
@@ -12,6 +13,8 @@ import { progressShader } from '@/lib/helpers/shader.helper';
 import { VFXKey, VFXLayer } from './VFXLayer';
 import { PartyMember } from '@/state/useParty';
 import { HealthComponent } from '../Battle/Health.component';
+import { hatConfigs } from '@/resource/image/units/hat';
+import { resources } from '@/resource';
 
 export type CompositeSpriteLayers =
     | 'armor'
@@ -73,7 +76,7 @@ export class CompositeActor extends Actor {
             this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts });
             this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts, isBack: true });
         }
-        if (hairKey) {
+        if (hairKey && !(hatKey && hatConfigs[hatKey]?.cloaking)) {
             this.equipLayer({ key: hairKey, type: 'hair', ...excalOpts });
         }
         if (accessoryKey) {
@@ -108,7 +111,25 @@ export class CompositeActor extends Actor {
         ]);
     }
 
-    onInitialize(_engine: Engine): void {}
+    onInitialize(_engine: Engine): void {
+        if (
+            this.hair &&
+            this.opts.appearance.hat &&
+            hatConfigs[this.opts.appearance.hat]?.masking
+        ) {
+            this.applyHatMask();
+        }
+    }
+
+    private applyHatMask() {
+        this.hair!.graphics.material = this.scene!.engine.graphicsContext.createMaterial({
+            name: 'hatMask',
+            fragmentSource: HAT_MASK,
+            images: {
+                u_hatGraphic: resources.image.units.hat[this.opts.appearance.hat!],
+            },
+        });
+    }
 
     private velCheckCt: number = 0;
     private lastVel = vec(0, 0);
@@ -190,6 +211,7 @@ export class CompositeActor extends Actor {
         }
 
         this.addChild(layer);
+        return layer;
     }
 
     private suppressMovementAnimation: boolean = false;

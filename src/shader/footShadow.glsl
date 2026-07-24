@@ -6,6 +6,7 @@ uniform sampler2D u_graphic;
 uniform vec2 u_origin;
 uniform float u_height;
 uniform float u_width;
+uniform float u_opacity;
 
 in vec2 v_uv;
 in vec2 v_screenuv;
@@ -45,8 +46,9 @@ void main() {
 
     vec2 normalizedCoord = vec2(normalizeFrameCoordinate(v_uv.x, 12), normalizeFrameCoordinate(v_uv.y, 12));
 
+
     if(spriteFrag.a != 0.0) {
-        fragColor = spriteFrag;
+        fragColor = vec4(spriteFrag.rgb * u_opacity, u_opacity);
     } else {
         vec2 p = normalizedCoord - u_origin;
         vec2 r = vec2(u_width, u_height);
@@ -54,10 +56,17 @@ void main() {
         float ellipse = dot(p / r, p / r);
 
         float edgeStrength = mix(0.6, 0.4, ellipse);
+        if(edgeStrength > u_opacity){
+            edgeStrength = u_opacity;
+        }
         float dither = bayer4(gl_FragCoord.xy);
 
         if(ellipse >= 1.0 || dither > edgeStrength) {
-            fragColor = spriteFrag;
+            if(spriteFrag.a != 0.0) {
+                fragColor = vec4(spriteFrag.rgb * u_opacity, u_opacity);
+            } else {
+                fragColor = spriteFrag;
+            }
         } else {
             fragColor = vec4(0.1,0.1,0.1,edgeStrength);
         }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {
-    getCurrentOwner,
+    captureControls,
     registerInputListener,
+    unCaptureControls,
     unregisterInputListener,
 } from '@/game/input/useInput';
 import { getScale } from '@/lib/helpers/screen.helper';
@@ -41,7 +42,13 @@ onMounted(async () => {
 
     listeners = [
         registerInputListener(() => {
-            useExploration().getExplorationManager().partyMenuManager.open();
+            useExploration().getExplorationManager().actorManager.getLeader().fadeOut();
+            captureControls();
+            registerInputListener(() => {
+                useExploration().getExplorationManager().actorManager.getLeader().fadeIn();
+                unCaptureControls();
+            }, 'cancel');
+            // useExploration().getExplorationManager().partyMenuManager.open();
         }, 'context_menu_1'),
     ];
 });

@@ -1,4 +1,5 @@
 import { ImageSource } from 'excalibur';
+import { HatType } from '..';
 
 export const hat = {
     flowerHairpin: new ImageSource('/image/units/hat/FlowerHairpin.png'),
@@ -22,4 +23,22 @@ export const hatLabels = {
     shadowHood: 'Shadow Cowl',
     sideBeret: 'Petit Beret',
     stonecallerHood: "Stonecaller's Hood",
+};
+
+export const hatConfigs: Partial<Record<HatType, { masking?: boolean; cloaking?: boolean }>> = {
+    riceFarmerHat: {
+        masking: true,
+    },
+    plumedHat: {
+        masking: true,
+    },
+    sageHat: {
+        masking: true,
+    },
+    shadowHood: {
+        cloaking: true,
+    },
+    stonecallerHood: {
+        cloaking: true,
+    },
 };

@@ -109,6 +109,7 @@ export class CompositeLayer extends Actor {
             });
             this.graphics.material = this.footShadow;
             this.graphics.material.update((shader) => {
+                shader.trySetUniformFloat('u_opacity', this.graphics.opacity);
                 shader.trySetUniform('uniform2fv', 'u_origin', [0.5, 0.85]);
                 shader.trySetUniformFloat('u_width', 0.25);
                 shader.trySetUniformFloat('u_height', 0.05);
@@ -133,19 +134,14 @@ export class CompositeLayer extends Actor {
     }
 
     public hide() {
-        this.graphics.material = null;
         this.graphics.opacity = 0;
     }
 
     public show() {
-        if (this.type === 'mannequin' && !this.isSilhouette) {
-            this.graphics.material = this.footShadow!;
-        }
         this.graphics.opacity = 1;
     }
 
     public fadeOut(duration: number = 250) {
-        this.graphics.material = null;
         const step = 25;
         const numSteps = duration / step;
         const opacityStep = -1 / numSteps;
@@ -164,11 +160,7 @@ export class CompositeLayer extends Actor {
             () => this.graphics.opacity === 1,
             () => this.stepOpacity(opacityStep),
             step,
-        ).then(() => {
-            if (this.type === 'mannequin' && !this.isSilhouette) {
-                this.graphics.material = this.footShadow!;
-            }
-        });
+        );
     }
 
     private stepOpacity(opacityStep: number) {
@@ -177,12 +169,19 @@ export class CompositeLayer extends Actor {
                 ? Math.max(0, this.graphics.opacity + opacityStep)
                 : Math.min(this.graphics.opacity + opacityStep, 1);
         this.graphics.opacity = nextOpacity;
+        this.graphics.material?.update((shader) => {
+            const num = parseFloat(Math.max(this.graphics.opacity, 0).toPrecision(2));
+
+            console.log(`[${this.type}] set shader opacity to: ${num}`);
+            shader.trySetUniformFloat('u_opacity', num);
+        });
     }
 
     private isSilhouette = false;
     public addMaterialLayer(materialConfig: {
         name: string;
         fragmentSource: string;
+        images?: Record<string, ImageSource>;
         setupUniforms?: (shader: Shader) => void;
     }): string {
         if (materialConfig.name === 'silhouette') {
@@ -205,10 +204,15 @@ export class CompositeLayer extends Actor {
         const material = this.scene!.engine.graphicsContext.createMaterial({
             name: materialConfig.name,
             fragmentSource: materialConfig.fragmentSource,
+            images: materialConfig.images ?? {},
         });
-        if (materialConfig.setupUniforms) {
-            material.update(materialConfig.setupUniforms);
-        }
+        material.update((shader) => {
+            if (materialConfig.setupUniforms) {
+                materialConfig.setupUniforms?.(shader);
+            }
+            console.log('updating foot shader opacity');
+            shader.trySetUniformFloat('u_opacity', this.graphics.opacity);
+        });
         duplicate.graphics.material = material;
 
         this.parent!.addChild(duplicate);

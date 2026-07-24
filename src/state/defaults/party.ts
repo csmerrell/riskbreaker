@@ -135,8 +135,8 @@ export const RiskbreakerDefault: PartyMember = {
         armor: 'bladesealerYoroi',
         mainHand: 'sword',
         offHand: 'shield',
-        hair: 'sideSweep',
-        hat: 'kitsune',
+        hair: 'poofyBob',
+        hat: 'plumedHat',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_scimitar',
