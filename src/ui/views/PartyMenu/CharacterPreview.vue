@@ -9,6 +9,7 @@ import { Actor, Sprite, vec } from 'excalibur';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { usePartyMenu } from './usePartyMenu';
 import { resources } from '@/resource';
+import { PartyMember } from '@/state/useParty';
 
 const root = ref<HTMLDivElement>();
 

@@ -66,7 +66,7 @@ const menuMap: Record<
         up: 'fashion',
     },
 };
-const focused = ref<LoadoutMenuKey>('equipment');
+const focused = ref<LoadoutMenuKey>('fashion');
 onMounted(() => {
     listeners = [
         registerInputListener(() => {

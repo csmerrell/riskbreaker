@@ -17,7 +17,7 @@ const { selectedMember } = usePartyMenu();
 
 const isFocused = computed(() => focused);
 const { editing, addCleanupCb } = useMenuEdit(isFocused);
-type FashionItemKey = 'hat' | 'head' | 'body';
+export type FashionItemKey = 'hat' | 'hair' | 'armor';
 export type FashionMenuItem = { key: FashionItemKey; label: string; value: ComputedRef<string> };
 const editTarget = ref(0);
 const fashionItems: FashionMenuItem[] = [
@@ -33,8 +33,8 @@ const fashionItems: FashionMenuItem[] = [
         }),
     },
     {
-        key: 'head',
-        label: 'Head',
+        key: 'hair',
+        label: 'Hair',
         value: computed(() => {
             if (selectedMember.value.appearance.hair) {
                 return fashionLabels.hair[selectedMember.value.appearance.hair];
@@ -44,7 +44,7 @@ const fashionItems: FashionMenuItem[] = [
         }),
     },
     {
-        key: 'body',
+        key: 'armor',
         label: 'Body',
         value: computed(() => {
             if (selectedMember.value.appearance.armor) {
@@ -98,24 +98,20 @@ watch(editing, () => {
             </div>
         </div>
         <div
-            class="relative -left-12 skew-x-[42deg] border-2 border-yellow-700 bg-bg-dark py-2 text-white"
+            class="relative -left-12 skew-x-[42deg] overflow-hidden border-2 border-yellow-700 bg-bg-dark py-2 text-white"
             :style="{
                 width: 'calc(100% + 2rem)',
                 ...(focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }),
             }"
         >
-            <div class="skew-x-[-42deg] pl-4">
-                <div
+            <div class="flex skew-x-[-42deg] flex-col items-start py-2 pl-4">
+                <FashionItem
                     v-for="(item, idx) in fashionItems"
                     :key="item.key"
-                    class="flex flex-col items-start py-1.5"
-                    :style="{ paddingLeft: `${idx * 2}rem` }"
-                >
-                    <FashionItem
-                        :item
-                        :focused="editing && fashionItems[editTarget].key === item.key"
-                    />
-                </div>
+                    :item
+                    :focused="editing && fashionItems[editTarget].key === item.key"
+                    :style="{ marginLeft: `${idx * 2}rem` }"
+                />
             </div>
         </div>
     </div>

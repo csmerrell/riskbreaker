@@ -9,7 +9,8 @@ import { usePartyMenu } from './usePartyMenu';
 import { HotbarActionComponent } from '@/game/actions/HotbarAction.component';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
 import { Entity, ImageSource } from 'excalibur';
-import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
+import MenuOverlayTitle from '@/ui/components/MenuOverlayTitle.vue';
+import MenuOverlayButtonPrompt from '@/ui/components/MenuOverlayButtonPrompt.vue';
 
 type Props = {
     focused?: boolean;
@@ -67,44 +68,18 @@ const skillBindings = computed(() => {
     <div class="relative -top-4 -mr-8 size-full">
         <div class="absolute inset-0 -top-8">
             <div class="relative size-full">
-                <div
-                    class="absolute left-14 z-20 leading-[1px] text-white"
-                    :class="
-                        focused
-                            ? 'text-standard-xl translate-y-1'
-                            : 'text-standard-lg translate-y-0.5'
-                    "
-                >
-                    <div class="relative size-full">
-                        <div
-                            class="absolute inset-x-0 top-1/2 z-10 -ml-3 -mr-2 h-10 -translate-y-1/2 bg-bg opacity-70"
-                        />
-                        <div class="invisible">Skills</div>
-                        <div class="absolute left-0 top-0 z-20">Skills</div>
-                    </div>
-                </div>
-
+                <MenuOverlayTitle label="Skills" :focused class="left-14" />
                 <MenuBox
                     :poles="{ NW: true, NE: true, SW: true, SE: true }"
                     class="border-2 bg-bg-dark text-white"
                     :style="focused && { boxShadow: 'inset 0 0 0.5rem 0.25rem var(--yellow-700)' }"
                 >
-                    <div
-                        v-if="focused"
-                        class="absolute -top-1 right-6 flex flex-row items-start gap-2"
-                    >
-                        <ControlIconSprite command="confirm" size="xs" />
-                        <div
-                            class="text-standard-md relative bottom-1 h-auto bg-bg-dark font-bold leading-5 text-white"
-                        >
-                            <div
-                                class="absolute inset-0 z-10 -mb-2 -mr-2 ml-[-0.67rem] bg-bg opacity-70"
-                            />
-                            <div class="invisible">Edit</div>
-                            <div class="absolute left-0 top-0 z-20">Edit</div>
-                        </div>
-                    </div>
-
+                    <MenuOverlayButtonPrompt
+                        label="Edit"
+                        command="confirm"
+                        :focused
+                        class="right-6"
+                    />
                     <div class="relative size-full">
                         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                             <div

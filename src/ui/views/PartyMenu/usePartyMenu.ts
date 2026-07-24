@@ -1,9 +1,11 @@
-import { useParty } from '@/state/useParty';
-import { computed, ref } from 'vue';
+import { CompositeActorConfig } from '@/game/actors/CompositeActor/CompositeActor';
+import { PartyMember, useParty } from '@/state/useParty';
+import { ref, watch } from 'vue';
 
 const selectedMemberIdx = ref(0);
-const selectedMember = computed(() => {
-    return useParty().getParty()[selectedMemberIdx.value];
+const selectedMember = ref<PartyMember>({} as PartyMember);
+watch(selectedMemberIdx, () => {
+    selectedMember.value = useParty().getParty()[selectedMemberIdx.value];
 });
 function changeSelectedMember(direction: 'left' | 'right') {
     let idx = selectedMemberIdx.value;
@@ -21,9 +23,26 @@ function changeSelectedMember(direction: 'left' | 'right') {
             break;
     }
 }
+
+function changeMemberAppearance<T extends keyof CompositeActorConfig>(
+    layerKey: T,
+    valueKey: 'inherit' | CompositeActorConfig[T],
+) {
+    selectedMember.value = {
+        ...selectedMember.value,
+        appearance: {
+            ...selectedMember.value.appearance,
+            [layerKey]: valueKey === 'inherit' ? undefined : valueKey,
+        },
+    };
+    useParty().updatePartyMember(selectedMember.value as PartyMember);
+}
+
 export function usePartyMenu() {
+    selectedMember.value = useParty().getParty()[selectedMemberIdx.value];
     return {
         selectedMember,
         changeSelectedMember,
+        changeMemberAppearance,
     };
 }
