@@ -132,10 +132,10 @@ export const RiskbreakerDefault: PartyMember = {
         leader: true,
     },
     appearance: {
-        armor: 'bladesealerYoroi',
+        armor: 'minstrelCoat',
         mainHand: 'sword',
         offHand: 'shield',
-        hair: 'poofyBob',
+        hair: 'throwback_Black',
         hat: 'plumedHat',
     } as CompositeActorConfig,
     equipment: {

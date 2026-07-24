@@ -42,13 +42,7 @@ onMounted(async () => {
 
     listeners = [
         registerInputListener(() => {
-            useExploration().getExplorationManager().actorManager.getLeader().fadeOut();
-            captureControls();
-            registerInputListener(() => {
-                useExploration().getExplorationManager().actorManager.getLeader().fadeIn();
-                unCaptureControls();
-            }, 'cancel');
-            // useExploration().getExplorationManager().partyMenuManager.open();
+            useExploration().getExplorationManager().partyMenuManager.open();
         }, 'context_menu_1'),
     ];
 });

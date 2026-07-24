@@ -117,14 +117,21 @@ export class CompositeLayer extends Actor {
         }
     }
 
+    private storedMaterial?: Material;
     public useAnimation(key: AnimationKey, opts: KeyedAnimationOptions<typeof spriteMap> = {}) {
         if (key === 'static' && this.type.match(/mainHand|offHand/)) {
             if (this.graphics) {
-                this.graphics.material = null;
                 this.graphics.opacity = 0;
             }
             return Promise.resolve();
+        } else if (key === 'death' && this.type === 'hair' && this.graphics.material) {
+            this.storedMaterial = this.graphics.material;
+            this.graphics.material = null;
         } else {
+            if (this.storedMaterial) {
+                this.graphics.material = this.storedMaterial;
+                delete this.storedMaterial;
+            }
             return this.get(Animator).useKeyedAnimation(key, opts);
         }
     }
@@ -170,10 +177,7 @@ export class CompositeLayer extends Actor {
                 : Math.min(this.graphics.opacity + opacityStep, 1);
         this.graphics.opacity = nextOpacity;
         this.graphics.material?.update((shader) => {
-            const num = parseFloat(Math.max(this.graphics.opacity, 0).toPrecision(2));
-
-            console.log(`[${this.type}] set shader opacity to: ${num}`);
-            shader.trySetUniformFloat('u_opacity', num);
+            shader.trySetUniformFloat('u_opacity', this.graphics.opacity);
         });
     }
 
@@ -210,7 +214,6 @@ export class CompositeLayer extends Actor {
             if (materialConfig.setupUniforms) {
                 materialConfig.setupUniforms?.(shader);
             }
-            console.log('updating foot shader opacity');
             shader.trySetUniformFloat('u_opacity', this.graphics.opacity);
         });
         duplicate.graphics.material = material;
