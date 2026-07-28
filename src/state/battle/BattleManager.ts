@@ -1,18 +1,21 @@
 import {
     Actor,
     AnimationStrategy,
-    BoundingBox,
     Color,
     EasingFunctions,
     GraphicsGroup,
     Material,
-    Rectangle,
     vec,
 } from 'excalibur';
-import { SceneManager } from '../SceneManager';
-import { colors } from '@/lib/enum/colors.enum';
 import { useShader } from '../useShader';
-import { battleground, toLayerArray } from '@/resource/image/battleground';
+import {
+    AnimateableKey,
+    AnimateableMeta,
+    battleground,
+    getAnimateables,
+    TerrainType,
+    toLayerArray,
+} from '@/resource/image/battleground';
 import {
     captureControls,
     registerInputListener,
@@ -71,7 +74,8 @@ export class BattleManager extends MaskingManager {
 
     public laneActors = {} as Record<LaneKey, Actor>;
     private groundActor!: Actor;
-    public setTerrain(type: 'grass' | 'dirt') {
+    private animateables: Actor[] = [];
+    public setTerrain(type: TerrainType) {
         if (this.terrain) this.terrain.forEach((t) => t.isAdded && t.kill());
 
         toLayerArray(battleground, type).forEach((terrainGroup) => {
@@ -102,6 +106,20 @@ export class BattleManager extends MaskingManager {
                 fragmentSource: FADE_BG_SHADER,
             });
         });
+
+        (Object.entries(getAnimateables(type)) as [AnimateableKey, AnimateableMeta][]).forEach(
+            ([key, metadata]) => {
+                const actor = new Actor({
+                    name: key,
+                    pos: metadata.pos,
+                    z: 1030,
+                    scale: vec(1, 1),
+                });
+                actor.graphics.add('static', metadata.src.toSprite());
+                actor.graphics.use('static');
+                this.animateables.push(actor);
+            },
+        );
     }
 
     onPreupdate() {
@@ -148,6 +166,10 @@ export class BattleManager extends MaskingManager {
                 layer.graphics.opacity = 0;
                 layer.pos = this.scene.camera.pos;
                 this.scene.add(layer);
+            });
+            this.animateables.forEach((a) => {
+                a.pos = a.pos.add(this.scene.camera.pos);
+                this.scene.add(a);
             });
 
             //Fade in

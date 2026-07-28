@@ -1,5 +1,5 @@
 import { LaneKey } from '@/state/useParty';
-import { ImageSource } from 'excalibur';
+import { ImageSource, vec, Vector } from 'excalibur';
 
 export const battleground = {
     backShadowTrees: new ImageSource('/image/battle/BackShadowTrees.png'),
@@ -13,6 +13,8 @@ export const battleground = {
     backDeco: new ImageSource('/image/battle/BackDeco.png'),
     frontDeco: new ImageSource('/image/battle/FrontDeco.png'),
     frontShadowTrees: new ImageSource('/image/battle/FrontShadowTrees.png'),
+    animateableTree: new ImageSource('/image/battle/infusables/objects/tree.png'),
+    animateableRock: new ImageSource('/image/battle/infusables/objects/rock.png'),
 };
 
 export function toLayerArray(
@@ -69,4 +71,28 @@ export function toLayerArray(
         { sources: [bg[`${type}Ring`], backDeco], zIndex: 1020, isGround: true },
         { sources: [frontDeco, frontShadowTrees], zIndex: 1030 },
     ];
+}
+
+export type TerrainType = 'grass' | 'dirt';
+export type AnimateableMeta = {
+    src: ImageSource;
+    pos: Vector;
+};
+export type AnimateableKey = 'tree' | 'rock';
+
+const animateables: Record<TerrainType, Partial<Record<AnimateableKey, AnimateableMeta>>> = {
+    grass: {
+        tree: {
+            src: battleground.animateableTree,
+            pos: vec(-134, 10),
+        },
+        rock: {
+            src: battleground.animateableRock,
+            pos: vec(-30, 42),
+        },
+    },
+    dirt: {},
+};
+export function getAnimateables(type: TerrainType) {
+    return animateables[type];
 }

@@ -23,8 +23,6 @@ const {
 
 const imgContainer = ref<HTMLDivElement>();
 const size = ref(Math.min(getScale() - 2, scaleMax) * (type === 'skill' ? 24 : 32));
-console.log('scaleMax @ box: ', scaleMax);
-console.log('defaultScale: ', getScale(), ' | resolvedScale: ', size.value / 32);
 
 if (col !== undefined && row !== undefined) {
     onMounted(async () => {
