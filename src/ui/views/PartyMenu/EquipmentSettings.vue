@@ -27,9 +27,14 @@ const emptyEquip: EquipmentMeta = {
 };
 const equipment = computed(() => {
     const { equipment: eqKeys } = selectedMember.value;
+    const mainHandIsTwoHanded = eqKeys.mainHand
+        ? (equipmentDb[eqKeys.mainHand] as EquipmentMeta).twoHands
+        : false;
     return {
         mainHand: eqKeys.mainHand ? equipmentDb[eqKeys.mainHand] : { ...emptyEquip },
-        offHand: eqKeys.offHand ? equipmentDb[eqKeys.offHand] : { ...emptyEquip },
+        offHand: eqKeys.offHand
+            ? equipmentDb[eqKeys.offHand]
+            : { ...emptyEquip, name: mainHandIsTwoHanded ? '--' : emptyEquip.name },
         head: eqKeys.head ? equipmentDb[eqKeys.head] : { ...emptyEquip },
         body: eqKeys.body ? equipmentDb[eqKeys.body] : { ...emptyEquip },
         accessory1: eqKeys.accessory1 ? equipmentDb[eqKeys.accessory1] : { ...emptyEquip },

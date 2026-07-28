@@ -5,6 +5,9 @@ export const weapon = {
         front: new ImageSource('/image/units/weapons/Sword.png'),
         back: new ImageSource('/image/units/weapons/SwordBack.png'),
     },
+    soulSheathe: {
+        front: new ImageSource('/image/units/weapons/SoulSheathe.png'),
+    },
     shield: {
         front: new ImageSource('/image/units/weapons/Shield.png'),
         back: new ImageSource('/image/units/weapons/ShieldBack.png'),

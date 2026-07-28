@@ -8,6 +8,7 @@ import { useShader } from '@/state/useShader';
 import { VFXLayer } from '@/game/actors/CompositeActor/VFXLayer';
 import { moveAlongBezier } from '@/lib/helpers/movement.helper';
 import { HealthComponent } from '@/game/actors/Battle/Health.component';
+import { useParty } from '@/state/useParty';
 
 export class ShieldChargeSkill extends Skill {
     private ctCost: number = 80;
@@ -33,6 +34,7 @@ export class ShieldChargeSkill extends Skill {
 
         //pre-activate
         const returnPoint = actor.pos.clone();
+        const member = useParty().activeBattleMember.value;
         const focusActor = new Actor({ pos: midPoint, z });
         battleManager.scene.add(focusActor);
         await new Promise<void>((resolve) => {
@@ -61,7 +63,12 @@ export class ShieldChargeSkill extends Skill {
         focusActor.addChild(VFXImpact);
         const impactPromises = Promise.all([
             ...targets.map((t) => {
-                return t.get(HealthComponent).hurt(this.potency + ~~(Math.random() * 8 - 3));
+                return t
+                    .get(HealthComponent)
+                    .hurt(
+                        this.potency +
+                            ~~((member?.stats.strength ?? 0) * Math.min(1, Math.random() + 0.8)),
+                    );
             }),
             VFXImpact.animate(),
             actor.useAnimation('shieldSpreadForward'),

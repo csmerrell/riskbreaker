@@ -21,6 +21,7 @@ export type EquipmentMeta = {
     name: string;
     slots: EquipmentSlotKey[];
     stat: StatMap;
+    twoHands?: boolean;
     special?: unknown;
     script?: unknown;
 };

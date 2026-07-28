@@ -8,7 +8,7 @@ import {
 } from '@/game/input/useInput';
 
 import type { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
-import type { PartyMember } from '@/state/useParty';
+import { useParty, type PartyMember } from '@/state/useParty';
 import ActionItem from './ActionItem.vue';
 import { useExploration } from '@/state/useExploration';
 import { BattleManager } from '@/state/battle/BattleManager';
@@ -75,6 +75,7 @@ const handleMovement = (direction: 'left' | 'right') => {
 
 let listeners: string[] = [];
 onMounted(async () => {
+    useParty().setActiveBattleMember(unit);
     listeners = [
         registerInputListener(() => {
             setTimeout(() => {

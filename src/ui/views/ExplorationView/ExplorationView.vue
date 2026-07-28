@@ -58,6 +58,7 @@ watch(activeView, () => {
                     ref="dynamicActionEl"
                     class="origin-bottom-left"
                     icon-type="menu"
+                    :scale-max="3"
                     :gate-button="'shoulder_right'"
                     :quads="['faceButton']"
                     :actions="{

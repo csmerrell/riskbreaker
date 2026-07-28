@@ -19,10 +19,10 @@ const westDarklandsResources = {
                 }),
                 {},
             ),
-            // '17_10': {
-            //     type: 'scriptTrigger',
-            //     scriptName: 'unique.newGameFirstBattle',
-            // },
+            '17_10': {
+                type: 'scriptTrigger',
+                scriptName: 'unique.newGameFirstBattle',
+            },
             // '20_9': {
             //     type: 'scriptTrigger',
             //     scriptName: 'unique.newGameDragonAttack',

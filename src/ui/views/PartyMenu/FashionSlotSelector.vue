@@ -15,8 +15,7 @@ const { type } = defineProps<Props>();
 const { selectedMember } = usePartyMenu();
 const optionLists: Record<FashionItemKey, { key: string; label: string }[]> = {
     hat: [
-        { key: 'hide', label: '[None: Hide]' },
-        { key: 'inherit', label: '[None: Show Equipped]' },
+        { key: 'inherit', label: 'None' },
         ...Object.entries(hatLabels)
             .map(([key, label]) => ({ key, label }))
             .filter((i) => i.label != null),

@@ -1,8 +1,10 @@
 import { docManager } from '@/db';
 import { makeState } from './Observable';
+import { ResolutionOption, setResolution } from '@/ui/views/SettingsView/menuItems/resolution';
 
 export type DisplayModes = 'windowed' | 'borderless' | 'fullscreen';
 type SettingsState = {
+    key: ResolutionOption['key'];
     resolution: { width: number; height: number };
     displayMode: DisplayModes;
     textSpeed: 'slow' | 'fast' | '2x' | 'instant';
@@ -10,6 +12,7 @@ type SettingsState = {
 export type SettingsKey = keyof SettingsState;
 
 const settingsState = makeState<SettingsState>({
+    key: '720p_16_9',
     resolution: { width: 1280, height: 720 },
     displayMode: 'windowed',
     textSpeed: 'fast',
@@ -32,7 +35,7 @@ function setSettingDisabled(key: SettingsKey, val: boolean) {
 
 async function loadSettings() {
     try {
-        const { resolution, displayMode, textSpeed: defTextSpd } = settingsState.value;
+        const { key, resolution, displayMode, textSpeed: defTextSpd } = settingsState.value;
         // const {
         //     resolution = defRes,
         //     displayMode = defDisp,
@@ -52,6 +55,7 @@ async function loadSettings() {
         }
 
         window.electron.changeWindowResolution(resolution.width, resolution.height);
+        setResolution(key);
         window.electron.changeWindowMode(displayMode);
         return;
     } catch (_e) {

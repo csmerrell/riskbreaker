@@ -36,7 +36,7 @@ export const newGameFirstBattle: GameScript = {
             await explorationMgr.safeHaltMovement();
             const { addEnemy, clearEnemies } = useBattle();
             clearEnemies();
-            addEnemy(getWolfDef('mid', 'gray'));
+            addEnemy(getWolfDef('right-2', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
             addEnemy(getWolfDef('right-1', 'gray'));
             unCaptureControls();

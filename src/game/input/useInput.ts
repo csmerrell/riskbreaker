@@ -116,6 +116,9 @@ export function getCurrentOwner() {
 export function captureControls(key?: string) {
     console.log('Captured by:', key);
     const ownerKey = key ?? nanoid(16);
+    //Release all hold listeners before capture so they don't get stuck.
+    //  (Hold listeners don't get any notifications of changes unless their listener layer is active.)
+    notifyHoldListeners(new InputMap());
     listenerStack.push({});
     stackOwners.push(ownerKey);
     stackOwner.set(ownerKey);

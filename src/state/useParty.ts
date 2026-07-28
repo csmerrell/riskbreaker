@@ -7,6 +7,7 @@ import { UnitStats } from './battle/UnitStats';
 import { HotbarKey } from '@/ui/components/menus/crossHotbar/HotbarSet.vue';
 import { Entity, Vector } from 'excalibur';
 import { QuadEvents } from '@/ui/components/menus/crossHotbar/HotbarQuad.vue';
+import { ref } from 'vue';
 
 export type LaneKey = 'left-2' | 'left-1' | 'mid' | 'right-1' | 'right-2';
 
@@ -83,6 +84,11 @@ function updatePartyMember(member: PartyMember) {
     });
 }
 
+const activeBattleMember = ref<PartyMember | null>();
+function setActiveBattleMember(member: PartyMember) {
+    activeBattleMember.value = member;
+}
+
 function getParty() {
     return partyState.value.party;
 }
@@ -118,6 +124,8 @@ export function useParty() {
     return {
         loaded,
         partyState,
+        activeBattleMember,
+        setActiveBattleMember,
         getLeader,
         getParty,
         getMemberIdx,

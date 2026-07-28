@@ -18,10 +18,19 @@ export const weapons = {
     },
     worn_tome: {
         name: 'Worn Tome',
-        slots: ['mainHand', 'offHand'],
+        slots: ['mainHand'],
+        twoHands: true,
         stat: {
             mp: 10,
             magic: 3,
+        },
+    },
+    artificer_scrawl: {
+        name: "Artificer's Scrawl",
+        slots: ['mainHand'],
+        twoHands: true,
+        stat: {
+            magic: 20,
         },
     },
 } as const satisfies Record<string, EquipmentMeta>;

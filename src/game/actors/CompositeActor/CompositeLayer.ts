@@ -4,7 +4,7 @@ import {
     COMPOSITE_SPRITE_GRID,
     spriteMap,
 } from '@/resource/image/units/spriteMap';
-import { Actor, ActorArgs, Engine, ImageSource, Material, Shader } from 'excalibur';
+import { Actor, ActorArgs, Engine, ImageSource, Material, Shader, vec } from 'excalibur';
 import { CompositeSpriteLayers } from './CompositeActor';
 import { AccessoryType, ArmorType, HairType, HatType, WeaponType } from '@/resource/image/units';
 import FOOT_SHADOW from '@/shader/footShadow.glsl?raw';
@@ -12,6 +12,7 @@ import { ReadyComponent } from '../ReadyComponent';
 import { Animator } from '../Animation/Animator';
 import { KeyedAnimationOptions } from '../useKeyedAnimation';
 import { loopUntil } from '@/lib/helpers/async.helper';
+import { hatConfigs } from '@/resource/image/units/hat';
 
 export type CompositeSpriteMapping = {
     type: CompositeSpriteLayers;
@@ -45,8 +46,9 @@ export type CompositeSpriteMapping = {
           key: 'mannequin';
       }
 );
-type CompositeResourceOpts = CompositeSpriteMapping & {
+export type CompositeResourceOpts = CompositeSpriteMapping & {
     isBack?: boolean;
+    hairType?: HairType | 'none';
 };
 
 export class CompositeLayer extends Actor {
@@ -82,6 +84,12 @@ export class CompositeLayer extends Actor {
                 break;
             case 'hat':
                 src = resources.image.units.hat[key];
+                if (opts.hairType && hatConfigs[key]?.hairStyleAdaptation?.[opts.hairType]) {
+                    const { offset = vec(0, 0), scale = vec(1, 1) } =
+                        hatConfigs[key].hairStyleAdaptation![opts.hairType]!;
+                    this.offset = offset;
+                    this.scale = scale;
+                }
                 break;
             case 'mannequin':
             default:
@@ -201,6 +209,7 @@ export class CompositeLayer extends Actor {
 
         const duplicate = new Actor({
             pos: this.pos,
+            offset: this.offset,
             z: this.z + 1,
         });
         duplicate.graphics.use(this.graphics.current.clone());

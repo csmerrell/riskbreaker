@@ -53,6 +53,20 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
             return skill;
         })(),
     },
+    rallyStance: {
+        name: 'Rally Stance',
+        skillKey: 'rallyStance',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.riskbreaker,
+                    iconPos: vec(1, 1),
+                    label: 'Rally Stance',
+                }),
+            });
+            return skill;
+        })(),
+    },
     challengeTheOdds: {
         name: 'Challenge the Odds',
         skillKey: 'challengeTheOdds',
@@ -94,6 +108,79 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
             return skill;
         })(),
     },
+};
+
+export const ArtificerDefaultAbilities: Record<string, SkillMetadata> = {
+    infuse: {
+        name: 'Infuse',
+        skillKey: 'infuse',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(0, 0),
+                    label: 'Infuse',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    infusionCharge: {
+        name: 'Infusion Charge',
+        skillKey: 'infusionCharge',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(1, 0),
+                    label: 'Infusion Charge',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    manaDispersal: {
+        name: 'Mana Dispersal',
+        skillKey: 'manaDispersal',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(2, 0),
+                    label: 'Mana Dispersal',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    healthInfusion: {
+        name: 'Health Infusion',
+        skillKey: 'healthInfusion',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(3, 0),
+                    label: 'Health Infusion',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    screwBit: {
+        name: 'Screw Bit',
+        skillKey: 'screwBit',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(4, 0),
+                    label: 'Screw Bit',
+                }),
+            });
+            return skill;
+        })(),
+    },
     siphonBit: {
         name: 'Siphon Bit',
         skillKey: 'siphonBit',
@@ -103,6 +190,34 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
                     iconSrc: resources.image.icons.skills.artificer,
                     iconPos: vec(5, 0),
                     label: 'Siphon Bit',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    dismantleWhack: {
+        name: 'Dismantle Whack',
+        skillKey: 'dismantleWhack',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(6, 0),
+                    label: 'Dismantle Whack',
+                }),
+            });
+            return skill;
+        })(),
+    },
+    infuseLens: {
+        name: 'Infuse Lens',
+        skillKey: 'infuseLens',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(7, 0),
+                    label: 'Infuse Lens',
                 }),
             });
             return skill;
@@ -122,58 +237,19 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
             return skill;
         })(),
     },
-};
-export const RiskbreakerDefault: PartyMember = {
-    id: nanoid(16),
-    alignment: 'ally',
-    name: 'Riskbreaker',
-    config: {
-        battlePosition: 'left-1',
-        leader: true,
-    },
-    appearance: {
-        armor: 'minstrelCoat',
-        mainHand: 'sword',
-        offHand: 'shield',
-        hair: 'throwback_Black',
-        hat: 'plumedHat',
-    } as CompositeActorConfig,
-    equipment: {
-        mainHand: 'worn_scimitar',
-        offHand: 'worn_buckler',
-        head: undefined,
-        body: 'worn_leather_garb',
-        accessory1: undefined,
-        accessory2: undefined,
-    },
-    abilities: RiskbreakerDefaultAbilities,
-    equippedAbilities: {
-        dPad: {
-            up: RiskbreakerDefaultAbilities.staggerBash.action,
-            down: RiskbreakerDefaultAbilities.temperStance.action,
-            left: RiskbreakerDefaultAbilities.challengeTheOdds.action,
-            right: RiskbreakerDefaultAbilities.infuseAir.action,
-        },
-        faceButton: {
-            down: RiskbreakerDefaultAbilities.break.action,
-            right: RiskbreakerDefaultAbilities.chainStrike.action,
-            left: RiskbreakerDefaultAbilities.shieldCharge.action,
-            up: RiskbreakerDefaultAbilities.siphonBit.action,
-        },
-    },
-    stats: {
-        hp: 125,
-        currentHp: 75,
-        speed: 22,
-        strength: 6,
-        dexterity: 5,
-        balance: 10,
-        intelligence: 2,
-        wisdom: 7,
-        lucidity: 1,
-        fortitude: 8,
-        mods: emptyStatMods(),
-        effects: {},
+    scrutinize: {
+        name: 'Scrutinize',
+        skillKey: 'scrutinize',
+        action: (() => {
+            const skill = new BreakSkill({
+                hotbarActionComponent: new HotbarActionComponent({
+                    iconSrc: resources.image.icons.skills.artificer,
+                    iconPos: vec(9, 0),
+                    label: 'Scrutinize',
+                }),
+            });
+            return skill;
+        })(),
     },
 };
 
@@ -222,16 +298,67 @@ const AstrologianDefaultAbilities: Record<string, SkillMetadata> = {
     },
 };
 
-export const AstrologianDefault: PartyMember = {
+export const RiskbreakerDefault: PartyMember = {
     id: nanoid(16),
-    name: 'Astrologian',
     alignment: 'ally',
+    name: 'Artificer',
     config: {
-        battlePosition: 'left-2',
+        battlePosition: 'left-1',
+        leader: true,
     },
     appearance: {
-        armor: 'moonfangAttire',
+        armor: 'astrologianCloak',
         hair: 'tightCurls',
+    } as CompositeActorConfig,
+    equipment: {
+        mainHand: 'artificer_scrawl',
+        offHand: undefined,
+        head: 'lifegiver_lens',
+        body: 'mana_stitched_cloak',
+        accessory1: 'vampire_focus',
+        accessory2: 'ley_analyzer',
+    },
+    abilities: RiskbreakerDefaultAbilities,
+    equippedAbilities: {
+        dPad: {
+            up: AstrologianDefaultAbilities.starflash.action,
+            down: AstrologianDefaultAbilities.compress.action,
+            left: RiskbreakerDefaultAbilities.rallyStance.action,
+            right: ArtificerDefaultAbilities.healthInfusion.action,
+        },
+        faceButton: {
+            up: ArtificerDefaultAbilities.siphonBit.action,
+            down: ArtificerDefaultAbilities.infuse.action,
+            left: ArtificerDefaultAbilities.screwBit.action,
+            right: ArtificerDefaultAbilities.dismantleWhack.action,
+        },
+    },
+    stats: {
+        hp: 500,
+        currentHp: 482,
+        speed: 22,
+        strength: 48,
+        dexterity: 5,
+        balance: 10,
+        intelligence: 2,
+        wisdom: 7,
+        lucidity: 1,
+        fortitude: 8,
+        mods: emptyStatMods(),
+        effects: {},
+    },
+};
+
+export const AstrologianDefault: PartyMember = {
+    id: nanoid(16),
+    name: 'Soulsword',
+    alignment: 'ally',
+    config: {
+        battlePosition: 'mid',
+    },
+    appearance: {
+        armor: 'naturalistGarb',
+        hair: 'sideSweep',
     } as CompositeActorConfig,
     equipment: {
         mainHand: 'worn_tome',
@@ -247,8 +374,8 @@ export const AstrologianDefault: PartyMember = {
         },
     },
     stats: {
-        hp: 80,
-        currentHp: 80,
+        hp: 620,
+        currentHp: 250,
         speed: 9,
         strength: 2,
         dexterity: 2,

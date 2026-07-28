@@ -34,6 +34,7 @@ type Props = {
     gateButton?: 'shoulder_left' | 'shoulder_right';
     quads?: QuadType[];
     capturesControls?: boolean;
+    scaleMax?: number;
 };
 
 const {
@@ -43,7 +44,9 @@ const {
     gateButton,
     quads = ['dpad', 'faceButton'],
     capturesControls = false,
+    scaleMax,
 } = defineProps<Props>();
+console.log('scaleMax @ set: ', scaleMax);
 
 const focused = ref(false);
 const listeners: string[] = [];
@@ -113,7 +116,7 @@ const showFace = computed(() => quads.includes('faceButton'));
         class="hotbar-set flex flex-row items-center gap-1"
         :class="!focused ? 'text-[.75em]' : ''"
         :style="{
-            transformOrigin: `center ${scaleAnchor}`,
+            transformOrigin: `bottom ${scaleAnchor}`,
             ...(focused && {
                 transform: `scale(${focusScale})`,
             }),
@@ -125,6 +128,7 @@ const showFace = computed(() => quads.includes('faceButton'));
             command-set="hotbarD"
             :focused="focused"
             :icon-type
+            :scale-max
         />
         <div v-if="showDpad && showFace" :class="focused && 'mx-3'" />
         <HotbarQuad
@@ -133,6 +137,7 @@ const showFace = computed(() => quads.includes('faceButton'));
             command-set="hotbarF"
             :focused="focused"
             :icon-type
+            :scale-max
         />
     </div>
 </template>

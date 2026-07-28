@@ -3,8 +3,8 @@ import DDLSelect from '../selectors/DDLSelect.vue';
 import { defineMenuItem } from '../SettingsMenuItemMeta';
 import { useSettings } from '@/state/useSettings';
 
-type ResolutionOption = {
-    key: string;
+export type ResolutionOption = {
+    key: '540p_16_9' | '720p_16_9' | '900p_16_9' | '1080p_16_9' | '2160p_16_9';
     label: string;
     width: number;
     height: number;
@@ -41,6 +41,12 @@ const resolutionOptions: ResolutionOption[] = [
         width: 1920,
         height: 1080,
     },
+    {
+        key: '2160p_16_9',
+        label: '3840 x 2160',
+        width: 3840,
+        height: 2160,
+    },
 ];
 
 export const resolutionMenuItem = defineMenuItem({
@@ -61,7 +67,7 @@ export const resolutionMenuItem = defineMenuItem({
     },
 });
 
-async function setResolution(value: string) {
+export async function setResolution(value: string) {
     const { width, height } = resolutionOptions.find((o) => o.key === value);
     try {
         const result = await window.electron.changeWindowResolution(width, height);
@@ -71,12 +77,20 @@ async function setResolution(value: string) {
                 fontSizeVar = 'var(--font-480p)';
             } else if (height < 720) {
                 fontSizeVar = 'var(--font-540p)';
-            } else if (height > 1080) {
+            } else if (height < 900) {
                 fontSizeVar = 'var(--font-720p)';
+            } else if (height < 1080) {
+                fontSizeVar = 'var(--font-900p)';
+            } else if (height < 2160) {
+                fontSizeVar = 'var(--font-1080p)';
             } else {
-                fontSizeVar = 'var(--font-1080plus)';
+                fontSizeVar = 'var(--font-4k)';
             }
             (document.querySelector(':root') as HTMLElement).style.setProperty(
+                'font-size',
+                fontSizeVar,
+            );
+            (document.querySelector('body') as HTMLElement).style.setProperty(
                 'font-size',
                 fontSizeVar,
             );

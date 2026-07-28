@@ -18,10 +18,12 @@ img {
 :root {
     --keysprite-scale-md: 3;
 
-    --font-540p: 12pt;
-    --font-720p: 14pt;
-    --font-1080plus: 16pt;
-    --font-480p: 10pt;
+    --font-540p: 14px;
+    --font-720p: 18px;
+    --font-900p: 22px;
+    --font-1080p: 27px;
+    --font-4k: 54px;
+    --font-480p: 12px;
     --font-base: var(--font-720p);
 
     --keysprite-scale: var(--keysprite-scale-md);
@@ -34,6 +36,10 @@ img {
     --blue-300: #a38529;
     --yellow-500: #D2BF55;
     --yellow-700: #7D6C0C;
+}
+
+body {
+    font-size: var(--font-size);
 }
 
 .fade-enter-active,

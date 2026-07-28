@@ -1,5 +1,9 @@
 import { Actor, ActorArgs, AnimationStrategy, Engine, Material, vec, Vector } from 'excalibur';
-import { CompositeLayer, type CompositeSpriteMapping } from './CompositeLayer';
+import {
+    CompositeLayer,
+    CompositeResourceOpts,
+    type CompositeSpriteMapping,
+} from './CompositeLayer';
 import GRADIENT_SHIMMER from '@/shader/gradientShimmer.glsl?raw';
 import SILHOUETTE from '@/shader/silhouette.glsl?raw';
 import HAT_MASK from '@/shader/hatMask.glsl?raw';
@@ -70,11 +74,15 @@ export class CompositeActor extends Actor {
         }
         if (mainHandKey) {
             this.equipLayer({ key: mainHandKey, type: 'mainHand', ...excalOpts });
-            this.equipLayer({ key: mainHandKey, type: 'mainHand', ...excalOpts, isBack: true });
+            if (resources.image.units.weapon[mainHandKey].back) {
+                this.equipLayer({ key: mainHandKey, type: 'mainHand', ...excalOpts, isBack: true });
+            }
         }
         if (offHandKey) {
             this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts });
-            this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts, isBack: true });
+            if (resources.image.units.weapon[offHandKey].back) {
+                this.equipLayer({ key: offHandKey, type: 'offHand', ...excalOpts, isBack: true });
+            }
         }
         if (hairKey && !(hatKey && hatConfigs[hatKey]?.cloaking)) {
             this.equipLayer({ key: hairKey, type: 'hair', ...excalOpts });
@@ -83,7 +91,12 @@ export class CompositeActor extends Actor {
             this.equipLayer({ key: accessoryKey, type: 'accessory', ...excalOpts });
         }
         if (hatKey) {
-            this.equipLayer({ key: hatKey, type: 'hat', ...excalOpts });
+            this.equipLayer({
+                key: hatKey,
+                type: 'hat',
+                hairType: hairKey ?? 'none',
+                ...excalOpts,
+            });
         }
 
         this.addComponent(new HealthComponent({ max: stats.hp, current: stats.currentHp }));
@@ -174,7 +187,7 @@ export class CompositeActor extends Actor {
         }
     }
 
-    public equipLayer(opts: ActorArgs & CompositeSpriteMapping & { isBack?: boolean }) {
+    public equipLayer(opts: ActorArgs & CompositeSpriteMapping & CompositeResourceOpts) {
         const layer = new CompositeLayer(opts);
         switch (opts.type) {
             case 'hat':

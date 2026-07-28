@@ -22,9 +22,11 @@ type Props = {
     events: QuadEvents;
     commandSet: CommandSet;
     focused: boolean;
+    scaleMax?: number;
 };
 
-const { iconType, events, commandSet, focused } = defineProps<Props>();
+const { iconType, events, commandSet, focused, scaleMax } = defineProps<Props>();
+console.log('scaleMax @ quad: ', scaleMax);
 
 const centerIcon = computed<'dpad' | 'faceButtons'>(() =>
     commandSet === 'hotbarD' ? 'dpad' : 'faceButtons',
@@ -101,6 +103,7 @@ onUnmounted(() => {
                 :row="boxes.left?.iconPos.y"
                 :col="boxes.left?.iconPos.x"
                 :src="boxes.left?.iconSrc"
+                :scale-max
             />
             <HotbarName v-if="boxes.left && focused">
                 {{ boxes.left.label }}
@@ -113,6 +116,7 @@ onUnmounted(() => {
                     :row="boxes.up?.iconPos.y"
                     :col="boxes.up?.iconPos.x"
                     :src="boxes.up?.iconSrc"
+                    :scale-max
                 />
                 <HotbarName v-if="boxes.up && focused">
                     {{ boxes.up.label }}
@@ -125,6 +129,7 @@ onUnmounted(() => {
                     :row="boxes.down?.iconPos.y"
                     :col="boxes.down?.iconPos.x"
                     :src="boxes.down?.iconSrc"
+                    :scale-max
                 />
                 <HotbarName v-if="boxes.down && focused">
                     {{ boxes.down.label }}
@@ -137,6 +142,7 @@ onUnmounted(() => {
                 :row="boxes.right?.iconPos.y"
                 :col="boxes.right?.iconPos.x"
                 :src="boxes.right?.iconSrc"
+                :scale-max
             />
             <HotbarName v-if="boxes.right && focused">
                 {{ boxes.right.label }}

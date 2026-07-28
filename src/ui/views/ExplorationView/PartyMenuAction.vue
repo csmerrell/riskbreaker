@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-    captureControls,
-    registerInputListener,
-    unCaptureControls,
-    unregisterInputListener,
-} from '@/game/input/useInput';
+import { registerInputListener, unregisterInputListener } from '@/game/input/useInput';
 import { getScale } from '@/lib/helpers/screen.helper';
 import { useExploration } from '@/state/useExploration';
 import ControlIconSprite from '@/ui/components/ControlIconSprite.vue';
@@ -52,41 +47,29 @@ onBeforeUnmount(() => {
         unregisterInputListener(l);
     });
 });
+
+const styleLg = {
+    width: `${Math.min(getScale() - 2, 3) * 32}px`,
+    height: `${Math.min(getScale() - 2, 3) * 32}px`,
+};
+const styleSm = {
+    width: `${Math.min(getScale() - 3, 2) * 32}px`,
+    height: `${Math.min(getScale() - 3, 2) * 32}px`,
+};
 </script>
 
 <template>
     <div class="relative">
         <div v-if="focused?.icon" class="absolute top-0 z-10 flex w-full flex-row gap-2">
-            <img
-                :src="subFocused[0]?.icon.src"
-                :style="{
-                    width: `${(getScale() - 3) * 32}px`,
-                    height: `${(getScale() - 3) * 32}px`,
-                }"
-            />
-            <img
-                :src="subFocused[1]?.icon.src"
-                :style="{
-                    width: `${(getScale() - 3) * 32}px`,
-                    height: `${(getScale() - 3) * 32}px`,
-                }"
-            />
+            <img :src="subFocused[0]?.icon.src" :style="styleSm" />
+            <img :src="subFocused[1]?.icon.src" :style="styleSm" />
         </div>
         <div class="mt-4 px-3">
-            <div
-                class="relative"
-                :style="{
-                    width: `${(getScale() - 2) * 32}px`,
-                    height: `${(getScale() - 2) * 32}px`,
-                }"
-            >
+            <div class="relative" :style="styleLg">
                 <img
                     v-if="focused?.icon"
                     :src="focused?.icon.src"
-                    :style="{
-                        width: `${(getScale() - 2) * 32}px`,
-                        height: `${(getScale() - 2) * 32}px`,
-                    }"
+                    :style="styleLg"
                     class="focused-icon-bg absolute left-0 top-0 z-20"
                 />
             </div>

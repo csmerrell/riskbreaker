@@ -8,4 +8,11 @@ export const armor = {
             defense: 3,
         },
     },
+    mana_stitched_cloak: {
+        name: 'Mana-stitched Cloak',
+        slots: ['body'],
+        stat: {
+            magic: 10,
+        },
+    },
 } as const satisfies Record<string, EquipmentMeta>;

@@ -92,6 +92,7 @@ export class TargetComponent extends Component {
                 }, 'cancel'),
                 registerInputListener(() => {
                     this.listeners.forEach((l) => unregisterInputListener(l));
+                    battleManager.setTargetedLane(undefined);
                     removeMenu(indicator.id);
                     resolve(targetLanes[currentLaneIdx]);
                 }, 'confirm'),

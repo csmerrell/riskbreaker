@@ -27,5 +27,4 @@ export const hairLabels = {
     throwback_Black: 'Throwback (Black)',
     throwback_Brown: 'Throwback (Brown)',
     tightCurls: 'Tight Curls',
-    dragonBob: "Dragonkin's Bob",
 };

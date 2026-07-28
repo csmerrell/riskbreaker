@@ -113,8 +113,8 @@ export class Dragon extends KeyedAnimationActor<DragonAnimationKey> {
     public hitPointOffset: Vector = vec(-24, 6);
 
     public static stats: UnitStats = {
-        hp: 400,
-        currentHp: 400,
+        hp: 1200,
+        currentHp: 800,
         speed: 11,
 
         strength: 24,

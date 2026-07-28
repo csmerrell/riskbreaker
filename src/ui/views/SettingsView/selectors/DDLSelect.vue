@@ -17,6 +17,8 @@ type Props = {
 const { settingKey, options, getSelected, onSelect } = defineProps<Props>();
 
 const currentValue = ref<T | null>(getSelected());
+console.log(options);
+console.log(currentValue);
 const cursorPos = ref(options.findIndex((o) => o.key === currentValue.value.key));
 
 const open = ref(false);
