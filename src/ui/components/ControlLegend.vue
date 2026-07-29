@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import KeySprite from './KeySprite.vue';
 import type { MappedCommand } from '@/game/input/InputMap';
 import { ref } from 'vue';
 import { useGameContext } from '@/state/useGameContext';

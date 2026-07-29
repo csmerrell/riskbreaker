@@ -12,5 +12,11 @@ export default defineConfig(async () => {
                 '@': fileURLToPath(new URL('./src', import.meta.url)),
             },
         },
+        devServer: {
+            client: {
+                overlay: false,
+            },
+            overlay: false,
+        },
     };
 });

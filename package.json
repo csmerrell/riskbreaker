@@ -1,10 +1,11 @@
 {
-  "name": "riskbreaker",
-  "productName": "Riskbreaker",
+  "name": "Estelle Igni: To Light Fires in the Night Sky",
+  "productName": "EstelleIgni",
   "version": "0.0.1",
-  "description": "Low-fi co-op adventure RPG",
+  "description": "The JRPG of eternal night and endless discovery.",
   "main": ".vite/build/main.js",
   "scripts": {
+    "webdev": "vite --config vite.web.config.ts",
     "dev": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",

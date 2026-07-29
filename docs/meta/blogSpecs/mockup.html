@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            --full-width: 1920px;
+            margin: 0;
+        }
+
+        .bg {
+            background-color: #151d28;
+        }
+
+        .v-fade-bg {
+            background: linear-gradient(
+                0deg,
+                transparent 0%,
+                rgba(21, 29, 40, 1) 50%,
+                transparent 100%
+            )
+        }
+
+        .full-width {
+            width: var(--full-width);
+        }
+
+        .pixel-img {
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+
+<body class="bg">
+    <img src="./assets/Campfire.gif" class="full-width pixel-img" style="position: relative; margin-top: -75px;" />
+    <div class="v-fade-bg" style="position: relative; top: -1rem; height: 2rem; width: 100%" />
+</body>
+
+<script>
+    function setScale() {
+        //match the first scale values that match the closest window width
+        const targetScale = [
+            { w: 960, f: '12px' },
+            { w: 1280, f: '14px' },
+            { w: 1600, f: '16px' },
+            { w: 1920, f: '18px' },
+            { w: 3840, f: '24px' }
+        ].find(s => s.w > window.innerWidth);
+
+        document.body.style.setProperty('--full-width', `${targetScale.w}px`)
+        document.body.style.setProperty('font-size', targetScale.f)
+    }
+    setScale();
+    window.addEventListener('resize', setScale);
+</script>
+
+</html>

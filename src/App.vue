@@ -7,18 +7,18 @@ import DialogueBus from './ui/components/dialogue/DialogueBus.vue';
 import ExplorationView from './ui/views/ExplorationView/ExplorationView.vue';
 import TitleScreen from './ui/views/TitleScreen/TitleScreen.vue';
 
-import './game/actors/actor.extension';
+import './game/actors/actor.extension.js';
 
-import { initGame, useGameContext } from './state/useGameContext';
-import { useSFX } from './state/useSFX';
+import { initGame, useGameContext } from './state/useGameContext.js';
+import { useSFX } from './state/useSFX.js';
 
-import { LiteLoader } from './resource/loader';
-import { useSprites } from './state/useSprites';
-import { useGameState } from './state/useGameState';
+import { LiteLoader } from './resource/loader.js';
+import { useSprites } from './state/useSprites.js';
+import { useGameState } from './state/useGameState.js';
 import SFXDriver from './ui/components/SFXDriver.vue';
-import { useShader } from './state/useShader';
+import { useShader } from './state/useShader.js';
 import SettingsView from './ui/views/SettingsView/SettingsView.vue';
-import { loadAllMaps, loadAllResources, resources } from './resource';
+import { loadAllMaps, loadAllResources, resources } from './resource/index.js';
 import MenuLayer from './ui/components/menus/MenuLayer.vue';
 import BattleView from './ui/views/BattleScreen/BattleView.vue';
 

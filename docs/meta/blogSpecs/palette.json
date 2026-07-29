@@ -1,0 +1,153 @@
+{
+  "ramps": [
+    {
+      "name": "Neutral",
+      "colors": [
+        "#221C1A",
+        "#141013",
+        "#060608",
+        "#FFFFFF"
+      ]
+    },
+    {
+      "name": "Dark Brown",
+      "colors": [
+        "#322B28",
+        "#423934",
+        "#5A4E44",
+        "#796755"
+      ]
+    },
+    {
+      "name": "Tan",
+      "colors": [
+        "#BB7547",
+        "#DBA463",
+        "#F4D29C",
+        "#FAD6B8"
+      ]
+    },
+    {
+      "name": "Khaki",
+      "colors": [
+        "#A08662",
+        "#C7B08B",
+        "#E4D2AA",
+        "#FEF3C0"
+      ]
+    },
+    {
+      "name": "Burgundy",
+      "colors": [
+        "#422433",
+        "#5B3138",
+        "#71413B",
+        "#8E5252"
+      ]
+    },
+    {
+      "name": "Crimson",
+      "colors": [
+        "#3B2525",
+        "#73172D",
+        "#B4202A",
+        "#E86A73"
+      ]
+    },
+    {
+      "name": "Orange",
+      "colors": [
+        "#DF3E23",
+        "#FA6A0A",
+        "#F9A31B",
+        "#FFD541"
+      ]
+    },
+    {
+      "name": "Lime",
+      "colors": [
+        "#1A7A3E",
+        "#9CDB43",
+        "#D6F264",
+        "#FFFC40"
+      ]
+    },
+    {
+      "name": "Olive",
+      "colors": [
+        "#1F3736",
+        "#24523B",
+        "#6E995C",
+        "#9BB95D"
+      ]
+    },
+    {
+      "name": "Forest",
+      "colors": [
+        "#23694E",
+        "#328264",
+        "#5DAF8D"
+      ]
+    },
+    {
+      "name": "Mint",
+      "colors": [
+        "#478585",
+        "#92DCBA",
+        "#A6FCD9",
+        "#CDF7E2"
+      ]
+    },
+    {
+      "name": "Azure",
+      "colors": [
+        "#143464",
+        "#285CC4",
+        "#249FDE",
+        "#20D6C7"
+      ]
+    },
+    {
+      "name": "Purple",
+      "colors": [
+        "#242234",
+        "#403353",
+        "#793A80",
+        "#BC4A9B"
+      ]
+    },
+    {
+      "name": "Periwinkle",
+      "colors": [
+        "#588DBE",
+        "#849BE4",
+        "#B9BFFB",
+        "#E3E6FF"
+      ]
+    },
+    {
+      "name": "Slate",
+      "colors": [
+        "#6D758D",
+        "#8B93AF",
+        "#B3B9D1",
+        "#DAE0EA"
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "colors": [
+        "#333941",
+        "#4A5462",
+        "#BA756A"
+      ]
+    },
+    {
+      "name": "Peach",
+      "colors": [
+        "#F5A097",
+        "#E9B5A3"
+      ]
+    }
+  ]
+}
