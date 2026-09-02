@@ -7,7 +7,9 @@
         "esModuleInterop": true,
         "noImplicitAny": true,
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/estelle-igni/*"],
+            "@web/*": ["./src/clairescott.dev/*"],
+            "@root/*": ["./src/*"],
         },
         "sourceMap": true,
         "outDir": "dist",

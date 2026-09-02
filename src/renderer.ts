@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import App from './App.vue';
+import App from './estelle-igni/App.vue';
 import './index.css';
 
 // init Vue

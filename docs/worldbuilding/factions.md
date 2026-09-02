@@ -1,6 +1,6 @@
 # Factions
 
-## Riskbreakers / Minstrels
+## Riskbreakers / Minstrels / Swashbuckler
 These aren't actually factions. They're just independent actors with loose definitions.
 
 A Riskbreaker is a name casually given to anyone who braves the darkness to make an area safer for others. It's typically assigned locally to individuals whose actions earn storied respect within their home.
@@ -10,7 +10,11 @@ Minstrels are often the individuals who knight someone an riskbreaker: When a so
 Minstrels make many of the world's firesides, spreading comfort by turning the shadows behind a fire's light into symbols of levity and entertainment. 
 - "Turn shadow into solace."
     - The minstrel's promise
-- Contrast is the tool a minstrel uses to chip away at fear. 
+- Contrast is the tool a minstrel uses to chip away at fear.
+
+Minstrel makes a strange class, in that its skills aren't locked behind a breakthrough. Anyone may sing the songs.
+
+One minstrel, in particular, began her song as a seaborn shanty. Captain of the ----, she retired to the shores that she might spread the stories shared from her many travels.
 
 ## Scholars of the Final Star (Astrologians & Ascetics)
 Astrologians divine the aether of the air, while Ascetics breathe it in.

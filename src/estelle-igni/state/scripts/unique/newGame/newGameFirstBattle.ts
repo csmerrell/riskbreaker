@@ -1,0 +1,47 @@
+import { useExploration } from '@//state/useExploration';
+import { GameScript } from '../../types/GameScript';
+import { EnemyDef, useBattle } from '@//state/battle/useBattle';
+import { Wolf } from '@//game/actors/Monsters/Wolf.actor';
+import { KeyedAnimationActor } from '@//game/actors/KeyedAnimationActor';
+import { nanoid } from 'nanoid';
+import { LaneKey } from '@//state/useParty';
+import { captureControls, unCaptureControls } from '@//game/input/useInput';
+
+function getWolfDef(position: LaneKey, palette: 'gray'): EnemyDef {
+    return {
+        id: nanoid(16),
+        name: 'Wolf',
+        config: {
+            battlePosition: position,
+        },
+        constructor: class extends Wolf {
+            constructor() {
+                super({ palette });
+            }
+        } as unknown as typeof KeyedAnimationActor,
+        stats: Wolf.stats[palette],
+    };
+}
+export const newGameFirstBattle: GameScript = {
+    events: [
+        async () => {
+            console.warn(
+                'TODO: Tutorial battle needs to save and check a settings flag or it will execute more than once.',
+            );
+        },
+        async () => {
+            const explorationMgr = useExploration().getExplorationManager();
+            const { battleManager, movementManager } = explorationMgr;
+            captureControls('battlePrep');
+            await explorationMgr.safeHaltMovement();
+            const { addEnemy, clearEnemies } = useBattle();
+            clearEnemies();
+            addEnemy(getWolfDef('right-2', 'gray'));
+            addEnemy(getWolfDef('right-1', 'gray'));
+            addEnemy(getWolfDef('right-1', 'gray'));
+            unCaptureControls();
+            await battleManager.openBattle();
+            movementManager.enableMovement();
+        },
+    ],
+};

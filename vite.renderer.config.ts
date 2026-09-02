@@ -9,7 +9,9 @@ export default defineConfig(async () => {
         plugins: [vue(), glsl()],
         resolve: {
             alias: {
-                '@': fileURLToPath(new URL('./src', import.meta.url)),
+                '@': fileURLToPath(new URL('./src/estelle-igni', import.meta.url)),
+                '@web': fileURLToPath(new URL('./src/clairescott.dev', import.meta.url)),
+                '@root': fileURLToPath(new URL('./src', import.meta.url)),
             },
         },
         devServer: {
