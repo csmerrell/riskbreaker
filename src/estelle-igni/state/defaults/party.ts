@@ -152,7 +152,7 @@ const RiskbreakerDefaultAbilities: Record<string, SkillMetadata> = {
     },
 };
 
-export const ArtificerDefaultAbilities: Record<string, SkillMetadata> = {
+const ArtificerDefaultAbilities: Record<string, SkillMetadata> = {
     infuse: {
         name: 'Infuse',
         skillKey: 'infuse',

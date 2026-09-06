@@ -28,6 +28,9 @@ Spellblade damage aggregates all stats (not just str/mag).
         - Rock: + Barrier
         - Water: Splash (AoE)
         - Crystal: Mirror all stat boosts to ally
+    - [HiddenLinks]:
+        - [Locus Infusion]
+            - At `4 - (floor(0, locusInfusion_lvl - 1))` investiture lvl, infuse a random locus
 - Draw Investiture
     - (Start of battle): Immediately draw investiture to `Floor(1, investingStrike_lvl - 1)`.
     - Cooldown: 2
@@ -49,7 +52,7 @@ Spellblade damage aggregates all stats (not just str/mag).
     - If 2nd investiture drops to 0, the channel is locked.
 - Matron's Plea
     - `FLOOR(2, -4 + (1 * triggeredEffect))` Cooldown
-    - Grow 2 known, missing ley loci?
+    - Grow 2 known, missing ley loci
     - Full heal each ally below 50% health
     - +20% all-enemy stagger per investiture level
     - +1 all investiture (Can exceed skill level)

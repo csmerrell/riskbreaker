@@ -3,7 +3,7 @@
 ## Skills
 All skills using infusion give the character an infusion gauge that charges 10% each turn. Artificer basic boosts that to 50% each turn.
 
-- (Basic) Infuse
+- (Basic) Locus Infusion
     - Target objects in the battlefield and infuse them with intent.
         - Forest:
             - Tree: Needle turret, Entangling roots
@@ -13,6 +13,9 @@ All skills using infusion give the character an infusion gauge that charges 10% 
     - [Passive]:
         - While infused, pets regenerate 25% hp/turn & Activate 10% faster.
         - While not infused, gain 35% infusion each turn, but infusion caps at 70%
+    - [HiddenLinks]: 
+        - [Investiture Strike]
+            - Each action from pet boosts investiture level +1 (caps @ `investitureStrke_lvl - 1`).
 - Infusion Charge
     - While infused, regenerate 50% of all pets' hp
     - Wile not infused, fill 100% of infusion gauge, regerate 10% of all pets' hp.
@@ -23,6 +26,7 @@ All skills using infusion give the character an infusion gauge that charges 10% 
     - Consumes all infusion gauge
     - [Free] Heals 50% + {infusion gauge consumed}% health. Overhealing becomes barrier (barriers cap at 100%).
 - Screw Bit
+    - 50% CT + 15% per summoned bit
     - Weak ranged attack. Inflicts small, stacking wounds.
     - Bits last all battle, but each consumes 5% infusion each turn to fire. 
     - Stacks to 3.
