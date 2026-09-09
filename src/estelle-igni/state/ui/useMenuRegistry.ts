@@ -1,5 +1,6 @@
 import { MenuItemHooks } from '@/ui/components/menus/MenuItem.vue';
-import { Component, Ref, shallowRef } from 'vue';
+import { Component, ref, Ref, shallowRef } from 'vue';
+import { MenuAnchor } from './useActorAnchors';
 export type MenuInstance = {
     id: number;
     component: Component;
@@ -11,6 +12,7 @@ export type MenuInstance = {
     yAnchor?: 'top' | 'bottom';
     zIndex: number;
 };
+export type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
 
 export const MENU_TRANSITION_DURATION = 200;
 
@@ -23,10 +25,16 @@ export function useMenuRegistry() {
     return menus;
 }
 
+type MenuOptions = Omit<MenuInstance, 'id' | 'zIndex' | 'component' | 'addHooks'>;
 export function addMenu(
     component: Component,
-    options: Omit<MenuInstance, 'id' | 'zIndex' | 'component' | 'addHooks'>,
+    options: Omit<MenuInstance, 'id' | 'zIndex' | 'component' | 'addHooks' | 'position'> & {
+        position?: MenuInstance['position'];
+    },
 ) {
+    if (!options.position) {
+        options.position = ref({ x: 0, y: 0 });
+    }
     const instance: MenuInstance = {
         id: nextId++,
         zIndex: zCounter++,
@@ -34,7 +42,7 @@ export function addMenu(
         addHooks: (hooks) => {
             instance.hooks = hooks;
         },
-        ...options,
+        ...(options as MenuOptions),
     };
 
     menus.value = [...menus.value, instance];

@@ -23,6 +23,7 @@ const menuItems = ref<MenuItemMeta[]>([
     {
         key: 'continue',
         label: 'Continue',
+        disabled: true,
         onSelect: () => {
             unCaptureControls();
             activeView.value = 'exploration';
@@ -34,6 +35,14 @@ const menuItems = ref<MenuItemMeta[]>([
         onSelect: () => {
             unCaptureControls();
             useScript().runScript('unique.newGameOriginSelect');
+        },
+    },
+    {
+        key: 'gauntlet',
+        label: 'Gauntlet (Test)',
+        onSelect: () => {
+            unCaptureControls();
+            useScript().runScript('unique.startGauntlet');
         },
     },
     {
@@ -54,7 +63,7 @@ const menuItems = ref<MenuItemMeta[]>([
 
 const selectedIdx = Math.max(
     menuItems.value.findIndex((i) => !i.disabled),
-    1,
+    2,
 );
 menuItems.value[selectedIdx].selected = true;
 

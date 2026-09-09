@@ -28,6 +28,8 @@ Spellblade damage aggregates all stats (not just str/mag).
         - Rock: + Barrier
         - Water: Splash (AoE)
         - Crystal: Mirror all stat boosts to ally
+        - Heat: +5% dmg boost
+        - Air: +8% eva boost
     - [HiddenLinks]:
         - [Locus Infusion]
             - At `4 - (floor(0, locusInfusion_lvl - 1))` investiture lvl, infuse a random locus
@@ -50,6 +52,22 @@ Spellblade damage aggregates all stats (not just str/mag).
     - Opens a 2nd investiture channel for the remainder of battle.
         -  Draws 1 level of investiture.
     - If 2nd investiture drops to 0, the channel is locked.
+- Matron's Embrace
+    - +1 Water/Wood investiture
+    - Single target heal
+    - +2% regen
+    - +50% stagger barrier
+- Matron's Protection
+    - +1 Rock/Crystal investiture
+    - 25% dmg reduction 3 hits
+    - 75% CT cost
+- Matron's Claws
+    - +1 Heat/Air investiture
+    - Adds def-piercing follow-up damage to next 3 attacks
+        - `FLOOR(5, SUM(stats) / numStats) * INVESTITURE_LV`
+    - 25% CT cost
+
+## Deferred Skills
 - Matron's Plea
     - `FLOOR(2, -4 + (1 * triggeredEffect))` Cooldown
     - Grow 2 known, missing ley loci
@@ -57,14 +75,3 @@ Spellblade damage aggregates all stats (not just str/mag).
     - +20% all-enemy stagger per investiture level
     - +1 all investiture (Can exceed skill level)
     - Burn: Max out all investiture
-- Matron's Embrace
-    - Single target heal
-    - +2% regen
-    - +50% stagger barrier
-- Matron's Protection
-    - 25% dmg reduction 3 hits
-    - 75% CT cost
-- Matron's Claws
-    - Adds def-piercing follow-up damage to next 3 attacks
-        - `FLOOR(5, SUM(stats) / numStats) * INVESTITURE_LV`
-    - 25% CT cost

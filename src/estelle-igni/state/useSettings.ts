@@ -12,8 +12,8 @@ type SettingsState = {
 export type SettingsKey = keyof SettingsState;
 
 const settingsState = makeState<SettingsState>({
-    key: '900p_16_9',
-    resolution: { width: 1600, height: 900 },
+    key: '720p_16_9',
+    resolution: { width: 1280, height: 720 },
     displayMode: 'windowed',
     textSpeed: 'fast',
 });

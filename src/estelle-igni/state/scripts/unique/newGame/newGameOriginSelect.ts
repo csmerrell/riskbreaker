@@ -1,34 +1,40 @@
-import { GameScript } from '../../types/GameScript';
-import { useExploration } from '@/state/useExploration';
+import { Component } from 'vue';
 import { Actor, EasingFunctions, vec } from 'excalibur';
-import { getActorAnchor, MenuAnchor } from '@/state/ui/useActorAnchors';
+
+import { useExploration } from '@/state/useExploration';
+import { useParty } from '@/state/useParty';
+import { useBattle } from '@/state/battle/useBattle';
+import { useGameContext } from '@/state/useGameContext';
+import { getActorAnchor } from '@/state/ui/useActorAnchors';
 import {
     addMenu,
     MENU_TRANSITION_DURATION,
-    MenuInstance,
     removeMenu,
+    type AnchoredMenu,
 } from '@/state/ui/useMenuRegistry';
-import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
 import {
     captureControls,
     registerInputListener,
     unCaptureControls,
     unregisterInputListener,
 } from '@/game/input/useInput';
-import PlayerOriginBox from '@/ui/components/menus/unique/PlayerOriginBox.vue';
-import { getScale } from '@/lib/helpers/screen.helper';
-import { html } from 'lit-html';
-import { useParty } from '@/state/useParty';
-import { nanoid } from 'nanoid';
-import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
-import { LightSource } from '@/game/actors/LightSource/LightSource.component';
-import { useGameContext } from '@/state/useGameContext';
+
 import { maps } from '@/resource/maps';
-import { useBattle } from '@/state/battle/useBattle';
+
+import { CompositeActor } from '@/game/actors/CompositeActor/CompositeActor';
 import { Dragon } from '@/game/actors/Monsters/Dragon.actor';
 import { KeyedAnimationActor } from '@/game/actors/KeyedAnimationActor';
+import { LightSource } from '@/game/actors/LightSource/LightSource.component';
 
-type AnchoredMenu = MenuInstance & { anchor: MenuAnchor };
+import TargetIndicator from '@/ui/components/menus/TargetIndicator.vue';
+import PlayerOriginBox from '@/ui/components/menus/unique/originSelect/PlayerOriginBox.vue';
+import PlayerOriginHeader from '@/ui/components/menus/unique/originSelect/PlayerOriginHeader.vue';
+
+import { nanoid } from 'nanoid';
+import { getScale } from '@/lib/helpers/screen.helper';
+
+import type { GameScript } from '../../types/GameScript';
+
 function displayPlayerOrigin(
     origin: 'riskbreaker' | 'astrologian',
     actor: Actor,
@@ -85,104 +91,113 @@ function moveCameraToActor(
     );
 }
 
-function addHeader() {
-    const header = document.createElement('span');
-    header.classList.add('fixed', 'z-[9999]', 'w-full', 'py-24');
-    header.innerHTML = html`<div
-        class="flex flex-col justify-center items-center gap-2 text-amber-200 stroke-black stroke-1"
-    >
-        <div class="text-standard-lg stroke-2 stroke-black">Select your party lead.</div>
-        <div class="text-standard-sm">(This can be changed freely)</div>
-    </div>`.strings[0];
-    document.getElementById('main-container')!.appendChild(header);
-    return header;
+export const focusOriginCharacter = async () => {
+    const explorationManager = useExploration().getExplorationManager();
+    await explorationManager.ready();
+    const camera = explorationManager.scene.camera;
+    await Promise.all([
+        new Promise<void>((resolve) => {
+            const menuEl = document.getElementById('title-menu')!;
+            menuEl.style.setProperty('transition-duration', '250ms');
+            menuEl.classList.add('hide');
+            const hideListener = () => {
+                menuEl.removeEventListener('transitionend', hideListener);
+                resolve();
+            };
+            menuEl.addEventListener('transitionend', hideListener);
+        }),
+        moveCameraToActor(explorationManager.campManager.getActors()[0], {
+            movementDuration: 750,
+        }),
+        camera.zoomOverTime(1 + 2 / getScale(), 750, EasingFunctions.Linear),
+    ]);
+};
+
+function onP0Focus(player: Actor) {
+    return displayPlayerOrigin('riskbreaker', player, 'left');
 }
+function onP1Focus(player: Actor) {
+    return displayPlayerOrigin('astrologian', player, 'right');
+}
+
+export const addOriginCharacterControls = async (
+    onP0Focus: (player: Actor) => AnchoredMenu[],
+    onP1Focus: (player: Actor) => AnchoredMenu[],
+    headerComponent?: Component,
+) => {
+    //Await player origin select
+    await new Promise<void>((resolve) => {
+        const explorationManager = useExploration().getExplorationManager();
+        const campMgr = explorationManager.campManager;
+        const [p0, p1] = campMgr.getActors();
+        let menus: AnchoredMenu[] = [];
+        function clearMenus() {
+            while (menus.length > 0) {
+                const menu = menus.pop()!;
+                removeMenu(menu.id);
+            }
+        }
+
+        let focusedPlayer: 'p0' | 'p1' = 'p0';
+        menus = onP0Focus(p0);
+        let header: Component;
+        if (headerComponent) {
+            header = addMenu(headerComponent, {});
+        }
+
+        captureControls('OriginSelect');
+        let moving = false;
+        const listeners: string[] = [];
+        listeners.push(
+            registerInputListener(() => {
+                if (moving || focusedPlayer === 'p1') return;
+                focusedPlayer = 'p1';
+                moving = true;
+
+                clearMenus();
+                moveCameraToActor(p1, { xOffset: 24 }).then(() => {
+                    menus = onP1Focus(p1);
+                    moving = false;
+                });
+            }, ['menu_left', 'movement_left']),
+        );
+
+        listeners.push(
+            registerInputListener(() => {
+                if (moving || focusedPlayer === 'p0') return;
+                focusedPlayer = 'p0';
+                moving = true;
+
+                clearMenus();
+                moveCameraToActor(p0).then(() => {
+                    menus = onP0Focus(p0);
+                    moving = false;
+                });
+            }, ['menu_right', 'movement_right']),
+        );
+
+        listeners.push(
+            registerInputListener(() => {
+                while (menus.length > 0) {
+                    const menu = menus.pop()!;
+                    removeMenu(menu.id);
+                }
+                if (header) {
+                    document.getElementById('main-container')!.removeChild(header as Element);
+                }
+                listeners.forEach((l) => unregisterInputListener(l));
+                unCaptureControls();
+                resolve();
+            }, 'confirm'),
+        );
+    });
+};
 
 export const newGameOriginSelect: GameScript = {
     events: [
+        focusOriginCharacter,
         async () => {
-            const explorationManager = useExploration().getExplorationManager();
-            await explorationManager.ready();
-            const camera = explorationManager.scene.camera;
-            await Promise.all([
-                new Promise<void>((resolve) => {
-                    const menuEl = document.getElementById('title-menu')!;
-                    menuEl.style.setProperty('transition-duration', '250ms');
-                    menuEl.classList.add('hide');
-                    const hideListener = () => {
-                        menuEl.removeEventListener('transitionend', hideListener);
-                        resolve();
-                    };
-                    menuEl.addEventListener('transitionend', hideListener);
-                }),
-                moveCameraToActor(explorationManager.campManager.getActors()[0], {
-                    movementDuration: 750,
-                }),
-                camera.zoomOverTime(1 + 2 / getScale(), 750, EasingFunctions.Linear),
-            ]);
-        },
-        async () => {
-            //Await player origin select
-            await new Promise<void>((resolve) => {
-                const explorationManager = useExploration().getExplorationManager();
-                const campMgr = explorationManager.campManager;
-                const [p0, p1] = campMgr.getActors();
-                let menus: AnchoredMenu[] = [];
-                function clearMenus() {
-                    while (menus.length > 0) {
-                        const menu = menus.pop()!;
-                        removeMenu(menu.id);
-                    }
-                }
-
-                let focusedPlayer: 'p0' | 'p1' = 'p0';
-                menus = displayPlayerOrigin('riskbreaker', p0, 'left');
-                const header = addHeader();
-
-                captureControls('OriginSelect');
-                let moving = false;
-                const listeners: string[] = [];
-                listeners.push(
-                    registerInputListener(() => {
-                        if (moving || focusedPlayer === 'p1') return;
-                        focusedPlayer = 'p1';
-                        moving = true;
-
-                        clearMenus();
-                        moveCameraToActor(p1, { xOffset: 24 }).then(() => {
-                            menus = displayPlayerOrigin('astrologian', p1, 'right');
-                            moving = false;
-                        });
-                    }, ['menu_left', 'movement_left']),
-                );
-
-                listeners.push(
-                    registerInputListener(() => {
-                        if (moving || focusedPlayer === 'p0') return;
-                        focusedPlayer = 'p0';
-                        moving = true;
-
-                        clearMenus();
-                        moveCameraToActor(p0).then(() => {
-                            menus = displayPlayerOrigin('riskbreaker', p0, 'left');
-                            moving = false;
-                        });
-                    }, ['menu_right', 'movement_right']),
-                );
-
-                listeners.push(
-                    registerInputListener(() => {
-                        while (menus.length > 0) {
-                            const menu = menus.pop()!;
-                            removeMenu(menu.id);
-                        }
-                        document.getElementById('main-container')!.removeChild(header);
-                        listeners.forEach((l) => unregisterInputListener(l));
-                        unCaptureControls();
-                        resolve();
-                    }, 'confirm'),
-                );
-            });
+            return addOriginCharacterControls(onP0Focus, onP1Focus, PlayerOriginHeader);
         },
         async () => {
             const explorationMgr = useExploration().getExplorationManager();

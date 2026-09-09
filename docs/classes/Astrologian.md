@@ -36,7 +36,7 @@ All abilities are either [Astral] or [Umbral] aligned.
 - (Basic) Umbral Rake
     - 80% CT cost.
     - Low potency 1-lane attack. Reduces enemies' atk potency 10% for 2 attacks.
-- Midlight Shroud
+- Umbral Shroud
     - Single target: Negate 1 received attack
     - On absorb:
         - Activate user's turn
